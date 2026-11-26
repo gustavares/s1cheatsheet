@@ -1,0 +1,971 @@
+{
+	"$comment": "Roland S-1 MIDI implementation, transcribed from the MIDI implementation chart and control change list in the official S-1 Owner's Manual (Version 1.02, chart dated Apr. 18, 2023). Every entry cites a verbatim quote that scripts/validate-midi.mjs checks against the manual; transmit/receive flags are re-parsed from the chart.",
+	"source": {
+		"title": "Roland S-1 Owner's Manual (Version 1.02)",
+		"section": "MIDI implementation chart (pp. 73–74)",
+		"url": "https://static.roland.com/assets/media/pdf/S-1_eng02_W.pdf"
+	},
+	"channels": {
+		"synth": 3,
+		"programChange": 16,
+		"range": "1–16",
+		"memorized": true,
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+			"page": 73,
+			"quote": "Basic Channel Default Changed 3 (Synth), 16 (Program Change) 1–16 3 (Synth), 16 (Program Change) 1–16 Memorized"
+		}
+	},
+	"messageGroups": [
+		{
+			"group": "Mode",
+			"default": "Mode 3",
+			"rows": [
+				{
+					"message": "Messages",
+					"tx": false,
+					"rx": false
+				},
+				{
+					"message": "Altered",
+					"tx": false,
+					"rx": false
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "Mode Default Messages Altered Mode 3 x x Mode 3 x x"
+			}
+		},
+		{
+			"group": "Note Number",
+			"rows": [
+				{
+					"message": "True Voice",
+					"range": "0–127",
+					"tx": true,
+					"rx": true
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "Note Number : True Voice 0–127 0–127"
+			}
+		},
+		{
+			"group": "Velocity",
+			"rows": [
+				{
+					"message": "Note On",
+					"tx": true,
+					"rx": true
+				},
+				{
+					"message": "Note Off",
+					"tx": false,
+					"rx": false
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "Velocity Note On Note Off o x o x"
+			}
+		},
+		{
+			"group": "After Touch",
+			"rows": [
+				{
+					"message": "Key’s",
+					"tx": false,
+					"rx": false
+				},
+				{
+					"message": "Channel’s",
+					"tx": false,
+					"rx": false
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "After Touch Key’s Channel’s x x x x"
+			}
+		},
+		{
+			"group": "Pitch Bend",
+			"rows": [
+				{
+					"message": "Pitch Bend",
+					"tx": false,
+					"rx": true
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "Pitch Bend x o"
+			}
+		},
+		{
+			"group": "Program Change",
+			"rows": [
+				{
+					"message": "True Number",
+					"range": "0–63",
+					"tx": true,
+					"rx": true
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "Program Change : True Number o 0–63 o 0–63"
+			}
+		},
+		{
+			"group": "System Exclusive",
+			"rows": [
+				{
+					"message": "System Exclusive",
+					"tx": false,
+					"rx": false
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "System Exclusive x x"
+			}
+		},
+		{
+			"group": "System Common",
+			"rows": [
+				{
+					"message": "Song Position",
+					"tx": false,
+					"rx": false
+				},
+				{
+					"message": "Song Select",
+					"tx": false,
+					"rx": false
+				},
+				{
+					"message": "Tune Request",
+					"tx": false,
+					"rx": false
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "System Common : Song Position : Song Select : Tune Request x x x x x x"
+			}
+		},
+		{
+			"group": "System Real Time",
+			"rows": [
+				{
+					"message": "Clock",
+					"tx": true,
+					"rx": true
+				},
+				{
+					"message": "Start",
+					"tx": true,
+					"rx": true
+				},
+				{
+					"message": "Continue",
+					"tx": false,
+					"rx": false
+				},
+				{
+					"message": "Stop",
+					"tx": true,
+					"rx": true
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "System Real Time : Clock : Start : Continue : Stop o o x o o o x o"
+			}
+		},
+		{
+			"group": "Aux Message",
+			"remark": "Transmitted: MIDI OFFLINE",
+			"rows": [
+				{
+					"message": "All Sound Off",
+					"tx": true,
+					"rx": true
+				},
+				{
+					"message": "Reset All Controllers",
+					"tx": false,
+					"rx": true
+				},
+				{
+					"message": "All Notes Off",
+					"tx": false,
+					"rx": true
+				},
+				{
+					"message": "Omni Mode Off",
+					"tx": false,
+					"rx": false
+				},
+				{
+					"message": "Omni Mode On",
+					"tx": false,
+					"rx": false
+				},
+				{
+					"message": "Mono Mode On",
+					"tx": false,
+					"rx": false
+				},
+				{
+					"message": "Poly Mode On",
+					"tx": false,
+					"rx": false
+				},
+				{
+					"message": "Active Sensing",
+					"tx": true,
+					"rx": true
+				},
+				{
+					"message": "System Reset",
+					"tx": false,
+					"rx": false
+				}
+			],
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "Aux Message : All Sound Off : Reset All Controllers : All Notes Off : Omni Mode Off : Omni Mode On : Mono Mode On : Poly Mode On : Active Sensing : System Reset o x x x x x x o x o o o x x x x o x"
+			}
+		}
+	],
+	"controlChangeChart": {
+		"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+		"page": 73,
+		"quote": "Control Change 1 3 5 10 11 12–31 64, 65 71–76 77 78–83 85–87 89–93 102–107 x o o x x o x o x o o o o o o o o o o o o o o o o o"
+	},
+	"controlChanges": [
+		{
+			"cc": 1,
+			"parameter": "Modulation Wheel",
+			"layer": "performance",
+			"controls": [],
+			"tx": false,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "1 Modulation Wheel"
+			}
+		},
+		{
+			"cc": 3,
+			"parameter": "LFO RATE",
+			"layer": "knob",
+			"controls": ["RATE"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "3 LFO RATE (LFO [RATE] knob)"
+			}
+		},
+		{
+			"cc": 5,
+			"parameter": "PORTAMENTO TIME",
+			"layer": "function",
+			"controls": ["PORTA TIME"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 73,
+				"quote": "5 PORTAMENTO TIME ([SHIFT] button + [PORTA TIME] pad)"
+			}
+		},
+		{
+			"cc": 10,
+			"parameter": "Pan",
+			"layer": "performance",
+			"controls": [],
+			"tx": false,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "10 Pan"
+			}
+		},
+		{
+			"cc": 11,
+			"parameter": "Expression Pedal",
+			"layer": "performance",
+			"controls": [],
+			"tx": false,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "11 Expression Pedal"
+			}
+		},
+		{
+			"cc": 12,
+			"parameter": "LFO WAVE FORM",
+			"layer": "knob",
+			"controls": ["WAVE FORM"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "12 LFO WAVE FORM (LFO [WAVE FORM] knob)"
+			}
+		},
+		{
+			"cc": 13,
+			"parameter": "OSC LFO",
+			"layer": "knob",
+			"controls": ["OSC LFO"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "13 OSC LFO (OSCILLATOR [LFO] knob)"
+			}
+		},
+		{
+			"cc": 14,
+			"parameter": "OSC RANGE",
+			"layer": "knob",
+			"controls": ["RANGE"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "14 OSC RANGE (OSCILLATOR [RANGE] knob)"
+			}
+		},
+		{
+			"cc": 15,
+			"parameter": "OSC PULSE WIDTH",
+			"layer": "shift-knob",
+			"controls": ["SQUARE", "PWM DEPTH"],
+			"tx": true,
+			"rx": true,
+			"note": "SHIFT + square-wave knob while OSC DRAW SW is OFF (knob table, p. 70).",
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "15 OSC PULSE WIDTH ([SHIFT] button + [PWM DEPTH] pad) ([SHIFT] +OSCILLATOR [ ] knob)"
+			}
+		},
+		{
+			"cc": 16,
+			"parameter": "OSC PWM SOURCE",
+			"layer": "function",
+			"controls": ["PWM SRC"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "16 OSC PWM SOURCE ([SHIFT] button + [PWM SRC] pad)"
+			}
+		},
+		{
+			"cc": 17,
+			"parameter": "LFO MODULATION DEPTH",
+			"layer": "function",
+			"controls": ["PAD 15"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "17 LFO MODULATION DEPTH ([SHIFT] button + pad [15] (MENU): LFO Modulation Depth)"
+			}
+		},
+		{
+			"cc": 18,
+			"parameter": "OSC BEND SENS",
+			"layer": "function",
+			"controls": ["PAD 15"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "18 OSC BEND SENS ([SHIFT] button + pad [15] (MENU): Oscillator Bend Sens)"
+			}
+		},
+		{
+			"cc": 19,
+			"parameter": "OSC LEVEL",
+			"layer": "knob",
+			"controls": ["SQUARE"],
+			"tx": true,
+			"rx": true,
+			"note": "Square-wave level knob: identified by the waveform icon printed in the CC list (the text layer drops the icon).",
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "19 OSC LEVEL (OSCILLATOR [ ] knob)"
+			}
+		},
+		{
+			"cc": 20,
+			"parameter": "OSC LEVEL",
+			"layer": "knob",
+			"controls": ["SAW"],
+			"tx": true,
+			"rx": true,
+			"note": "Sawtooth-wave level knob: identified by the waveform icon printed in the CC list (the text layer drops the icon).",
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "20 OSC LEVEL (OSCILLATOR [ ] knob)"
+			}
+		},
+		{
+			"cc": 21,
+			"parameter": "OSC SUB OSC LEVEL",
+			"layer": "knob",
+			"controls": ["SUB"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "21 OSC SUB OSC LEVEL (OSCILLATOR [SUB] knob)"
+			}
+		},
+		{
+			"cc": 22,
+			"parameter": "OSC SUB OCT TYPE",
+			"layer": "function",
+			"controls": ["SUB OCT"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "22 OSC SUB OCT TYPE ([SHIFT] button + [SUB OCT] pad)"
+			}
+		},
+		{
+			"cc": 23,
+			"parameter": "OSC NOISE LEVEL",
+			"layer": "knob",
+			"controls": ["NOISE"],
+			"tx": true,
+			"rx": true,
+			"note": "While Riser Mode is on, the NOISE knob controls the riser instead (knob table, p. 70).",
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "23 OSC NOISE LEVEL (OSCILLATOR [NOISE] knob)"
+			}
+		},
+		{
+			"cc": 24,
+			"parameter": "FILTER ENVELOPE",
+			"layer": "knob",
+			"controls": ["FILTER ENV"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "24 FILTER ENVELOPE (FILTER [ENV] knob)"
+			}
+		},
+		{
+			"cc": 25,
+			"parameter": "FILTER LFO",
+			"layer": "knob",
+			"controls": ["FILTER LFO"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "25 FILTER LFO (FILTER [LFO] knob)"
+			}
+		},
+		{
+			"cc": 26,
+			"parameter": "FILTER KEYBOARD FOLLOW",
+			"layer": "shift-knob",
+			"controls": ["FILTER ENV", "PAD 7"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "26 FILTER KEYBOARD FOLLOW ([SHIFT] button + pad [7] (FILTER KYBD) pad) ([SHIFT] button +FILTER [ENV] knob)"
+			}
+		},
+		{
+			"cc": 27,
+			"parameter": "FILTER BEND SENS",
+			"layer": "function",
+			"controls": ["PAD 15"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "27 FILTER BEND SENS ([SHIFT] button + pad [15] (MENU): Filter Bend Sens)"
+			}
+		},
+		{
+			"cc": 28,
+			"parameter": "AMP ENVELOPE MODE SW",
+			"layer": "function",
+			"controls": ["AMP"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "28 AMP ENVELOPE MODE SW ([SHIFT] button + [AMP] pad)"
+			}
+		},
+		{
+			"cc": 29,
+			"parameter": "ENV TRIGGER MODE",
+			"layer": "function",
+			"controls": ["ENV TRG"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "29 ENV TRIGGER MODE ([SHIFT] button + [ENV TRG] pad)"
+			}
+		},
+		{
+			"cc": 30,
+			"parameter": "ENV SUSTAIN",
+			"layer": "knob",
+			"controls": ["SUSTAIN"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "30 ENV SUSTAIN (ENV [SUSTAIN] knob)"
+			}
+		},
+		{
+			"cc": 31,
+			"parameter": "PORTAMENTO MODE",
+			"layer": "function",
+			"controls": ["PORTA ON"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "31 PORTAMENTO MODE ([SHIFT] button + [PORTA ON] pad)"
+			}
+		},
+		{
+			"cc": 64,
+			"parameter": "Damper Pedal",
+			"layer": "performance",
+			"controls": [],
+			"tx": false,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "64 Damper Pedal"
+			}
+		},
+		{
+			"cc": 65,
+			"parameter": "PORTAMENTO",
+			"layer": "performance",
+			"controls": [],
+			"tx": false,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "65 PORTAMENTO"
+			}
+		},
+		{
+			"cc": 71,
+			"parameter": "FILTER RESONANCE",
+			"layer": "knob",
+			"controls": ["RESO"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "71 FILTER RESONANCE (FILTER [RESO] knob)"
+			}
+		},
+		{
+			"cc": 72,
+			"parameter": "ENV RELEASE",
+			"layer": "knob",
+			"controls": ["RELEASE"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "72 ENV RELEASE (ENV [RELEASE] knob)"
+			}
+		},
+		{
+			"cc": 73,
+			"parameter": "ENV ATTACK",
+			"layer": "knob",
+			"controls": ["ATTACK"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "73 ENV ATTACK (ENV [ATTACK] knob)"
+			}
+		},
+		{
+			"cc": 74,
+			"parameter": "FILTER FREQUENCY",
+			"layer": "knob",
+			"controls": ["FREQ"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "74 FILTER FREQUENCY (FILTER [FREQ] knob)"
+			}
+		},
+		{
+			"cc": 75,
+			"parameter": "ENV DECAY",
+			"layer": "knob",
+			"controls": ["DECAY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "75 ENV DECAY (ENV [DECAY] knob)"
+			}
+		},
+		{
+			"cc": 76,
+			"parameter": "FINE TUNE",
+			"layer": "shift-knob",
+			"controls": ["RANGE"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "76 FINE TUNE ([SHIFT] +OSCILLATOR [RANGE] knob)"
+			}
+		},
+		{
+			"cc": 77,
+			"parameter": "TRANSPOSE SW",
+			"layer": "function",
+			"controls": ["STEP"],
+			"tx": false,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "77 TRANSPOSE SW ([SHIFT] button + [STEP] (KEY TRANSPOSE) button)"
+			}
+		},
+		{
+			"cc": 78,
+			"parameter": "NOISE MODE",
+			"layer": "shift-knob",
+			"controls": ["NOISE", "PAD 15"],
+			"tx": true,
+			"rx": true,
+			"note": "SHIFT + NOISE knob while Riser Mode is OFF (knob table, p. 70).",
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "78 NOISE MODE ([SHIFT] button + pad [15] (MENU): Noise Mode) ([SHIFT] + OSCILLATOR [NOISE] knob)"
+			}
+		},
+		{
+			"cc": 79,
+			"parameter": "LFO MODE",
+			"layer": "shift-knob",
+			"controls": ["RATE", "PAD 15"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "79 LFO MODE ([SHIFT] button + pad [15] (MENU): LFO Mode) ([SHIFT] +LFO [RATE] knob)"
+			}
+		},
+		{
+			"cc": 80,
+			"parameter": "POLY MODE",
+			"layer": "function",
+			"controls": ["POLY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "80 POLY MODE ([SHIFT] button + [POLY] pad: Poly Mode)"
+			}
+		},
+		{
+			"cc": 81,
+			"parameter": "CHORD VOICE 2 SW",
+			"layer": "function",
+			"controls": ["POLY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "81 CHORD VOICE 2 SW ([SHIFT] button + [POLY] pad: Voice 2 SW)"
+			}
+		},
+		{
+			"cc": 82,
+			"parameter": "CHORD VOICE 3 SW",
+			"layer": "function",
+			"controls": ["POLY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "82 CHORD VOICE 3 SW ([SHIFT] button + [POLY] pad: Voice 3 SW)"
+			}
+		},
+		{
+			"cc": 83,
+			"parameter": "CHORD VOICE 4 SW",
+			"layer": "function",
+			"controls": ["POLY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "83 CHORD VOICE 4 SW ([SHIFT] button + [POLY] pad: Voice 4 SW)"
+			}
+		},
+		{
+			"cc": 85,
+			"parameter": "CHORD VOICE 2 KEY SHIFT",
+			"layer": "function",
+			"controls": ["POLY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "85 CHORD VOICE 2 KEY SHIFT ([SHIFT] button + [POLY] pad: Voice 2 Key Shift)"
+			}
+		},
+		{
+			"cc": 86,
+			"parameter": "CHORD VOICE 3 KEY SHIFT",
+			"layer": "function",
+			"controls": ["POLY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "86 CHORD VOICE 3 KEY SHIFT ([SHIFT] button + [POLY] pad: Voice 3 Key Shift)"
+			}
+		},
+		{
+			"cc": 87,
+			"parameter": "CHORD VOICE 4 KEY SHIFT",
+			"layer": "function",
+			"controls": ["POLY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "87 CHORD VOICE 4 KEY SHIFT ([SHIFT] button + [POLY] pad: Voice 4 Key Shift)"
+			}
+		},
+		{
+			"cc": 89,
+			"parameter": "REVERB TIME",
+			"layer": "shift-knob",
+			"controls": ["REVERB"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "89 REVERB TIME ([SHIFT] + [REVERB] knob)"
+			}
+		},
+		{
+			"cc": 90,
+			"parameter": "DELAY TIME",
+			"layer": "shift-knob",
+			"controls": ["DELAY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "90 DELAY TIME ([SHIFT] + [DELAY] knob)"
+			}
+		},
+		{
+			"cc": 91,
+			"parameter": "REVERB LEVEL",
+			"layer": "knob",
+			"controls": ["REVERB"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "91 REVERB LEVEL ([REVERB] knob)"
+			}
+		},
+		{
+			"cc": 92,
+			"parameter": "DELAY LEVEL",
+			"layer": "knob",
+			"controls": ["DELAY"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "92 DELAY LEVEL ([DELAY] knob)"
+			}
+		},
+		{
+			"cc": 93,
+			"parameter": "CHORUS",
+			"layer": "function",
+			"controls": ["PAD 15"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "93 CHORUS ([SHIFT] button + pad [15] (MENU): Chorus)"
+			}
+		},
+		{
+			"cc": 102,
+			"parameter": "OSC DRAW MULTIPLY",
+			"layer": "shift-knob",
+			"controls": ["SQUARE", "PAD 5"],
+			"tx": true,
+			"rx": true,
+			"note": "SHIFT + square-wave knob while OSC DRAW SW is STEP or SLOPE (knob table, p. 70).",
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "102 OSC DRAW MULTIPLY ([SHIFT] button + pad [5] (OSC DRAW): MULTIPLY) ([SHIFT] + OSCILLATOR [ ] knob)"
+			}
+		},
+		{
+			"cc": 103,
+			"parameter": "OSC CHOP OVERTONE",
+			"layer": "shift-knob",
+			"controls": ["OSC LFO", "PAD 6"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "103 OSC CHOP OVERTONE ([SHIFT] button + pad [6] (OSC CHOP): OVERTONE) ([SHIFT] + OSCILLATOR [LFO] knob)"
+			}
+		},
+		{
+			"cc": 104,
+			"parameter": "OSC CHOP COMB",
+			"layer": "shift-knob",
+			"controls": ["SUB", "PAD 6"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "104 OSC CHOP COMB ([SHIFT] button + pad [6] (OSC CHOP): COMB) ([SHIFT] + OSCILLATOR [SUB] knob)"
+			}
+		},
+		{
+			"cc": 105,
+			"parameter": "LFO KEY TRIGGER",
+			"layer": "function",
+			"controls": ["PAD 15"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "105 LFO KEY TRIGGER ([SHIFT] button + pad [15] (MENU): LFO Key Trigger)"
+			}
+		},
+		{
+			"cc": 106,
+			"parameter": "LFO SYNC",
+			"layer": "shift-knob",
+			"controls": ["WAVE FORM", "PAD 15"],
+			"tx": true,
+			"rx": true,
+			"note": "Added in Ver. 1.02.",
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "106 LFO SYNC ([SHIFT] button + [MENU] pad: LFO Sync) ([SHIFT] +LFO [WAVE FORM] knob) (Ver.1.02)"
+			}
+		},
+		{
+			"cc": 107,
+			"parameter": "OSC DRAW SW",
+			"layer": "shift-knob",
+			"controls": ["SAW", "PAD 5"],
+			"tx": true,
+			"rx": true,
+			"citation": {
+				"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+				"page": 74,
+				"quote": "107 OSC DRAW SW ([SHIFT] button + pad [5] (OSC DRAW): SW) ([SHIFT] + OSCILLATOR [ ] knob)"
+			}
+		}
+	]
+}
