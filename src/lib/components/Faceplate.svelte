@@ -15,6 +15,8 @@
 	import { CCS_BY_CONTROL, KNOB_CC, MIDI_MAPPED_CONTROLS, knobAngle } from '#lib/midi.js';
 	import { midiStore } from '#lib/stores/midi.svelte.js';
 	import MidiPanel from './MidiPanel.svelte';
+	import Visualizer from './Visualizer.svelte';
+	import { audioStore } from '#lib/stores/audio.svelte.js';
 
 	interface Props {
 		activeButtons: string[];
@@ -221,16 +223,30 @@
 			<span class="brand-model">S-1</span>
 			<span class="brand-tagline">Tweak Synth</span>
 		</div>
-		<button
-			type="button"
-			class="layout-mode-btn"
-			class:layout-mode-btn--active={isZoomed}
-			aria-pressed={isZoomed}
-			onclick={() => (isZoomed = !isZoomed)}
-			title={isZoomed ? 'Fit the whole panel' : 'Enlarge the panel for easier tapping'}
-		>
-			{isZoomed ? 'Fit Panel' : 'Zoom'}
-		</button>
+		<div class="branding-actions">
+			<button
+				type="button"
+				class="layout-mode-btn layout-mode-btn--viz"
+				class:layout-mode-btn--viz-on={audioStore.open}
+				aria-pressed={audioStore.open}
+				onclick={() => (audioStore.open ? audioStore.stop() : audioStore.start())}
+				title={audioStore.open
+					? 'Close the visualizer (stops the audio input)'
+					: 'Show the S-1’s USB audio as a waveform, spectrum or spectrogram'}
+			>
+				Visualizer
+			</button>
+			<button
+				type="button"
+				class="layout-mode-btn"
+				class:layout-mode-btn--active={isZoomed}
+				aria-pressed={isZoomed}
+				onclick={() => (isZoomed = !isZoomed)}
+				title={isZoomed ? 'Fit the whole panel' : 'Enlarge the panel for easier tapping'}
+			>
+				{isZoomed ? 'Fit Panel' : 'Zoom'}
+			</button>
+		</div>
 	</div>
 
 	<MidiPanel />
@@ -526,6 +542,10 @@
 		</svg>
 	</div>
 
+	{#if audioStore.open}
+		<Visualizer />
+	{/if}
+
 	<div class="faceplate__readout" role="status" aria-live="polite">
 		{#if selectedTip}
 			<div class="readout__main">
@@ -636,6 +656,23 @@
 	.layout-mode-btn:hover {
 		color: #e2e8f0;
 		border-color: #475569;
+	}
+
+	.branding-actions {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.layout-mode-btn--viz {
+		color: #86efac;
+		border-color: rgba(74, 222, 128, 0.35);
+	}
+
+	.layout-mode-btn--viz-on {
+		color: #dcfce7;
+		background: rgba(74, 222, 128, 0.16);
+		border-color: rgba(74, 222, 128, 0.6);
 	}
 
 	.layout-mode-btn--active {

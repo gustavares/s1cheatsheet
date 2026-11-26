@@ -16,6 +16,7 @@ This is an S-1 port of **[sp404mk2cheatsheet](https://github.com/cntrvsy/sp404mk
 - **Curated Studio Sheet & PDF:** Pin go-to shortcuts into a custom sheet and export an ink-friendly 1–2 page reference table.
 - **Strict Verification:** 121 shortcuts, each with a verbatim quote and page number from the official Roland S-1 Owner's Manual, checked on every build.
 - **Connect your S-1 (Web MIDI, opt-in):** in Chrome or Edge on a desktop computer, press **Connect S-1** to control an S-1 plugged in over USB. Drag a knob (or focus it and press ↑/↓) to send its CC; knob moves on the hardware rotate and light up the on-screen knobs. Controls with no MIDI CC are hatched. Nothing is requested or sent until you connect.
+- **Visualizer (opt-in):** press **Visualizer** to see the S-1's USB audio live as a trigger-locked oscilloscope (1–8 cycles, note/frequency readout), a log-frequency spectrum with harmonic markers, or a scrolling spectrogram. The input picker auto-selects the S-1, browser audio processing is off, and the audio is never sent to your speakers. It runs alongside Connect S-1, so turning a knob shows the wave change.
 
 ---
 
