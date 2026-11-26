@@ -1,7 +1,7 @@
 {
-	"name": "Roland SP-404MKII Cheat Sheet",
-	"short_name": "SP-404 MK2",
-	"description": "Fast visual shortcut companion and 1:1 hardware faceplate filter for Roland SP-404MKII.",
+	"name": "Roland S-1 Cheat Sheet",
+	"short_name": "S-1 Sheet",
+	"description": "Interactive shortcut finder and clickable front-panel filter for the Roland S-1 Tweak Synth.",
 	"start_url": "./",
 	"scope": "./",
 	"display": "standalone",

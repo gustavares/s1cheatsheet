@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'sp404mk2-pinned-tips-v1';
+const STORAGE_KEY = 's1-pinned-tips-v1';
 const isBrowser = typeof window !== 'undefined';
 
 class PinnedStore {

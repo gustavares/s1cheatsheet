@@ -1,5 +1,5 @@
 {
-	"name": "sp404mk2cheatsheet",
+	"name": "s1cheatsheet",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -8,9 +8,10 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
+		"docs:sync": "node scripts/ingest-pdf.mjs --sync",
 		"docs:ingest": "node scripts/ingest-pdf.mjs",
 		"validate:tips": "node scripts/validate-tips.mjs",
-		"check": "npm run validate:tips && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check": "npm run docs:sync && npm run validate:tips && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write ."
@@ -33,6 +34,7 @@
 		"svelte-check": "^4.6.0",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.60.1",
+		"unpdf": "2.2.3",
 		"vite": "^8.3.0"
 	},
 	"imports": {

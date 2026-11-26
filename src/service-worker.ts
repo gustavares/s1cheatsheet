@@ -8,7 +8,7 @@ declare const self: ServiceWorkerGlobalScope;
 import { version } from '$app/env';
 import { assets, immutable, prerendered } from '$app/manifest';
 
-const CACHE = `sp404-cache-${version}`;
+const CACHE = `s1-cache-${version}`;
 const ASSETS = [...immutable, ...assets, ...prerendered].map((item) => item.path);
 
 self.addEventListener('install', (event) => {

@@ -21,3 +21,7 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Generated manual corpus (Roland's copyrighted text): rebuilt by `npm run docs:sync`
+/docs/reference/*/
+/docs/reference/.cache/

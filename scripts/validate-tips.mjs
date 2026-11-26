@@ -4,108 +4,51 @@
  *
  * This test suite guarantees the integrity of the cheatsheet:
  * 1. Schema & Unique IDs: Ensures each tip has a kebab-case ID, valid category, and tier.
- * 2. 1-to-1 Hardware Matching: Ensures `tip.buttons` strictly matches `tip.combo` tokens,
- *    preventing false-positive highlights on the interactive Faceplate.
- * 3. Verbatim Citation Verification: Reads the committed manual markdown under `docs/reference/`,
- *    finds the `<!-- [Page N] -->` page anchor, and verifies that `citation.quote` appears
- *    word-for-word in the manual.
+ * 2. 1-to-1 Hardware Matching: Ensures `tip.buttons` strictly matches the IDs parsed from
+ *    `tip.combo` (grammar in `src/lib/device.js`), preventing false-positive highlights on the
+ *    interactive Faceplate. Every ID is a control that the Faceplate actually draws.
+ * 3. Verbatim Citation Verification: Reads the manual corpus under `docs/reference/<slug>/`
+ *    (generated from the SHA-256-pinned official PDF by `npm run docs:sync`), finds the
+ *    `<!-- [Page N] -->` page anchor, and verifies that `citation.quote` appears word-for-word
+ *    on that page. Optional `display` codes and "Ver. x.xx" context tags are checked against
+ *    the same page.
  * 4. Alias Anti-Bloat Bounds: Verifies 1:1 coverage in `src/lib/data/aliases.json` and ensures
  *    no single alias is shared across >2 tips to prevent search dilution.
  *
- * Adapting for Another Device (e.g. SP-303 or SP-404SX):
- * - Update `VALID_CATEGORIES` to match the target device's categories.
- * - Update `VALID_BUTTON_IDS` with the target machine's hardware buttons (e.g. 8 pads instead of 16).
- * - Update `comboTokenToButtons()` to parse machine-specific tokens (e.g. `[CANCEL] + [PAD]`).
+ * Adapting for Another Device: update `src/lib/device.js` (categories, controls, combo grammar)
+ * and `docs/reference/sources.json`; this script reads both.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { CATEGORIES, DEVICE, VALID_BUTTON_IDS, comboToButtons } from '../src/lib/device.js';
 
 const TIPS_PATH = path.resolve('src/lib/data/tips.json');
 const ALIASES_PATH = path.resolve('src/lib/data/aliases.json');
+const SOURCES_PATH = path.resolve('docs/reference/sources.json');
 
-const VALID_CATEGORIES = new Set([
-	'Sample Playback',
-	'Pattern Sequencer',
-	'Sample Edit & Chop',
-	'Pitch, Speed & Env',
-	'FX & Routing',
-	'Banks & Projects',
-	'Pad Modes (SHIFT + Pad)'
-]);
-
+const VALID_CATEGORIES = new Set(CATEGORIES);
 const VALID_TIERS = new Set(['essential', 'deep-dive']);
+const MIN_QUOTE_LENGTH = 12;
+// Citations are short excerpts that prove a shortcut, not reproductions of the manual.
+const MAX_QUOTE_LENGTH = 240;
 
-const VALID_BUTTON_IDS = new Set([
-	// Top Knobs
-	'VOLUME',
-	'CTRL 1',
-	'CTRL 2',
-	'CTRL 3',
-	// Direct FX
-	'FILTER+DRIVE',
-	'RESONATOR',
-	'DELAY',
-	'ISOLATOR',
-	'DJFX LOOPER',
-	'MFX',
-	// Function Row 1
-	'PATTERN SELECT',
-	'PATTERN EDIT',
-	'RECORD SETTING',
-	'START/END',
-	'PITCH/SPEED',
-	'MARK',
-	'VALUE',
-	// Function Row 2
-	'DEL',
-	'REC',
-	'RESAMPLE',
-	'BPM SYNC',
-	'GATE',
-	'LOOP',
-	'REVERSE',
-	'ROLL',
-	// Function Row 3
-	'EXIT',
-	'COPY',
-	'REMAIN',
-	'BANK',
-	'BANK A/F',
-	'BANK B/G',
-	'BANK C/H',
-	'BANK D/I',
-	'BANK E/J',
-	'SHIFT',
-	// Pads & Right Column
-	'PAD',
-	...Array.from({ length: 16 }, (_, i) => `PAD ${i + 1}`),
-	'BUS FX',
-	'HOLD',
-	'EXT SOURCE',
-	'SUB PAD'
-]);
-
-function comboTokenToButtons(token) {
-	const t = token.trim();
-	if (t === 'TRUNCATE') return [];
-	if (t === 'Any FX') {
-		return ['FILTER+DRIVE', 'RESONATOR', 'DELAY', 'ISOLATOR', 'DJFX LOOPER', 'MFX'];
-	}
-	if (t === 'DJFX LOOPER / ISOLATOR') return ['DJFX LOOPER', 'ISOLATOR'];
-	if (t === 'BANK A/F / B/G') return ['BANK A/F', 'BANK B/G'];
-	if (t === 'PAD / BANK') return ['PAD', 'BANK'];
-	if (t === 'Turn CTRL 1/2/3') return ['CTRL 1', 'CTRL 2', 'CTRL 3'];
-	if (t === 'Turn CTRL 3') return ['CTRL 3'];
-	if (t === 'BANK (x2)') return ['BANK'];
-	if (/VALUE/.test(t)) return ['VALUE'];
-	if (/MARK/.test(t)) return ['MARK'];
-	if (/REMAIN/.test(t)) return ['REMAIN'];
-	return [t.replace(/^(Hold|Push|Turn)\s+/i, '').trim()];
-}
+const { sources } = JSON.parse(fs.readFileSync(SOURCES_PATH, 'utf8'));
+const DOC_PREFIXES = sources.map((s) => `docs/reference/${s.slug}/`);
 
 function normalizeWhitespace(str) {
 	return str.replace(/\s+/g, ' ').trim();
+}
+
+const missingCorpora = sources.filter(
+	(s) => !fs.existsSync(path.resolve('docs/reference', s.slug, 'INDEX.md'))
+);
+if (missingCorpora.length > 0) {
+	console.error(
+		`❌ Manual corpus not found for: ${missingCorpora.map((s) => s.slug).join(', ')}.\n` +
+			'   Run `npm run docs:sync` to download the official PDF and generate it.'
+	);
+	process.exit(1);
 }
 
 const docCache = new Map();
@@ -113,11 +56,7 @@ const docCache = new Map();
 function getPageText(docRelPath, pageNum) {
 	if (!docCache.has(docRelPath)) {
 		const absPath = path.resolve(docRelPath);
-		if (!fs.existsSync(absPath)) {
-			docCache.set(docRelPath, null);
-		} else {
-			docCache.set(docRelPath, fs.readFileSync(absPath, 'utf8'));
-		}
+		docCache.set(docRelPath, fs.existsSync(absPath) ? fs.readFileSync(absPath, 'utf8') : null);
 	}
 	const content = docCache.get(docRelPath);
 	if (!content) return null;
@@ -132,8 +71,7 @@ function getPageText(docRelPath, pageNum) {
 	return normalizeWhitespace(slice);
 }
 
-const raw = fs.readFileSync(TIPS_PATH, 'utf8');
-const tips = JSON.parse(raw);
+const tips = JSON.parse(fs.readFileSync(TIPS_PATH, 'utf8'));
 
 if (!Array.isArray(tips) || tips.length === 0) {
 	console.error('❌ tips.json must be a non-empty array.');
@@ -181,7 +119,7 @@ for (const [index, tip] of tips.entries()) {
 			}
 		}
 		if (Array.isArray(tip.combo)) {
-			const expectedButtons = [...new Set(tip.combo.flatMap(comboTokenToButtons))];
+			const expectedButtons = comboToButtons(tip.combo);
 			if (JSON.stringify(tip.buttons) !== JSON.stringify(expectedButtons)) {
 				errors.push(
 					`${prefix}: "buttons" ${JSON.stringify(tip.buttons)} does not match "combo" ${JSON.stringify(expectedButtons)}.`
@@ -201,6 +139,12 @@ for (const [index, tip] of tips.entries()) {
 	if (tip.caveat !== undefined) {
 		if (typeof tip.caveat !== 'string' || tip.caveat.trim().length < 12) {
 			errors.push(`${prefix}: "caveat" must be a non-empty descriptive string when present.`);
+		}
+	}
+
+	if (tip.steps !== undefined) {
+		if (!Array.isArray(tip.steps) || tip.steps.some((s) => typeof s !== 'string' || !s.trim())) {
+			errors.push(`${prefix}: "steps" must be an array of non-empty strings when present.`);
 		}
 	}
 
@@ -227,29 +171,62 @@ for (const [index, tip] of tips.entries()) {
 		errors.push(`${prefix}: Deprecated "sources" field found; use "citation" only.`);
 	}
 
-	// Closed-loop Verbatim Quote Verification against docs/reference/roland-v550/
+	// Closed-loop verbatim quote verification against the generated manual corpus
 	if (!tip.citation || typeof tip.citation !== 'object') {
 		errors.push(`${prefix}: Missing required "citation" ({ doc, page, quote }).`);
-	} else {
-		const { doc, page, quote } = tip.citation;
-		if (typeof doc !== 'string' || !doc.startsWith('docs/reference/roland-v550/')) {
-			errors.push(`${prefix}: citation.doc must be a path under "docs/reference/roland-v550/".`);
-		} else if (!Number.isInteger(page) || page < 1) {
-			errors.push(`${prefix}: citation.page must be a positive integer.`);
-		} else if (typeof quote !== 'string' || normalizeWhitespace(quote).length < 12) {
-			errors.push(`${prefix}: citation.quote must be at least 12 characters of verbatim text.`);
-		} else {
-			const pageText = getPageText(doc, page);
-			if (pageText === null) {
-				errors.push(`${prefix}: Could not find Page ${page} in "${doc}".`);
-			} else {
-				const normQuote = normalizeWhitespace(quote);
-				if (!pageText.includes(normQuote)) {
-					errors.push(
-						`${prefix}: Verbatim quote "${normQuote}" was NOT found on Page ${page} of "${doc}".`
-					);
-				}
-			}
+		continue;
+	}
+
+	const { doc, page, quote } = tip.citation;
+	if (typeof doc !== 'string' || !DOC_PREFIXES.some((p) => doc.startsWith(p))) {
+		errors.push(`${prefix}: citation.doc must be a path under ${DOC_PREFIXES.join(' or ')}.`);
+		continue;
+	}
+	if (!Number.isInteger(page) || page < 1) {
+		errors.push(`${prefix}: citation.page must be a positive integer.`);
+		continue;
+	}
+	if (typeof quote !== 'string' || normalizeWhitespace(quote).length < MIN_QUOTE_LENGTH) {
+		errors.push(
+			`${prefix}: citation.quote must be at least ${MIN_QUOTE_LENGTH} characters of verbatim text.`
+		);
+		continue;
+	}
+	const normQuote = normalizeWhitespace(quote);
+	if (normQuote.length > MAX_QUOTE_LENGTH) {
+		errors.push(
+			`${prefix}: citation.quote is ${normQuote.length} characters; keep it to the shortest verbatim excerpt (max ${MAX_QUOTE_LENGTH}).`
+		);
+	}
+
+	const pageText = getPageText(doc, page);
+	if (pageText === null) {
+		errors.push(`${prefix}: Could not find Page ${page} in "${doc}".`);
+		continue;
+	}
+	if (!pageText.includes(normQuote)) {
+		errors.push(
+			`${prefix}: Verbatim quote "${normQuote}" was NOT found on Page ${page} of "${doc}".`
+		);
+	}
+
+	if (tip.display !== undefined) {
+		if (typeof tip.display !== 'string' || tip.display.length === 0 || tip.display.length > 6) {
+			errors.push(`${prefix}: "display" must be the 1–6 character LED code shown by the unit.`);
+		} else if (!pageText.includes(tip.display)) {
+			errors.push(
+				`${prefix}: Display code "${tip.display}" was NOT found on Page ${page} of "${doc}".`
+			);
+		}
+	}
+
+	const versionTag = /^Ver\. (\d+\.\d+)$/.exec(tip.context ?? '');
+	if (versionTag) {
+		const version = versionTag[1].replace('.', '\\.');
+		if (!new RegExp(`Ver\\. ?${version}`).test(pageText)) {
+			errors.push(
+				`${prefix}: context "${tip.context}" is not backed by a version note on Page ${page}.`
+			);
 		}
 	}
 }
@@ -281,5 +258,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-	`✔ Validated ${tips.length} SP-404MKII tips + ${Object.keys(aliasesMap).length} alias entries (1:1 hardware IDs, verbatim Roland quotes, and anti-bloat alias bounds).`
+	`✔ Validated ${tips.length} ${DEVICE.model} tips + ${Object.keys(aliasesMap).length} alias entries (1:1 hardware IDs, verbatim Roland quotes, and anti-bloat alias bounds).`
 );

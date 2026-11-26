@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isComboTokenActive, type Tip } from '#lib/types.js';
+	import { DEVICE, isComboTokenActive, type Tip } from '#lib/types.js';
 	import { Star, TriangleAlert } from '@lucide/svelte';
 	import Keycap from './Keycap.svelte';
 
@@ -96,9 +96,12 @@
 					{tip.category}
 				</button>
 			{/if}
-			<span class="manual-ref-badge" title={tip.citation.quote}>
-				Roland v5.50 · p. {tip.citation.page}
+			<span class="manual-ref-badge" title="“{tip.citation.quote}”">
+				{DEVICE.model} v{DEVICE.firmware} · p. {tip.citation.page}
 			</span>
+			{#if tip.display}
+				<span class="display-badge" title="What the S-1’s LED display shows">{tip.display}</span>
+			{/if}
 			{#if tip.caveat && !isSelected}
 				<span class="caveat-indicator" title={tip.caveat}>
 					<TriangleAlert size={12} />
@@ -338,6 +341,19 @@
 	.context-tag {
 		font-size: 0.72rem;
 		color: #64748b;
+	}
+
+	.display-badge {
+		padding: 0.05rem 0.4rem;
+		font-size: 0.68rem;
+		font-weight: 700;
+		font-style: italic;
+		letter-spacing: 0.06em;
+		color: #ff5a4f;
+		background: #0b0b0c;
+		border: 1px solid #3a1d1b;
+		border-radius: 0.25rem;
+		font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
 	}
 
 	.tip-card__steps {

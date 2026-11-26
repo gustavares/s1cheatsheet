@@ -1,1608 +1,1814 @@
 [
 	{
-		"id": "gate-playback-toggle",
-		"category": "Sample Playback",
+		"id": "play-stop",
+		"category": "Play & Patterns",
 		"tier": "essential",
-		"combo": ["GATE"],
-		"buttons": ["GATE"],
-		"action": "Toggle Gate Playback On/Off for Selected Sample",
-		"context": "Lit = plays only while pad is held; Unlit = plays full sample on tap",
-		"goal": "Switch between sustaining a sample only while your finger holds the pad (Gate On) vs. triggering it with a single tap (Gate Off).",
-		"caveat": "When GATE is ON and an Envelope Release is set, fade-out begins the moment you take your finger off the pad (p. 56). Also gates EXT SOURCE when held (p. 20).",
+		"combo": ["PLAY"],
+		"buttons": ["PLAY"],
+		"action": "Play / stop the pattern",
+		"goal": "Start the sequencer; press PLAY again to stop.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/02-playing-back-samples.md",
-			"page": 20,
-			"quote": "When the [GATE] button is on, samples play back only while the pads are pressed (gate playback)."
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 5,
+			"quote": "Plays the pattern. Press the button again to stop playback."
 		}
 	},
 	{
-		"id": "loop-playback-toggle",
-		"category": "Sample Playback",
+		"id": "select-pattern",
+		"category": "Play & Patterns",
 		"tier": "essential",
-		"combo": ["LOOP"],
-		"buttons": ["LOOP"],
-		"action": "Toggle Loop Playback On/Off for Selected Sample",
-		"context": "Repeats between Start/Loop point and End point",
-		"goal": "Make a breakbeat, texture, or phrase repeat continuously between its Loop point and End point.",
-		"caveat": "When GATE is off and LOOP is on, tapping the pad toggles between starting and stopping; hold HOLD + Pad to retrigger from the start without stopping (p. 21).",
+		"combo": ["Hold PATTERN", "PAD 1–4 (bank)", "PAD 1–16 (number)"],
+		"buttons": ["PATTERN", "PAD 1", "PAD 2", "PAD 3", "PAD 4", "PAD"],
+		"action": "Select a pattern (bank 1–4, number 1–16)",
+		"goal": "Recall any of the 64 patterns: hold PATTERN and tap pads 1–4 for the bank, release, then tap pads 1–16 for the number.",
+		"steps": [
+			"Hold PATTERN and press pad 1–4 to choose the bank.",
+			"Release PATTERN and press pad 1–16 to choose the pattern number."
+		],
 		"citation": {
-			"doc": "docs/reference/roland-v550/02-playing-back-samples.md",
-			"page": 21,
-			"quote": "Use the loop function to make a sample play back repeatedly."
-		}
-	},
-	{
-		"id": "reverse-playback-toggle",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["REVERSE"],
-		"buttons": ["REVERSE"],
-		"action": "Toggle Reverse Playback On/Off for Selected Sample",
-		"context": "Sample Mode (select pad first, or press while playing)",
-		"goal": "Play a sample backwards from its End point to its Start point for reverse cymbals, vocals, or flip chops.",
-		"caveat": "Where reverse playback starts when pressed mid-playback depends on the Reverse Type system setting (136) (p. 22).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/02-playing-back-samples.md",
-			"page": 22,
-			"quote": "You can use the reverse function to play back samples in reverse (from end to start)."
-		}
-	},
-	{
-		"id": "bpm-sync-toggle",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["BPM SYNC"],
-		"buttons": ["BPM SYNC"],
-		"action": "Toggle BPM Sync On/Off for Selected Sample",
-		"context": "Matches sample playback speed to Bank or Project tempo",
-		"goal": "Automatically time-stretch a loop or chop so its tempo locks to your current Bank BPM or active Pattern BPM.",
-		"caveat": "Requires accurate sample BPM data first. While BPM SYNC is ON, the manual SPEED parameter (CTRL 1 on PITCH/SPEED) is disabled (p. 20, 56).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/02-playing-back-samples.md",
-			"page": 20,
-			"quote": "The tempo of the sample then synchronizes with the bank tempo or the project tempo."
-		}
-	},
-	{
-		"id": "roll-pad-trigger",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["Hold ROLL", "PAD"],
-		"buttons": ["ROLL", "PAD"],
-		"action": "Trigger Note Repeat / Sample Roll (and Turn VALUE to Speed Up)",
-		"context": "Hold ROLL + press up to 4 pads (or hold ROLL + turn VALUE clockwise for faster roll)",
-		"goal": "Perform live hi-hat rolls, snare builds, and stutter fills—and twist VALUE clockwise while holding ROLL to accelerate the roll live.",
-		"caveat": "Patterns cannot be rolled. If the roll interval is longer than the sample length, the sample loops instead (p. 23–24).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/02-playing-back-samples.md",
-			"page": 23,
-			"quote": "Hold down the [ROLL] button and press pads [1]–[16]."
-		}
-	},
-	{
-		"id": "bus-fx-toggle",
-		"category": "FX & Routing",
-		"tier": "essential",
-		"combo": ["BUS FX"],
-		"buttons": ["BUS FX"],
-		"action": "Switch Active Effect Control Between BUS 1 and BUS 2",
-		"context": "Solid Orange LED = BUS 1 selected; Blinking Orange LED = BUS 2 selected",
-		"goal": "Choose whether the 6 top Direct FX buttons and CTRL 1–3 knobs control your Bus 1 effect or your Bus 2 effect.",
-		"caveat": "Assigning the same effect algorithm to both Bus 1 and Bus 2 shows \"Same EFX on other BUS\" (p. 31).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/03-using-effects.md",
-			"page": 31,
-			"quote": "Press the [BUS FX] button to toggle the bus that controls the effects between BUS 1 and BUS 2."
-		}
-	},
-	{
-		"id": "copy-sample-pad",
-		"category": "Banks & Projects",
-		"tier": "essential",
-		"combo": ["COPY", "PAD", "Push VALUE"],
-		"buttons": ["COPY", "PAD", "VALUE"],
-		"action": "Copy a Sample to Another Pad, Bank, or Project",
-		"context": "Press COPY → source PAD → destination PAD (use CTRL 3 to change target Project) → COPY / VALUE",
-		"goal": "Duplicate a sample onto another pad before making destructive edits or copy pads across banks and projects.",
-		"caveat": "Overwrites the destination pad. Copied samples may change volume across banks due to each bank’s BANK VOLUME setting (p. 60–61).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 60,
-			"quote": "Here’s how to copy the sample that’s assigned to a pad to a different pad."
-		}
-	},
-	{
-		"id": "delete-sample-pad",
-		"category": "Banks & Projects",
-		"tier": "essential",
-		"combo": ["DEL", "PAD", "Push VALUE"],
-		"buttons": ["DEL", "PAD", "VALUE"],
-		"action": "Delete a Sample from a Pad",
-		"context": "Press DEL → select PAD → press DEL or push VALUE to confirm",
-		"goal": "Free up a pad in your current bank by permanently removing the sample assigned to it.",
-		"caveat": "Destructive — you cannot restore a pad’s sample after it has been deleted (p. 62).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 62,
-			"quote": "This is how to delete the sample assigned to a pad."
-		}
-	},
-	{
-		"id": "one-shot-playback",
-		"category": "Sample Playback",
-		"tier": "deep-dive",
-		"combo": ["Push VALUE", "GATE"],
-		"buttons": ["VALUE", "GATE"],
-		"action": "Toggle One-Shot Playback Mode",
-		"context": "Sample selected (GATE LED will pulse)",
-		"goal": "Let a long sample play all the way through without retriggering in a pattern, or prevent accidental double-triggers when finger drumming short drums.",
-		"caveat": "Enabling One-Shot Playback automatically turns off LOOP for that sample (p. 21).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Switches the “one-shot playback” sample playback mode on/off."
-		}
-	},
-	{
-		"id": "hold-latch-sample",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["PAD", "HOLD"],
-		"buttons": ["PAD", "HOLD"],
-		"action": "Latch pad playback without holding it down",
-		"context": "Sample Mode",
-		"goal": "Keep a gated or looping sample playing hands-free without holding your finger on the pad.",
-		"caveat": "Only enabled when GATE is turned ON for the pad. If LOOP is on, Hold + Pad retriggers from the start instead of stopping (p. 9, 21).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/01-introduction-and-panel.md",
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
 			"page": 9,
-			"quote": "You can make the samples keep playing back even after you take your fingers off the pads"
-		}
-	},
-	{
-		"id": "stop-all-samples",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["SHIFT", "EXIT"],
-		"buttons": ["SHIFT", "EXIT"],
-		"action": "Stop all currently playing samples (Panic)",
-		"context": "Or press EXIT 4 times rapidly",
-		"goal": "Immediately silence long tail samples, loops, or stuck audio.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Stops the playback of all samples."
-		}
-	},
-	{
-		"id": "pause-all-audio",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["SHIFT", "HOLD"],
-		"buttons": ["SHIFT", "HOLD"],
-		"action": "Pause / resume playing audio or pattern",
-		"context": "Works in Sample Playback, Pattern Play, and TR-REC",
-		"goal": "Freeze playback in place and resume from the exact same spot instead of restarting from bar 1.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Pauses the sample that’s currently playing back."
-		}
-	},
-	{
-		"id": "switch-alternate-bank",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["BANK (x2)"],
-		"buttons": ["BANK"],
-		"action": "Switch between primary (A–E) and alternate (F–J) bank",
-		"context": "Press the active Bank button a second time (blinks for Banks F–J)",
-		"goal": "Jump between Bank A and Bank F (or B and G, etc.) with one button press.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 74,
-			"quote": "Each time you press the bank [A/F] button, the bank switches between A and F."
-		}
-	},
-	{
-		"id": "ping-pong-loop",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["SHIFT", "LOOP"],
-		"buttons": ["SHIFT", "LOOP"],
-		"action": "Toggle Ping-Pong Looping",
-		"context": "Sample selected with LOOP enabled",
-		"goal": "Loop a sample forward then backward seamlessly to avoid harsh loop clicks on sustained textures.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Loops the sample by repeatedly playing back forward and then backward."
-		}
-	},
-	{
-		"id": "roll-time-division",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["SHIFT", "ROLL"],
-		"buttons": ["SHIFT", "ROLL"],
-		"action": "Set Roll repeat rate / time division",
-		"context": "Hold ROLL + PAD to trigger roll at chosen division",
-		"goal": "Change note repeat speed between 1/4, 1/8, 1/16, 1/32, or triplets for hi-hat rolls and fills.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "This shows how to set the roll interval (how fast the roll repeats)."
-		}
-	},
-	{
-		"id": "rename-sample",
-		"category": "Sample Playback",
-		"tier": "deep-dive",
-		"combo": ["REMAIN", "Turn VALUE"],
-		"buttons": ["REMAIN", "VALUE"],
-		"action": "View pad info and rename sample",
-		"context": "Select pad first, hold/press REMAIN, then scroll down with VALUE",
-		"goal": "Inspect sample details or give a pad a custom readable name on the OLED display.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 59,
-			"quote": "Hold down the [REMAIN] button to show the sample parameters assigned to the currently selected pad."
-		}
-	},
-	{
-		"id": "skip-back-recall",
-		"category": "Sample Playback",
-		"tier": "essential",
-		"combo": ["MARK"],
-		"buttons": ["MARK"],
-		"action": "Recall last 25–40 seconds of audio (Skip-Back Sampling)",
-		"context": "When MARK button is blinking after playing audio (25s default; up to 40s with SBS Long)",
-		"goal": "Capture a happy accident or jam you just played without having pressed REC beforehand.",
-		"caveat": "Pressing EXIT without assigning the audio to a pad—or turning off power—permanently erases the skip-back buffer (p. 42).",
-		"steps": [
-			"Press blinking MARK button to load the last 25–40s skip-back buffer",
-			"Press SUB PAD to preview; use CTRL 1 (Start) & CTRL 3 (End) to trim",
-			"Press REC → select destination PAD → press REC to save"
-		],
-		"citation": {
-			"doc": "docs/reference/roland-v550/04-sampling-looper-soundgen.md",
-			"page": 41,
-			"quote": "You can sample what you played up to 25 seconds ago (default) using the skip-back sampling function"
-		}
-	},
-	{
-		"id": "resample-multiple-pads",
-		"category": "Sample Playback",
-		"tier": "deep-dive",
-		"combo": ["SHIFT", "RESAMPLE"],
-		"buttons": ["SHIFT", "RESAMPLE"],
-		"action": "Quick-combine / bounce multiple pads together",
-		"context": "Select pads to merge (Note: does not copy all individual parameters)",
-		"goal": "Quickly layer a kick and snare or chord pads onto a single new pad.",
-		"caveat": "Sample Merge mixes raw sample audio without Bus FX. You cannot merge samples while a pattern is playing (p. 46).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Switches to sample merge mode."
-		}
-	},
-	{
-		"id": "pad-mute-mode",
-		"category": "Pattern Sequencer",
-		"tier": "essential",
-		"combo": ["SHIFT", "REVERSE", "REMAIN"],
-		"buttons": ["SHIFT", "REVERSE", "REMAIN"],
-		"action": "Latch Pad Mute Mode on (exit with EXIT or SHIFT + REVERSE)",
-		"context": "During Pattern Playback (unmuted pads light white; muted pads turn red)",
-		"goal": "Drop drum or melodic parts in and out live during a pattern—or press REC inside Pad Mute Mode to record mute automation.",
-		"caveat": "Exiting Pad Mute playback with EXIT returns to normal playback (mutes stop playing back, though recorded mute motion stays in memory) (p. 79).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Keeps the [SHIFT] and [REVERSE] buttons in “pressed-down” state."
-		}
-	},
-	{
-		"id": "pad-mute-momentary",
-		"category": "Pattern Sequencer",
-		"tier": "essential",
-		"combo": ["Hold SHIFT", "Hold REVERSE", "PAD"],
-		"buttons": ["SHIFT", "REVERSE", "PAD"],
-		"action": "Momentary Pad Mute screen",
-		"context": "Hold both SHIFT + REVERSE, tap pads to mute/unmute, release to return",
-		"goal": "Quickly mute or unmute a sample in a running pattern without staying locked in Pad Mute Mode.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Switches the pad mute on/off."
-		}
-	},
-	{
-		"id": "copy-specific-pattern-samples",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["COPY", "REMAIN", "PAD"],
-		"buttons": ["COPY", "REMAIN", "PAD"],
-		"action": "Copy specific sample(s) from one pattern to another",
-		"context": "While in Pattern Copy screen, press REMAIN to filter pads",
-		"goal": "Create arrangement variations (e.g., copy just the kick and bass into an empty pattern).",
-		"steps": [
-			"In PATTERN SELECT, press COPY, select source pattern PAD, then destination pattern PAD",
-			"Press REMAIN, then tap the specific sample PADs you want to extract (lit white)",
-			"Press REMAIN again, then press COPY or push VALUE to save"
-		],
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 86,
-			"quote": "You can create a pattern using only specific samples that were taken from a pattern"
-		}
-	},
-	{
-		"id": "delete-sample-in-pattern",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["Hold DEL", "PAD"],
-		"buttons": ["DEL", "PAD"],
-		"action": "Delete all notes of a specific sample from a pattern",
-		"context": "In PATTERN EDIT mode (Pads with notes light up blue; confirm with VALUE)",
-		"goal": "Wipe a single bad drum part or bassline from a pattern without erasing the rest of the loop.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 81,
-			"quote": "While pressing the [DEL] button, press the pad (pattern) you want to delete."
-		}
-	},
-	{
-		"id": "erase-mode-live",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["DEL", "Hold PAD"],
-		"buttons": ["DEL", "PAD"],
-		"action": "Real-time Erase Mode while pattern is looping",
-		"context": "While in Pattern Record (press DEL again to return to record)",
-		"goal": "Erase only specific hits of a sound as the loop passes over them.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 66,
-			"quote": "Press the [DEL] button while recording a pattern to enter erase mode"
-		}
-	},
-	{
-		"id": "bounce-pattern-to-pad",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["COPY", "PATTERN SELECT", "PAD"],
-		"buttons": ["COPY", "PATTERN SELECT", "PAD"],
-		"action": "Bounce / convert pattern (or stems) directly to a sample pad",
-		"context": "In PATTERN EDIT or PATTERN COPY menu",
-		"goal": "Render a pattern—or individual stems using REMAIN—into an audio sample faster than real-time resampling.",
-		"caveat": "Bouncing automatically bypasses BUS 1–4 effects and overwrites the destination pad. Use Resample if you want Bus FX printed (p. 72, 74).",
-		"steps": [
-			"In PATTERN EDIT (or PATTERN SELECT), press COPY and choose the pattern to bounce",
-			"Optional: Press REMAIN and select specific pads if you only want stems",
-			"Press PATTERN SELECT to switch destination from Pattern to Sample Bank",
-			"Choose an empty destination PAD and press COPY (or push VALUE) to bounce"
-		],
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 73,
-			"quote": "Here’s how to convert a pattern that’s assigned to a pad into a sample, and then assign that sample to a pad."
-		}
-	},
-	{
-		"id": "rehearsal-mode",
-		"category": "Pattern Sequencer",
-		"tier": "essential",
-		"combo": ["REC"],
-		"buttons": ["REC"],
-		"action": "Toggle Rehearsal Mode during pattern recording",
-		"context": "While already recording a pattern (REC LED blinks)",
-		"goal": "Practice playing a part over the looping pattern without committing notes until you press REC again.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 66,
-			"quote": "While you’re recording a pattern, the unit switches between rehearsal and recording mode each time you press the [REC] button."
-		}
-	},
-	{
-		"id": "pattern-undo",
-		"category": "Pattern Sequencer",
-		"tier": "essential",
-		"combo": ["SHIFT", "PATTERN SELECT"],
-		"buttons": ["SHIFT", "PATTERN SELECT"],
-		"action": "Undo last pattern recording step (up to 16 steps)",
-		"context": "While recording or overdubbing a pattern",
-		"goal": "Revert a bad take immediately (remaining undo steps show on the left of the OLED).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Undoes the data you just inputted (recorded)."
-		}
-	},
-	{
-		"id": "microscope-mode",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["Hold PATTERN EDIT", "PAD"],
-		"buttons": ["PATTERN EDIT", "PAD"],
-		"action": "Enter Microscope Mode for step/substep note editing",
-		"context": "Within TR-REC (select sample with SUB PAD + PAD, then hold PATTERN EDIT + step PAD)",
-		"goal": "Inspect and nudge individual note events, micro-timing, pitch, or velocity on a specific step.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 71,
-			"quote": "Press pads [1]–[16] while holding down the [PATTERN EDIT] button to select notes that are already recorded."
-		}
-	},
-	{
-		"id": "tr-rec-mode",
-		"category": "Pattern Sequencer",
-		"tier": "essential",
-		"combo": ["PATTERN SELECT", "REC", "REMAIN"],
-		"buttons": ["PATTERN SELECT", "REC", "REMAIN"],
-		"action": "Enter TR-REC step sequencer mode",
-		"context": "On Pattern Record Setting screen, press REMAIN to switch from Real-Time to TR-REC (or SHIFT + REC during playback)",
-		"goal": "Program drum steps on the 16-pad grid like a classic Roland TR-808/909.",
-		"steps": [
-			"Press PATTERN SELECT → REC → select empty PAD",
-			"Press REMAIN to switch to TR-REC (or press SHIFT + REC during pattern playback)",
-			"Hold SUB PAD + press a PAD to select sound without placing a step",
-			"Use VALUE encoder to switch bars; CTRL 1 for Substep type; CTRL 3 for Velocity"
-		],
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 67,
-			"quote": "Press the [REMAIN] button, and switch the pattern recording method to “TR-REC”."
-		}
-	},
-	{
-		"id": "tr-rec-motion-recording",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["Hold ROLL", "Turn CTRL 1/2/3"],
-		"buttons": ["ROLL", "CTRL 1", "CTRL 2", "CTRL 3"],
-		"action": "Record parameter motion (Substep, Velocity, Pitch) in TR-REC",
-		"context": "While TR-REC pattern is running",
-		"goal": "Automate pitch slides, velocity ramps, or ratchets per step in real time.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 164,
-			"quote": "You can record the motion of [CTRL 1] knob in the steps."
-		}
-	},
-	{
-		"id": "efx-motion-recording",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["MARK"],
-		"buttons": ["MARK"],
-		"action": "Start Effects Motion Recording (FX Automation) in a pattern",
-		"context": "While recording a pattern (START/END toggles Motion Play On/Off; SHIFT + MARK spot-erases motion)",
-		"goal": "Automate filter sweeps, delay throws, or effect toggles directly inside a pattern loop.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 77,
-			"quote": "The message “MOTION REC START” is shown (EFX MOTION REC)."
-		}
-	},
-	{
-		"id": "quantize-after-recording",
-		"category": "Pattern Sequencer",
-		"tier": "essential",
-		"combo": ["PATTERN EDIT", "PAD", "RECORD SETTING", "VALUE"],
-		"buttons": ["PATTERN EDIT", "PAD", "RECORD SETTING", "VALUE"],
-		"action": "Quantize a pattern after recording",
-		"context": "In PATTERN EDIT → select pattern PAD → press RECORD SETTING → select sample PADs → push VALUE",
-		"goal": "Tighten timing (Grid via CTRL 2, Strength % via CTRL 3) for specific pads in a recorded pattern.",
-		"caveat": "Destructive — once you quantize a pattern in Pattern Edit, you cannot undo or revert it to its unquantized timing (p. 85).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 82,
-			"quote": "You can quantize the notes of a pattern that you’ve inputted in real time."
-		}
-	},
-	{
-		"id": "pattern-chain",
-		"category": "Pattern Sequencer",
-		"tier": "essential",
-		"combo": ["PATTERN SELECT", "Hold HOLD", "PAD"],
-		"buttons": ["PATTERN SELECT", "HOLD", "PAD"],
-		"action": "Create and play a Pattern Chain (Song Mode)",
-		"context": "In PATTERN SELECT, hold HOLD + press PAD to choose Chain Slot 1–16",
-		"goal": "Sequence up to 16 patterns in order to build or resample/bounce a complete song arrangement.",
-		"steps": [
-			"In PATTERN SELECT, hold HOLD + press a PAD to select one of 16 Chain Slots",
-			"Tap pattern PADs in the order you want them to play",
-			"Press REMAIN to toggle repeat; press SUB PAD to play chain",
-			"To bounce a chain to a pad: PATTERN SELECT → COPY → HOLD + Chain PAD → destination PAD → COPY"
-		],
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 74,
-			"quote": "While holding down the [HOLD] button, press pads [1]–[16] to select the pattern chain number (1–16) to record."
-		}
-	},
-	{
-		"id": "delete-pattern",
-		"category": "Pattern Sequencer",
-		"tier": "essential",
-		"combo": ["DEL", "PAD", "Push VALUE"],
-		"buttons": ["DEL", "PAD", "VALUE"],
-		"action": "Delete a pattern (or DEL + EXIT to delete all patterns in a bank)",
-		"context": "In PATTERN SELECT mode",
-		"goal": "Clear a single pattern pad or wipe an entire bank of patterns at once.",
-		"caveat": "Destructive — deleted patterns cannot be restored with Undo. Use Bank Protect (SHIFT + COPY) to guard finished banks (p. 88).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 88,
-			"quote": "Press the [VALUE] knob or [DEL] button."
-		}
-	},
-	{
-		"id": "lock-loop-point",
-		"category": "Sample Edit & Chop",
-		"tier": "deep-dive",
-		"combo": ["START/END", "REMAIN"],
-		"buttons": ["START/END", "REMAIN"],
-		"action": "Lock Loop Point while adjusting Start Point",
-		"context": "On START/END sample edit screen",
-		"goal": "Prevent the Start point from moving beyond the Loop point or End point.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 48,
-			"quote": "On: Prevents the start point from being moved beyond the loop"
-		}
-	},
-	{
-		"id": "preview-end-of-sample",
-		"category": "Sample Edit & Chop",
-		"tier": "deep-dive",
-		"combo": ["START/END", "ROLL"],
-		"buttons": ["START/END", "ROLL"],
-		"action": "Preview the last several seconds before the End point of a sample",
-		"context": "On START/END sample edit screen (hold ROLL)",
-		"goal": "Quickly audition and fine-tune the End point of a long sample without listening from the very beginning.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 48,
-			"quote": "While this button is pressed, you can preview the sound several"
-		}
-	},
-	{
-		"id": "snap-zero-crossing",
-		"category": "Sample Edit & Chop",
-		"tier": "deep-dive",
-		"combo": ["START/END", "RESAMPLE"],
-		"buttons": ["START/END", "RESAMPLE"],
-		"action": "Toggle Snap to Zero-Crossing",
-		"context": "On START/END or CHOP edit screen (enabled when RESAMPLE is lit)",
-		"goal": "Eliminate clicks and pops at sample start/end/chop points by snapping markers to zero amplitude.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 49,
-			"quote": "Moves the start point to the zero cross-point (*) that’s closest to the"
-		}
-	},
-	{
-		"id": "chop-menu",
-		"category": "Sample Edit & Chop",
-		"tier": "essential",
-		"combo": ["SHIFT", "START/END"],
-		"buttons": ["SHIFT", "START/END"],
-		"action": "Open Sample Chop Menu (Manual, Auto Mark, Assign to Pads)",
-		"context": "Sample selected",
-		"goal": "Slice a breakbeat or melodic sample into up to 16 playable pad slices.",
-		"steps": [
-			"Manual Lazy Chop: Press PAD to play, tap other PADs (or MARK) as it plays to drop markers",
-			"Fine-tune markers: CTRL 3 selects mark, CTRL 2 moves selected mark, CTRL 1 places new mark",
-			"Auto Chop: Push VALUE → AUTO MARK → CTRL 2 chooses TIME DIVISION, LEVEL, or TRANSIENT",
-			"Assign to Pads: Push VALUE → ASSIGN TO PAD → press MARK to auto-select pads → push VALUE twice"
-		],
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Splits the sample at the marker positions, and assigns the resulting"
-		}
-	},
-	{
-		"id": "truncate-sample",
-		"category": "Sample Edit & Chop",
-		"tier": "essential",
-		"combo": ["START/END", "Push VALUE", "TRUNCATE"],
-		"buttons": ["START/END", "VALUE"],
-		"action": "Truncate sample (permanently delete audio outside Start/End)",
-		"context": "On START/END screen, push VALUE encoder to open menu",
-		"goal": "Free up memory and normalize/chop accurately by trimming unused audio before Start and after End.",
-		"caveat": "Destructive — directly trims the original sample data and cannot be restored once confirmed (p. 49).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 49,
-			"quote": "Trims (deletes) the sample’s audio regions before the start point and after the end point."
-		}
-	},
-	{
-		"id": "groove-humanize-sample",
-		"category": "Pitch, Speed & Env",
-		"tier": "deep-dive",
-		"combo": ["PITCH/SPEED", "ROLL"],
-		"buttons": ["PITCH/SPEED", "ROLL"],
-		"action": "Access Groove / Humanization settings for sample",
-		"context": "On PITCH/SPEED screen, press ROLL (CTRL 1 = Humanize, CTRL 2 = Rate, CTRL 3 = Groove)",
-		"goal": "Add subtle timing/pitch humanization or 8-/16-beat swing templates to static loops.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 58,
-			"quote": "You can add a unique rhythmic character to a sample to make it groove."
-		}
-	},
-	{
-		"id": "copy-pitch-speed-bank",
-		"category": "Pitch, Speed & Env",
-		"tier": "deep-dive",
-		"combo": ["PITCH/SPEED", "Hold REMAIN", "Turn CTRL 1/2/3"],
-		"buttons": ["PITCH/SPEED", "REMAIN", "CTRL 1", "CTRL 2", "CTRL 3"],
-		"action": "Adjust Pitch, Speed, Volume, or Envelope for ALL pads in current Bank",
-		"context": "On PITCH/SPEED or ENVELOPE (SHIFT + PITCH/SPEED) screen",
-		"goal": "Batch-edit volume, tuning, or release tails across all 16 pads in the current bank simultaneously.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Lets you simultaneously edit the parameters of samples that are registered to the"
-		}
-	},
-	{
-		"id": "copy-pitch-speed-mute-group",
-		"category": "Pitch, Speed & Env",
-		"tier": "deep-dive",
-		"combo": ["PITCH/SPEED", "Hold COPY", "Turn CTRL 1/2/3"],
-		"buttons": ["PITCH/SPEED", "COPY", "CTRL 1", "CTRL 2", "CTRL 3"],
-		"action": "Adjust Pitch, Speed, Volume, Gate, or Loop for pads in same Mute Group",
-		"context": "On PITCH/SPEED screen (Mute Group pads will flash)",
-		"goal": "Change tuning, speed, or volume across all chopped slices of a sample without affecting drums in the same bank.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 163,
-			"quote": "Lets you simultaneously edit the parameters of samples that are registered to the"
-		}
-	},
-	{
-		"id": "vinyl-varispeed-toggle",
-		"category": "Pitch, Speed & Env",
-		"tier": "deep-dive",
-		"combo": ["PITCH/SPEED", "Hold SHIFT", "Turn VALUE"],
-		"buttons": ["PITCH/SPEED", "SHIFT", "VALUE"],
-		"action": "Switch between VINYL Mode and VARI Mode (Backing / Ensemble)",
-		"context": "On PITCH/SPEED screen, hold SHIFT and turn the VALUE knob",
-		"goal": "Choose classic Vinyl repitching (pitch & speed linked) or independent pitch/time-stretch (Backing for drums, Ensemble for chords/bass).",
-		"caveat": "Ensemble mode consumes 2× polyphony voices for mono samples and 4× voices for stereo samples (p. 57).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 57,
-			"quote": "Turns VINYL mode on/off."
-		}
-	},
-	{
-		"id": "sample-pan-mono",
-		"category": "Pitch, Speed & Env",
-		"tier": "deep-dive",
-		"combo": ["PITCH/SPEED", "Hold SHIFT", "Turn CTRL 3"],
-		"buttons": ["PITCH/SPEED", "SHIFT", "CTRL 3"],
-		"action": "Adjust Sample Panning or force Stereo sample to MONO (Left/Right)",
-		"context": "On PITCH/SPEED screen (L:50–R:50, MONO Left, or MONO Right)",
-		"goal": "Pan individual drums left/right or collapse a stereo breakbeat/bass sample to mono.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 57,
-			"quote": "Sets the stereo position (pan) of the sample."
-		}
-	},
-	{
-		"id": "envelope-menu",
-		"category": "Pitch, Speed & Env",
-		"tier": "essential",
-		"combo": ["SHIFT", "PITCH/SPEED"],
-		"buttons": ["SHIFT", "PITCH/SPEED"],
-		"action": "Open Amplitude Envelope (Attack, Hold, Release) screen",
-		"context": "CTRL 1 = Attack, CTRL 2 = Hold, CTRL 3 = Release",
-		"goal": "Fade in a sample (Attack) or add a smooth fade-out tail (Release) so chops don't cut off abruptly.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Sets how the volume changes when the sample plays back."
-		}
-	},
-	{
-		"id": "auto-detect-bpm",
-		"category": "Pitch, Speed & Env",
-		"tier": "deep-dive",
-		"combo": ["PITCH/SPEED", "Turn/Push VALUE"],
-		"buttons": ["PITCH/SPEED", "VALUE"],
-		"action": "Auto-detect sample BPM or manually set integer/decimal BPM (MANU / MANU-F)",
-		"context": "On PITCH/SPEED screen (Turn VALUE for AUTO/MANU/MANU-F; Push VALUE on AUTO to scan BPM range)",
-		"goal": "Set exact loop tempo or scan BPM within a target range so half/double-time loops sync properly.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
-			"page": 57,
-			"quote": "Sets the sample tempo. When this is set to AUTO,"
-		}
-	},
-	{
-		"id": "swap-bus-1-2",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["REMAIN", "BUS FX"],
-		"buttons": ["REMAIN", "BUS FX"],
-		"action": "Flip / swap the effects assigned to Bus 1 and Bus 2",
-		"context": "Anytime",
-		"goal": "Instantly reverse the serial routing order of your Bus 1 and Bus 2 effects (e.g., Filter into Delay vs. Delay into Filter).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "You can swap the effects of BUS 1 and BUS 2."
-		}
-	},
-	{
-		"id": "toggle-bus-3-4",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["Push VALUE", "BUS FX"],
-		"buttons": ["VALUE", "BUS FX"],
-		"action": "Toggle Master Bus 3 + Bus 4 effects on/off",
-		"context": "Anytime",
-		"goal": "Bypass or engage your master chain effects (like 303 Vinyl Sim + Compressor on Bus 3/4) for instant A/B comparison.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Temporarily bypasses BUS 3 and BUS 4."
-		}
-	},
-	{
-		"id": "mute-bus-fx",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["SHIFT", "BUS FX"],
-		"buttons": ["SHIFT", "BUS FX"],
-		"action": "Mute Bus (silence audio routed to Bus 1/2 while keeping tails/dry pads)",
-		"context": "Dry pads (lit white) continue playing",
-		"goal": "Drop out the main beat routed through Bus 1/2 while letting reverb/delay tails ring out or keeping a dry vocal/drum playing.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Temporarily turns off the audio sent to the bus"
-		}
-	},
-	{
-		"id": "save-efx-params",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["Hold SHIFT", "Hold MARK (3–5s)"],
-		"buttons": ["SHIFT", "MARK"],
-		"action": "Save current MFX / Faceplate FX parameters as default",
-		"context": "While on the effect parameter screen",
-		"goal": "Make your favorite Filter, Vinyl Sim, or Isolator knob settings persist even after turning the SP-404MKII off.",
-		"caveat": "Only saves Main parameters (CTRL 1–3) for Bus 1 & 2. Sub-parameters are shared in common across Input FX, Bus 1, and Bus 2 (p. 33).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Saves the main parameters of the effects assigned to BUS 1 and BUS 2."
-		}
-	},
-	{
-		"id": "keep-mfx-screen-visible",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["Any FX", "REMAIN"],
-		"buttons": ["FILTER+DRIVE", "RESONATOR", "DELAY", "ISOLATOR", "DJFX LOOPER", "MFX", "REMAIN"],
-		"action": "Lock the FX parameter screen on the OLED display",
-		"context": "While in an effect menu, press REMAIN + the FX button",
-		"goal": "Stop the effect parameter screen from auto-closing after a few seconds while you tweak knobs.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Makes the effect edit screen keep displaying."
-		}
-	},
-	{
-		"id": "view-mfx-without-activating",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["Hold REMAIN", "Any FX"],
-		"buttons": ["REMAIN", "FILTER+DRIVE", "RESONATOR", "DELAY", "ISOLATOR", "DJFX LOOPER", "MFX"],
-		"action": "Inspect or pre-tweak an effect screen without turning the effect on",
-		"context": "Press REMAIN first, then the FX button",
-		"goal": "Check or preset knob parameters before dropping the effect into a live performance.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/03-using-effects.md",
-			"page": 33,
-			"quote": "While holding down the [REMAIN] button, press an effect button"
-		}
-	},
-	{
-		"id": "grab-momentary-fx",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["Hold VALUE", "Any FX"],
-		"buttons": ["VALUE", "FILTER+DRIVE", "RESONATOR", "DELAY", "ISOLATOR", "DJFX LOOPER", "MFX"],
-		"action": "Momentarily 'Grab' / punch-in an effect only while held",
-		"context": "Hold VALUE encoder down, press FX button(s), release to disengage",
-		"goal": "Punch in a quick DJFX Looper stutter, Isolator cut, or Delay throw for one beat and snap right back.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Applies effects only while you hold down the effect buttons (EFFECT GRAB)."
-		}
-	},
-	{
-		"id": "mfx-pages-shortcut",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["Hold MFX", "DJFX LOOPER / ISOLATOR"],
-		"buttons": ["MFX", "DJFX LOOPER", "ISOLATOR"],
-		"action": "Jump directly to MFX Page 2 (17–32) or Page 3 / SFX (33+)",
-		"context": "Hold MFX + DJFX LOOPER (Page 2) or ISOLATOR (Page 3), then tap PAD 1–16",
-		"goal": "Select any of the 40+ MFX (including Cloud Delay, SFX Reverb, Backspin) instantly using the 16 pads without scrolling.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 163,
-			"quote": "Displays the MFX LIST from #17 onwards."
-		}
-	},
-	{
-		"id": "mfx-second-param-page",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["Push/Hold VALUE"],
-		"buttons": ["VALUE"],
-		"action": "Access the 2nd page of 3 additional FX parameters",
-		"context": "When a down-arrow icon appears on the FX screen",
-		"goal": "Adjust the bottom row of effect parameters (4–6) using CTRL 1–3 knobs.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/03-using-effects.md",
-			"page": 32,
-			"quote": "Turn the [CTRL 1]–[CTRL 3] knobs while holding down the [VALUE] knob to operate the sub-parameters of the effect."
-		}
-	},
-	{
-		"id": "assign-pad-bus-routing",
-		"category": "FX & Routing",
-		"tier": "essential",
-		"combo": ["Hold REMAIN", "PAD / BANK"],
-		"buttons": ["REMAIN", "PAD", "BANK"],
-		"action": "Send Pad (or entire Bank) to Bus 1, Bus 2, or Dry (White)",
-		"context": "Select BUS 1 or BUS 2 first with BUS FX, then hold REMAIN + tap PAD (or BANK)",
-		"goal": "Route drums to Bus 1 (Compressor) and samples to Bus 2 (Filter), or exclude a pad from effects completely (White LED).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Specifies the output destination bus for each sample."
-		}
-	},
-	{
-		"id": "ext-source-input-settings",
-		"category": "FX & Routing",
-		"tier": "essential",
-		"combo": ["SHIFT", "EXT SOURCE"],
-		"buttons": ["SHIFT", "EXT SOURCE"],
-		"action": "Open Input Settings (Ext In vs. Mix routing, Input BPM, Input FX)",
-		"context": "CTRL 2 switches between EXT IN (external only) and MIX (internal + external)",
-		"goal": "Record only your external synth/phone/mic without capturing internal playing pads, or add Input FX.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Displays the input settings screen."
-		}
-	},
-	{
-		"id": "toggle-gate-bank",
-		"category": "Banks & Projects",
-		"tier": "essential",
-		"combo": ["SHIFT", "GATE"],
-		"buttons": ["SHIFT", "GATE"],
-		"action": "Toggle Gate ON/OFF for all 16 pads in current Bank",
-		"context": "Sample Mode",
-		"goal": "Turn off Gate for an entire bank of drum hits or chops at once instead of tapping Gate 16 times.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Turns the GATE parameter for all samples in the selected bank on/off."
-		}
-	},
-	{
-		"id": "bank-volume",
-		"category": "Banks & Projects",
-		"tier": "essential",
-		"combo": ["SHIFT", "BANK"],
-		"buttons": ["SHIFT", "BANK"],
-		"action": "Adjust overall Volume for an entire Bank",
-		"context": "Hold SHIFT and press the Bank button (A/F–E/J)",
-		"goal": "Balance a loud drum bank against a quiet sample bank without editing individual pads or changing master VOLUME.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Adjusts the volume for the specified bank overall."
-		}
-	},
-	{
-		"id": "delete-bank",
-		"category": "Banks & Projects",
-		"tier": "essential",
-		"combo": ["DEL", "EXIT"],
-		"buttons": ["DEL", "EXIT"],
-		"action": "Delete all samples (or patterns) in an entire Bank",
-		"context": "Press DEL + EXIT, select the Bank (or PAD), then press DEL to confirm",
-		"goal": "Wipe a whole bank clean in seconds instead of deleting 16 pads one by one.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Deletes all samples or patterns in a bank."
-		}
-	},
-	{
-		"id": "copy-bank-or-project",
-		"category": "Banks & Projects",
-		"tier": "essential",
-		"combo": ["COPY", "EXIT"],
-		"buttons": ["COPY", "EXIT"],
-		"action": "Copy an entire Bank to another Bank or another Project",
-		"context": "Use CTRL 3 to choose target Project; COPY > CTRL 3 also copies single pads across Projects",
-		"goal": "Move your favorite drum kit bank or pattern bank into a brand new project.",
-		"caveat": "Copied samples may play back at a different volume if the destination bank has a different BANK VOLUME setting (p. 61).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 163,
-			"quote": "Copies all samples or patterns in a bank to a different bank."
-		}
-	},
-	{
-		"id": "protect-bank",
-		"category": "Banks & Projects",
-		"tier": "essential",
-		"combo": ["SHIFT", "COPY"],
-		"buttons": ["SHIFT", "COPY"],
-		"action": "Protect / lock current Bank from accidental edits or deletion",
-		"context": "Sample Mode",
-		"goal": "Lock finished banks so you can't accidentally overwrite or delete a sample live.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "This function prevents the samples and patterns assigned to a pad from"
-		}
-	},
-	{
-		"id": "select-project",
-		"category": "Banks & Projects",
-		"tier": "essential",
-		"combo": ["SHIFT", "SUB PAD"],
-		"buttons": ["SHIFT", "SUB PAD"],
-		"action": "Open Project Select / Manager (16 Projects on PAD 1–16)",
-		"context": "Press PAD to load, COPY to duplicate project, DEL to delete project",
-		"goal": "Switch between your 16 projects on the SD card or duplicate a project as a backup before experimenting.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Displays the SELECT PROJECT screen."
-		}
-	},
-	{
-		"id": "fixed-velocity-mode",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 1"],
-		"buttons": ["SHIFT", "PAD 1"],
-		"action": "Toggle Fixed Velocity Mode (Full Level)",
-		"context": "SHIFT + PAD 1 (FIXED VEL)",
-		"goal": "Trigger samples at maximum 127 volume regardless of how softly or hard you hit the pads.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Sets the sample’s velocity so that it always plays back at 127"
-		}
-	},
-	{
-		"id": "16-velocity-mode",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 2"],
-		"buttons": ["SHIFT", "PAD 2"],
-		"action": "Enter 16 Velocity Mode for selected sample",
-		"context": "PAD 13 = quietest, PAD 4 = loudest",
-		"goal": "Play subtle ghost notes and dynamic hi-hat/snare rolls across 16 progressive volume levels.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Changes a sample’s velocity (volume) in steps when it plays back."
-		}
-	},
-	{
-		"id": "cue-headphone-audition",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 3"],
-		"buttons": ["SHIFT", "PAD 3"],
-		"action": "Toggle Cue Mode (audition pads in headphones only)",
-		"context": "Pads light up GREEN when sent to Cue",
-		"goal": "Preview sounds in your headphones during a live set without sending them to the main Line Out.",
-		"caveat": "You cannot send two or more samples to CUE at the same time (p. 101).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Adjusts the balance of the audio you monitor via the PHONES jack."
-		}
-	},
-	{
-		"id": "chromatic-mode",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 4"],
-		"buttons": ["SHIFT", "PAD 4"],
-		"action": "Enter Chromatic / Scale Mode (Mono, Legato, Poly)",
-		"context": "Press REMAIN for Mono/Legato/Poly; Push VALUE to select Scale; Turn VALUE for Root note",
-		"goal": "Play any sample melodically across the 16 pads—including polyphonic chords or locked musical scales—and record into patterns.",
-		"steps": [
-			"Select sample PAD → press SHIFT + PAD 4",
-			"Press REMAIN to cycle MONO → LEGATO → POLY (up to 4-note chords)",
-			"Push VALUE encoder to cycle Scales (Chromatic, Major, Minor, Dorian, Phrygian, etc.)",
-			"To record into a pattern: Enter Pattern Record → press REC for Rehearsal → press SHIFT + PAD 4 → press REC to record notes"
-		],
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Lets you play back samples (changing their pitches) as a chromatic scale"
-		}
-	},
-	{
-		"id": "exchange-swap-pads",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 5"],
-		"buttons": ["SHIFT", "PAD 5"],
-		"action": "Exchange / swap two sample pads",
-		"context": "Select first PAD → select second PAD → press COPY (or push VALUE)",
-		"goal": "Rearrange your drum kit layout on the 4x4 grid without needing an empty temporary pad.",
-		"caveat": "Cannot be performed while a pattern is playing. Swapping across banks may change volume due to each bank’s BANK VOLUME (p. 60, 85).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Exchanges (swaps) the sample or pattern data saved in different pads."
-		}
-	},
-	{
-		"id": "init-sample-params",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 6"],
-		"buttons": ["SHIFT", "PAD 6"],
-		"action": "Initialize sample parameters (Reset Pitch, Speed, Env)",
-		"context": "Select PAD → press SHIFT + PAD 6 → confirm with VALUE",
-		"goal": "Revert a sample back to its original un-pitched, un-trimmed factory state.",
-		"caveat": "Resets Start/End points, Pitch/Speed, Envelope, and BPM back to default values (p. 59).",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Initializes the sample parameters for the selected pad."
-		}
-	},
-	{
-		"id": "pad-link",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 7"],
-		"buttons": ["SHIFT", "PAD 7"],
-		"action": "Configure Pad Link groups (trigger multiple pads from one hit)",
-		"context": "Tap pads to link together, press EXIT when done",
-		"goal": "Layer a kick + sub-bass or snare + clap so hitting one pad fires all linked pads simultaneously.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Lets you play back all the pads at the same time that are assigned to a"
-		}
-	},
-	{
-		"id": "mute-groups",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 8"],
-		"buttons": ["SHIFT", "PAD 8"],
-		"action": "Assign pads to Mute Groups A–J (Choke groups)",
-		"context": "10 Mute Groups available across banks",
-		"goal": "Make open hi-hats choke when closed hi-hats hit, or make melodic sample chops cut each other off cleanly.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Groups together samples that you don’t want to play together"
-		}
-	},
-	{
-		"id": "metronome-toggle",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 9"],
-		"buttons": ["SHIFT", "PAD 9"],
-		"action": "Toggle Metronome On/Off",
-		"context": "Adjust click volume in Utility > Click",
-		"goal": "Turn the click track on or off while recording or practicing patterns.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Turns the metronome on/off."
-		}
-	},
-	{
-		"id": "count-in-mode",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 10"],
-		"buttons": ["SHIFT", "PAD 10"],
-		"action": "Cycle Recording Count-In (1 Meas, 2 Meas, Wait, Off)",
-		"context": "WAIT starts recording automatically as soon as input audio exceeds threshold",
-		"goal": "Add a 1- or 2-bar count-in before pattern recording, or use WAIT for threshold-triggered sampling.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Adds a count-in before sampling or pattern recording begins."
-		}
-	},
-	{
-		"id": "tap-tempo-menu",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 11"],
-		"buttons": ["SHIFT", "PAD 11"],
-		"action": "Open Bank Tap Tempo screen",
-		"context": "Tap SUB PAD repeatedly to set tempo, or turn VALUE encoder",
-		"goal": "Tap in the master/bank tempo by ear and sync all BPM-Sync enabled pads in the bank.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Lets you set the tempo in an intuitive way by tapping the pad in time"
-		}
-	},
-	{
-		"id": "gain-noise-gate",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 12"],
-		"buttons": ["SHIFT", "PAD 12"],
-		"action": "Open Input Attenuator, Noise Gate & Output Gain settings",
-		"context": "Quick shortcut to Gain/Input staging parameters",
-		"goal": "Prevent hot line inputs from clipping with the Attenuator or gate out background hum on the Mic/Guitar jack.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Displays the UTILITY MENU > SYSTEM > GAIN tab."
-		}
-	},
-	{
-		"id": "utility-menu",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 13"],
-		"buttons": ["SHIFT", "PAD 13"],
-		"action": "Open Utility Menu (System, Knob Mode, Sub Pad Mode, Backup, Factory Reset)",
-		"context": "Set Knob Mode (Direct vs. Catch) or Sub Pad Mode (Retrigger vs. Skip Back)",
-		"goal": "Configure system preferences, MIDI channels, SD card full backups, and Catch knob behavior.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Displays the UTILITY MENU screen."
-		}
-	},
-	{
-		"id": "import-export-sd",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 14"],
-		"buttons": ["SHIFT", "PAD 14"],
-		"action": "Import / Export Samples & Multipads from SD Card (or Format SD)",
-		"context": "Browse WAV/AIFF files on SD card to load onto pads",
-		"goal": "Load drum kits from your SD card or export finished samples/patterns without a computer.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Displays the UTILITY MENU > IMPORT (IMPORT/EXPORT MENU)."
-		}
-	},
-	{
-		"id": "pad-led-settings",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 15"],
-		"buttons": ["SHIFT", "PAD 15"],
-		"action": "Open Pad Settings (Velocity Curve, Threshold, LED Colors)",
-		"context": "Customize pad trigger feel and custom RGB color coding",
-		"goal": "Adjust pad velocity sensitivity for your finger-drumming style or color-code pads by instrument.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Displays the UTILITY MENU > PAD SET (PAD SETTING)."
-		}
-	},
-	{
-		"id": "efx-routing-bus-3-4",
-		"category": "Pad Modes (SHIFT + Pad)",
-		"tier": "essential",
-		"combo": ["SHIFT", "PAD 16"],
-		"buttons": ["SHIFT", "PAD 16"],
-		"action": "Open EFX Settings (Bus 1/2 Routing Type A/B, Bus 3/4 Master FX, Direct FX Assign)",
-		"context": "Push VALUE to toggle Type A (Serial) vs Type B (Parallel); Turn VALUE for Favorites 1–16",
-		"goal": "Choose serial vs. parallel Bus 1/2 routing, set up Bus 3 & 4 master effects, or customize the 5 top Direct FX buttons.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 160,
-			"quote": "Displays the UTILITY MENU > EFX SET (EFX SETTING) screen."
-		}
-	},
-	{
-		"id": "input-fx-recording",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["EXT SOURCE", "REC", "RECORD SETTING", "Push VALUE"],
-		"buttons": ["EXT SOURCE", "REC", "RECORD SETTING", "VALUE"],
-		"action": "Add Input FX when recording an external source",
-		"context": "Press EXT SOURCE → REC → RECORD SETTING → Push VALUE encoder to configure Input FX",
-		"goal": "Print built-in SP-404MKII effects (like Vinyl Sim, Compressor, or Filter) directly onto incoming external audio from USB, Line In, or Mic/Guitar.",
-		"steps": [
-			"Press EXT SOURCE to monitor incoming audio, then press REC",
-			"Press RECORD SETTING and push the VALUE encoder to select and tweak Input FX",
-			"Press EXIT twice, select your destination PAD, and press REC to start recording"
-		],
-		"citation": {
-			"doc": "docs/reference/roland-v550/04-sampling-looper-soundgen.md",
-			"page": 36,
-			"quote": "The INPUT FX (input effects) are effects used only for the input jacks."
-		}
-	},
-	{
-		"id": "pattern-edit-parameters",
-		"category": "Pattern Sequencer",
-		"tier": "essential",
-		"combo": ["PATTERN EDIT", "PAD"],
-		"buttons": ["PATTERN EDIT", "PAD"],
-		"action": "Edit Pattern BPM, Loop Start, Length, or Duplicate / Crop Bars",
-		"context": "In PATTERN EDIT: CTRL 1 = BPM, CTRL 2 = Loop Start, CTRL 3 = Length, Push VALUE = Duplicate or Crop",
-		"goal": "Change a pattern's tempo, double/duplicate a 2-bar loop into 4 bars so you can add variations, or crop excess bars.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 80,
-			"quote": "You can change the length of a pattern or change the range within which it plays back."
+			"quote": "Hold down the [PATTERN] button and press the [1]–[4] pads to select a bank."
 		}
 	},
 	{
 		"id": "queue-next-pattern",
-		"category": "Pattern Sequencer",
+		"category": "Play & Patterns",
 		"tier": "essential",
-		"combo": ["PATTERN SELECT", "PAD"],
-		"buttons": ["PATTERN SELECT", "PAD"],
-		"action": "Queue the next pattern to play seamlessly after current loop finishes",
-		"context": "While a pattern is playing in PATTERN SELECT mode (or hold SUB PAD + PAD to switch immediately)",
-		"goal": "Transition smoothly between song sections live—tap the next pattern pad anytime and it will wait until the current bar loop completes.",
+		"combo": ["PATTERN", "PAD 1–16 (during playback)"],
+		"buttons": ["PATTERN", "PAD"],
+		"action": "Queue the next pattern during playback",
+		"goal": "Pick a new pattern while one is playing; it starts automatically when the current pattern finishes, for seamless live switching.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 64,
-			"quote": "When you press the other pads [1]–[16] while the pattern is playing back, this places the next pattern to play back in standby."
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 9,
+			"quote": "Once the current pattern finishes playing, the next pattern you reserved automatically begins playing."
 		}
 	},
 	{
-		"id": "external-fx-processor",
-		"category": "FX & Routing",
+		"id": "pattern-select-knob",
+		"category": "Play & Patterns",
 		"tier": "deep-dive",
-		"combo": ["EXT SOURCE", "Any FX"],
-		"buttons": [
-			"EXT SOURCE",
-			"FILTER+DRIVE",
-			"RESONATOR",
-			"DELAY",
-			"ISOLATOR",
-			"DJFX LOOPER",
-			"MFX"
-		],
-		"action": "Use the SP-404MKII as a standalone live Effects Processor for external gear",
-		"context": "Connect synth/turntable/mixer to rear Line In, enable EXT SOURCE, and engage FX buttons",
-		"goal": "Run external synths, drum machines, or turntables live through the SP-404MKII's Filter+Drive, DJFX Looper, and Bus 1–4 effects without recording.",
+		"combo": ["PATTERN (lit)", "Turn TEMPO/VALUE"],
+		"buttons": ["PATTERN", "TEMPO/VALUE"],
+		"action": "Scroll through patterns with the knob",
+		"goal": "With the PATTERN button lit (pattern select mode), turn TEMPO/VALUE to step through patterns.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/08-monitoring-inputs-projects.md",
-			"page": 102,
-			"quote": "You can connect your electronic musical instrument, mic or guitar to the SP-404MK2 for audio input."
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 10,
+			"quote": "Turn the [TEMPO/VALUE] knob to select a pattern."
 		}
 	},
 	{
-		"id": "dj-mode-enter-controls",
-		"category": "Sample Playback",
-		"tier": "deep-dive",
-		"combo": ["BANK D/I", "BANK E/J"],
-		"buttons": ["BANK D/I", "BANK E/J"],
-		"action": "Enter DJ Mode (Dual-Deck CH1 / CH2 Performance Mixer)",
-		"context": "Press BANK D/I + E/J simultaneously; Pads 1–16 become CH1/CH2 transport controls",
-		"goal": "Mix two tracks live using CH1 (left pads: BEND+/-, BPM+/-, |<<, SYNC, ▶/⏸, CUE) and CH2 (right pads).",
-		"steps": [
-			"Press BANK D/I and BANK E/J at the same time to enter DJ Mode",
-			"Pads 1 & 5 = CH1 Pitch Bend +/- | Pads 2 & 6 = CH1 BPM +/- (Pads 3/7 & 4/8 for CH2)",
-			"Pad 9 = CH1 Restart (|<<) | Pad 10 = CH1 Beat Sync (Pads 11 & 12 for CH2)",
-			"Pad 13 = CH1 Play/Pause (▶/⏸) | Pad 14 = CH1 Headphone Cue (Pads 15 & 16 for CH2)"
-		],
-		"citation": {
-			"doc": "docs/reference/roland-v550/07-tempo-and-dj-mode.md",
-			"page": 93,
-			"quote": "Press the bank [D/I] button and the [E/J] button simultaneously."
-		}
-	},
-	{
-		"id": "sound-generator-mode",
-		"category": "Sample Playback",
-		"tier": "deep-dive",
-		"combo": ["SHIFT", "RECORD SETTING"],
-		"buttons": ["SHIFT", "RECORD SETTING"],
-		"action": "Enter Sound Generator Mode (Synth Bass & Pitched Tones)",
-		"context": "Press SHIFT + RECORD SETTING in Sample Mode (v4.04+ / v5.50)",
-		"goal": "Generate clean synth waveforms (sine, triangle, saw, bass) at custom pitches and save them directly to pads without an external synth.",
-		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Switches to sound generator mode."
-		}
-	},
-	{
-		"id": "sync-all-bank",
-		"category": "Banks & Projects",
+		"id": "set-tempo",
+		"category": "Play & Patterns",
 		"tier": "essential",
-		"combo": ["SHIFT", "BPM SYNC"],
-		"buttons": ["SHIFT", "BPM SYNC"],
-		"action": "Toggle BPM Sync ON/OFF for all 16 samples in current Bank",
-		"context": "Sample Mode",
-		"goal": "Sync or unsync every loop and chop in the active bank to the master tempo with a single combo.",
+		"combo": ["Turn TEMPO/VALUE"],
+		"buttons": ["TEMPO/VALUE"],
+		"action": "Set the tempo (BPM)",
+		"goal": "On the main screen, turn TEMPO/VALUE to change the tempo.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Turns the BPM SYNC parameter for all samples in the selected bank on/"
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 11,
+			"quote": "Turn the [TEMPO/VALUE] knob to set the tempo."
 		}
 	},
 	{
-		"id": "live-mode-lock",
-		"category": "Sample Playback",
+		"id": "fine-tune-tempo",
+		"category": "Play & Patterns",
 		"tier": "deep-dive",
-		"combo": ["SHIFT", "Hold REMAIN (3s)"],
-		"buttons": ["SHIFT", "REMAIN"],
-		"action": "Toggle Live Mode (disable sampling & edit buttons during performance)",
-		"context": "Hold SHIFT + REMAIN for at least 3 seconds",
-		"goal": "Lock out REC, DEL, RESAMPLE, and edit buttons during a live set so an accidental bump never interrupts playback.",
+		"combo": ["SHIFT", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "TEMPO/VALUE"],
+		"action": "Fine-tune the tempo in 0.1 BPM steps",
+		"goal": "Match another device or a track exactly by adjusting the tempo in tenths of a BPM.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Use this to disable buttons that are not used when playing live"
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 11,
+			"quote": "The value can be adjusted (fine-tuned) in steps of 0.1."
 		}
 	},
 	{
-		"id": "looper-skipback-switch",
-		"category": "Sample Playback",
-		"tier": "deep-dive",
-		"combo": ["SHIFT", "Push VALUE"],
-		"buttons": ["SHIFT", "VALUE"],
-		"action": "Switch [MARK] button between Skip-Back Sampling and Looper Mode",
-		"context": "Hold SHIFT and press the VALUE encoder",
-		"goal": "Toggle whether pressing MARK recalls the last 40 seconds of audio (Skip-Back) or opens the real-time Looper.",
-		"caveat": "You cannot use Skip-Back Sampling and the Looper function at the same time (p. 42, 44).",
+		"id": "octave-shift",
+		"category": "Play & Patterns",
+		"tier": "essential",
+		"combo": ["SHIFT", "OCT- / OCT+"],
+		"buttons": ["SHIFT", "OCT-", "OCT+"],
+		"action": "Shift the keyboard octave (−4 to +4)",
+		"goal": "Reach bass or lead registers on the 16 keyboard pads.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Switches the function to be recalled when you press the [MARK] button."
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 8,
+			"quote": "Hold down the [SHIFT] button and press the [OCT-] [OCT+] pads."
 		}
 	},
 	{
-		"id": "silent-pad-select",
-		"category": "Sample Playback",
+		"id": "octave-reset",
+		"category": "Play & Patterns",
 		"tier": "deep-dive",
-		"combo": ["Hold VALUE", "PAD"],
-		"buttons": ["VALUE", "PAD"],
-		"action": "Select a sample or pattern pad silently without triggering audio",
-		"context": "Hold down the VALUE knob and press any PAD 1–16",
-		"goal": "Select a pad to edit its Start/End, Pitch, or Bus routing during a live session without making a sound.",
+		"combo": ["SHIFT", "OCT-", "OCT+ (together)"],
+		"buttons": ["SHIFT", "OCT-", "OCT+"],
+		"action": "Reset the octave to zero",
+		"context": "Ver. 1.02",
+		"goal": "Jump back to the default octave instead of tapping OCT− / OCT+ several times.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Selects a sample (no sound is produced)."
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 8,
+			"quote": "By holding down the [SHIFT] button and pressing the [OCT-] pad and the [OCT+] pad, you can reset the octave setting (to zero)."
 		}
 	},
 	{
-		"id": "delete-efx-motion",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["DEL", "MARK"],
-		"buttons": ["DEL", "MARK"],
-		"action": "Delete recorded EFX Motion automation from a pattern",
-		"context": "On the PATTERN EDIT screen (or DEL + REVERSE to delete Pad Mute automation)",
-		"goal": "Clear unwanted filter sweeps or effect automation from a pattern while keeping all your recorded notes intact.",
+		"id": "keyboard-hold",
+		"category": "Play & Patterns",
+		"tier": "essential",
+		"combo": ["HOLD"],
+		"buttons": ["HOLD"],
+		"action": "Latch held notes (keyboard hold)",
+		"goal": "Keep notes or chords sounding after you lift your fingers — handy for drones and pads.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Deletes the effect operations recorded using EFX MOTION REC from a"
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 6,
+			"quote": "Turns the keyboard pad hold function on/off."
 		}
 	},
 	{
-		"id": "stop-single-ungated-pad",
-		"category": "Sample Playback",
-		"tier": "deep-dive",
-		"combo": ["Hold EXIT", "PAD"],
-		"buttons": ["EXIT", "PAD"],
-		"action": "Stop a Single Playing Sample Without Stopping Others",
-		"context": "Hold EXIT and tap the specific playing PAD 1–16",
-		"goal": "Silence one long one-shot or ungated loop while letting the rest of your playing pads continue uninterrupted.",
+		"id": "key-transpose",
+		"category": "Play & Patterns",
+		"tier": "essential",
+		"combo": ["SHIFT", "STEP (KEY TRANSPOSE)", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "STEP", "TEMPO/VALUE"],
+		"action": "Transpose keyboard and sequencer (key transpose)",
+		"goal": "Move the whole pattern up or down (−60 to +60 semitones), e.g. to follow a chord change.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/02-playing-back-samples.md",
-			"page": 21,
-			"quote": "Hold down the [EXIT] button and press pads [1]–[16]."
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 54,
+			"quote": "Hold down the [SHIFT] button and press the [STEP] (KEY TRANSPOSE) button."
 		}
 	},
 	{
-		"id": "flam-timing-guard",
-		"category": "Sample Playback",
-		"tier": "deep-dive",
-		"combo": ["Hold VALUE", "SUB PAD"],
-		"buttons": ["VALUE", "SUB PAD"],
-		"action": "Minimize Timing Skew When Triggering Multiple Pads Simultaneously",
-		"context": "Hold down the VALUE knob and press SUB PAD",
-		"goal": "Tighten simultaneous multi-pad hits so layered chords or stacked drums trigger together without unintended flams.",
+		"id": "quick-transpose-pads",
+		"category": "Play & Patterns",
+		"tier": "essential",
+		"combo": ["SHIFT", "STEP (KEY TRANSPOSE)", "keyboard PAD (with SHIFT)"],
+		"buttons": ["SHIFT", "STEP", "PAD"],
+		"action": "Transpose live by tapping a key (±12)",
+		"context": "Ver. 1.02",
+		"goal": "In the key-transpose screen, hold SHIFT and tap a keyboard pad to jump straight to that transposition while the pattern plays.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "This minimizes the slight differences in timing when you play multiple samples at"
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 54,
+			"quote": "At this time, you can also hold down the [SHIFT] button and press a keyboard pad to make this setting within a range of -12 to +12."
 		}
 	},
 	{
-		"id": "looper-mode-controls",
-		"category": "Sample Playback",
+		"id": "pattern-volume",
+		"category": "Play & Patterns",
 		"tier": "deep-dive",
-		"combo": ["MARK", "REC", "RESAMPLE"],
-		"buttons": ["MARK", "REC", "RESAMPLE"],
-		"action": "Record & Overdub Real-Time Loops in Looper Mode",
-		"context": "When MARK is switched to Looper Mode (SHIFT + Push VALUE); press RESAMPLE to toggle overdub",
-		"goal": "Capture a 1-, 2-, or 4-measure layered audio loop live, adjust PLAY-RATE speed (CTRL 3) or Feedback (VALUE), and save it to a pad.",
-		"caveat": "Max loop length is 16 seconds. When overdubbing, set Bus (SHIFT + CTRL 1) to LOOPER so effects are not re-applied each pass (p. 44).",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Set a pattern’s volume (vOL)",
+		"goal": "Balance levels between patterns so switching live doesn’t jump in loudness.",
+		"display": "vOL",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 67,
+			"quote": "Sets the pattern’s volume."
+		}
+	},
+	{
+		"id": "step-input",
+		"category": "Sequencer",
+		"tier": "essential",
+		"combo": ["STEP (lit)", "step PAD"],
+		"buttons": ["STEP", "PAD"],
+		"action": "Program steps TR-style with the step pads",
+		"goal": "With REC unlit, light STEP and tap pads 1–16 to add a note on that step; tap again to delete it.",
+		"caveat": "REC must be unlit for step-pad input. New steps get note C5 — change it with step editing.",
 		"steps": [
-			"Press SHIFT + Push VALUE to switch MARK from Skip-Back to Looper Mode, then press MARK",
-			"Set Measures (CTRL 1), Auto Trig (CTRL 2), BPM (CTRL 3), and Bus = LOOPER (SHIFT + CTRL 1)",
-			"Press REC to record first pass; press RESAMPLE to toggle overdubbing on subsequent passes",
-			"Press COPY → select destination PAD to save your loop to a sample pad"
+			"Make sure REC is unlit and press STEP so it lights.",
+			"Tap pads 1–16 to add (or delete) a note on each step."
 		],
 		"citation": {
-			"doc": "docs/reference/roland-v550/04-sampling-looper-soundgen.md",
-			"page": 44,
-			"quote": "This unit has a looper, which lets you record the sound that’s currently playing back as a sample."
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 34,
+			"quote": "A note (C5) is input to the step you selected, and the step pad lights up."
 		}
 	},
 	{
-		"id": "immediate-pattern-switch",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["PATTERN SELECT", "Hold SUB PAD", "PAD"],
-		"buttons": ["PATTERN SELECT", "SUB PAD", "PAD"],
-		"action": "Switch to Next Pattern Immediately (Jump Mid-Bar)",
-		"context": "While a pattern is playing in PATTERN SELECT mode",
-		"goal": "Cut straight into a new pattern on the spot instead of waiting for the current pattern’s final measure to finish.",
+		"id": "step-pages",
+		"category": "Sequencer",
+		"tier": "essential",
+		"combo": ["STEP (lit)", "PORTA ON / PORTA TIME"],
+		"buttons": ["STEP", "PORTA ON", "PORTA TIME"],
+		"action": "Switch step pages (1–16, 17–32, 33–48, 49–64)",
+		"goal": "Edit patterns longer than 16 steps by paging with the ◄ / ► keys.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 64,
-			"quote": "If you hold down the [SUB PAD] button and press a [1]–[16] pad, the pattern will change immediately."
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 33,
+			"quote": "While the [STEP] button is lit, use the [PORTA ON] (<) [PORTA TIME] (>) pads to switch between pages."
 		}
 	},
 	{
-		"id": "pattern-play-to-tr-rec",
-		"category": "Pattern Sequencer",
+		"id": "last-step",
+		"category": "Sequencer",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 4 (LAST)", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PAD 4", "TEMPO/VALUE"],
+		"action": "Set the pattern length (last step 1–64)",
+		"goal": "Make odd-length loops or extend a pattern up to 64 steps.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 33,
+			"quote": "Hold down the [SHIFT] button and press pad [4] (LAST)."
+		}
+	},
+	{
+		"id": "realtime-record",
+		"category": "Sequencer",
+		"tier": "essential",
+		"combo": ["REC", "PLAY", "keyboard PAD"],
+		"buttons": ["REC", "PLAY", "PAD"],
+		"action": "Record in real time",
+		"goal": "Arm REC, start PLAY and play the keyboard; the pattern loops so you can keep overdubbing notes.",
+		"caveat": "Turn on the count-in and metronome (SHIFT + PAD 15 MENU) to record in time more easily.",
+		"display": "rEc",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 40,
+			"quote": "The display indicates “rEc”, and recording begins."
+		}
+	},
+	{
+		"id": "clear-notes",
+		"category": "Sequencer",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 11 (CLEAR NOTE)", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 11", "PAD 2"],
+		"action": "Clear notes (whole pattern or selected step)",
+		"goal": "Wipe the sequence to start over — or only the selected step’s notes when a step is selected.",
+		"caveat": "Press pad 1 (EXIT) instead of ENTER to cancel. Motions are kept; clear them with CLEAR MOTION.",
+		"display": "CLr.n",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 65,
+			"quote": "Erases all notes in the selected pattern. When a step is selected, this deletes only the notes for that step."
+		}
+	},
+	{
+		"id": "copy-step",
+		"category": "Sequencer",
+		"tier": "deep-dive",
+		"combo": ["REC", "Turn TEMPO/VALUE", "Hold STEP", "PAD 15 (MENU)", "PAD 2 (ENTER)"],
+		"buttons": ["REC", "TEMPO/VALUE", "STEP", "PAD 15", "PAD 2"],
+		"action": "Copy a step",
+		"goal": "Grab one step’s notes and data so you can paste it elsewhere in the pattern.",
+		"steps": [
+			"Press REC so it lights; the step number is shown.",
+			"Turn TEMPO/VALUE to choose the source step.",
+			"Hold STEP, press pad 15 (MENU), select “COPY” and press pad 2 (ENTER)."
+		],
+		"display": "COPY",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 45,
+			"quote": "“donE” appears, and the data for the selected step is ready to be pasted."
+		}
+	},
+	{
+		"id": "paste-step",
+		"category": "Sequencer",
+		"tier": "deep-dive",
+		"combo": ["REC", "Turn TEMPO/VALUE", "Hold STEP", "PAD 15 (MENU)", "PAD 2 (ENTER)"],
+		"buttons": ["REC", "TEMPO/VALUE", "STEP", "PAD 15", "PAD 2"],
+		"action": "Paste a copied step",
+		"goal": "Overwrite the selected step with the step you copied.",
+		"steps": [
+			"Copy a step first (COPY).",
+			"With REC lit, turn TEMPO/VALUE to the destination step.",
+			"Hold STEP, press pad 15 (MENU), select “PStE” and press pad 2 (ENTER)."
+		],
+		"display": "PStE",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 45,
+			"quote": "“donE” appears, and the data of the copy source step overwrites the selected step."
+		}
+	},
+	{
+		"id": "insert-step",
+		"category": "Sequencer",
+		"tier": "deep-dive",
+		"combo": ["REC", "Turn TEMPO/VALUE", "Hold STEP", "PAD 15 (MENU)", "PAD 2 (ENTER)"],
+		"buttons": ["REC", "TEMPO/VALUE", "STEP", "PAD 15", "PAD 2"],
+		"action": "Insert an empty step",
+		"goal": "Push everything after the selected step one step later — quick way to shift a phrase.",
+		"steps": [
+			"Press REC so it lights; the step number is shown.",
+			"Turn TEMPO/VALUE to the step where the gap should go.",
+			"Hold STEP, press pad 15 (MENU), select “InSr” and press pad 2 (ENTER)."
+		],
+		"display": "InSr",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 45,
+			"quote": "“donE” is shown, and the empty step is inserted into the selected step, which shifts all steps afterwards by one step forward."
+		}
+	},
+	{
+		"id": "double-pattern",
+		"category": "Sequencer",
+		"tier": "deep-dive",
+		"combo": ["REC", "Hold STEP", "PAD 15 (MENU)", "Turn TEMPO/VALUE (dUPL)", "PAD 2 (ENTER)"],
+		"buttons": ["REC", "STEP", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Double the pattern (copy all steps after the end)",
+		"goal": "Turn a 16-step loop into 32 steps with an identical copy, ready for variations.",
+		"display": "dUPL",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 45,
+			"quote": "“donE” appears, and the steps from step 1 through the last step are copied after the last step, doubling the length."
+		}
+	},
+	{
+		"id": "pattern-scale",
+		"category": "Sequencer",
+		"tier": "deep-dive",
+		"combo": ["Hold PATTERN", "Turn TEMPO/VALUE"],
+		"buttons": ["PATTERN", "TEMPO/VALUE"],
+		"action": "Change the step length (pattern scale)",
+		"goal": "Switch between 1/8, 1/16, 1/32 and triplet steps for half-time, double-time or triplet feels.",
+		"display": "P.SCL",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 46,
+			"quote": "You can also edit the value by holding down the [PATTERN] button and turning the [TEMPO/VALUE] knob."
+		}
+	},
+	{
+		"id": "shuffle",
+		"category": "Sequencer",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 3 (SHUFFLE)", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PAD 3", "TEMPO/VALUE"],
+		"action": "Add shuffle / swing",
+		"goal": "Shift the off-beat steps for a swung groove.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 64,
+			"quote": "Configures the shuffle settings (-90–0–90)."
+		}
+	},
+	{
+		"id": "master-probability",
+		"category": "Sequencer",
+		"tier": "essential",
+		"combo": ["Hold STEP", "Turn TEMPO/VALUE"],
+		"buttons": ["STEP", "TEMPO/VALUE"],
+		"action": "Push or pull probability for the whole pattern",
+		"goal": "Thin out or fill in a generative pattern live: the master probability is added to every step’s own probability.",
+		"caveat": "Only steps whose own probability is 99 or lower are affected; steps at 100 always play.",
+		"display": "N.Prb",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 59,
+			"quote": "You can also set this by holding down the [STEP] button and turning the [TEMPO/VALUE] knob."
+		}
+	},
+	{
+		"id": "step-loop",
+		"category": "Sequencer",
+		"tier": "essential",
+		"combo": ["PLAY", "SHIFT", "PATTERN (STEP LOOP)", "Hold step PAD"],
+		"buttons": ["PLAY", "SHIFT", "PATTERN", "PAD"],
+		"action": "Loop selected steps live (step loop)",
+		"goal": "Repeat one or more steps during playback as a stutter effect; press PATTERN to exit.",
+		"steps": [
+			"Start playback with PLAY.",
+			"Hold SHIFT and press PATTERN (it blinks).",
+			"Keep pressing the step pads you want to repeat.",
+			"Press PATTERN to exit."
+		],
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 53,
+			"quote": "The [PATTERN] button blinks, and the unit enters step loop mode."
+		}
+	},
+	{
+		"id": "metronome-mode",
+		"category": "Sequencer",
 		"tier": "deep-dive",
 		"combo": ["SHIFT", "REC"],
 		"buttons": ["SHIFT", "REC"],
-		"action": "Switch Playing Pattern Directly into TR-REC Step Sequencer",
-		"context": "While a pattern is actively playing back",
-		"goal": "Jump seamlessly from pattern playback straight into TR-REC step editing without stopping playback.",
+		"action": "Metronome mode shortcut",
+		"context": "Ver. 1.02",
+		"goal": "A shortcut to the metronome mode setting (Off / Rec / Rec&Play), listed in the manual’s shortcut table.",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 161,
-			"quote": "Switches to pattern recording using TR-REC."
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 70,
+			"quote": "[SHIFT] button + [●] (REC) button Metronome mode(Ver.1.02)"
 		}
 	},
 	{
-		"id": "tr-rec-delete-measure",
-		"category": "Pattern Sequencer",
+		"id": "metronome-settings",
+		"category": "Sequencer",
 		"tier": "deep-dive",
-		"combo": ["DEL", "BANK A/F / B/G"],
-		"buttons": ["DEL", "BANK A/F", "BANK B/G"],
-		"action": "Clear Notes for 1 Measure in TR-REC (Selected Pad or All Pads)",
-		"context": "During TR-REC: DEL + BANK A/F clears selected pad; DEL + BANK B/G clears all pads in current bar",
-		"goal": "Wipe one bar of hi-hats (DEL + A/F) or clear an entire bar across all instruments (DEL + B/G) in TR-REC.",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Metronome mode and level (menu)",
+		"goal": "Choose when the click plays — Off, Rec only or Rec&Play — and set its level (Ntr.L).",
+		"display": "Ntro",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 164,
-			"quote": "Deletes the notes (for one measure) corresponding to the"
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 58,
+			"quote": "rC.PL (Rec&Play) Turns on during recording and playback"
 		}
 	},
 	{
-		"id": "tr-rec-micro-start",
-		"category": "Pattern Sequencer",
+		"id": "count-in",
+		"category": "Sequencer",
 		"tier": "deep-dive",
-		"combo": ["Hold SHIFT", "Turn CTRL 3"],
-		"buttons": ["SHIFT", "CTRL 3"],
-		"action": "Adjust Off-Grid Step Micro-Timing (START -50% to +99%) in TR-REC",
-		"context": "During TR-REC step input",
-		"goal": "Nudge individual drum steps early (-50%) or late (+99%) off the grid for laid-back snare or Dilla-style pocket.",
-		"caveat": "If START is set to any value other than 0%, substeps (rolls) cannot be set on that step (p. 69).",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Set a count-in for recording",
+		"goal": "Get 2–4 beats of lead-in before real-time recording starts.",
+		"display": "Cnt.I",
 		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 58,
+			"quote": "Sets the length (the number of beats) of the count-in for recording."
+		}
+	},
+	{
+		"id": "select-step-to-edit",
+		"category": "Step Edit",
+		"tier": "essential",
+		"combo": ["STEP", "REC", "step PAD"],
+		"buttons": ["STEP", "REC", "PAD"],
+		"action": "Select a step to edit (STEP + REC lit)",
+		"goal": "With STEP and REC both lit, press a step pad (or turn TEMPO/VALUE) to pick the step you want to edit.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 38,
+			"quote": "Press a step pad to select the step to edit."
+		}
+	},
+	{
+		"id": "step-data-cycle",
+		"category": "Step Edit",
+		"tier": "essential",
+		"combo": ["Hold step PAD", "D-MOTION (cycle)", "Turn TEMPO/VALUE"],
+		"buttons": ["PAD", "D-MOTION", "TEMPO/VALUE"],
+		"action": "Edit a step’s note, velocity, gate, probability or sub steps",
+		"goal": "Hold a step pad and tap D-MOTION to cycle through its data, then turn TEMPO/VALUE to edit the value shown.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 34,
+			"quote": "When you press the [D-MOTION] button while holding down a step pad, the display switches in the following order."
+		}
+	},
+	{
+		"id": "step-note-number",
+		"category": "Step Edit",
+		"tier": "deep-dive",
+		"combo": ["Hold step PAD", "D-MOTION (cycle)", "Turn TEMPO/VALUE"],
+		"buttons": ["PAD", "D-MOTION", "TEMPO/VALUE"],
+		"action": "Change a step’s note (pitch)",
+		"goal": "Fix wrong notes or move a whole chord: the lowest chord note is shown and the others follow.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 34,
+			"quote": "If a chord has been input, the lowest note number in the chord is shown."
+		}
+	},
+	{
+		"id": "step-velocity",
+		"category": "Step Edit",
+		"tier": "deep-dive",
+		"combo": ["Hold step PAD", "D-MOTION (cycle)", "Turn TEMPO/VALUE"],
+		"buttons": ["PAD", "D-MOTION", "TEMPO/VALUE"],
+		"action": "Set per-step velocity (accents)",
+		"goal": "Add accents and dynamics with a velocity of 1–127 per step.",
+		"display": "v.100",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 34,
+			"quote": "v.100 Sets the velocity."
+		}
+	},
+	{
+		"id": "step-gate-tie",
+		"category": "Step Edit",
+		"tier": "deep-dive",
+		"combo": ["Hold step PAD", "D-MOTION (cycle)", "Turn TEMPO/VALUE"],
+		"buttons": ["PAD", "D-MOTION", "TEMPO/VALUE"],
+		"action": "Set gate time (note length) per step",
+		"goal": "Shorten notes for staccato, or set 100 to tie into the next step when it holds the same note.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 34,
+			"quote": "When this is set to 100 and the same note number has been input for the next step, a tie is played."
+		}
+	},
+	{
+		"id": "step-probability",
+		"category": "Step Edit",
+		"tier": "essential",
+		"combo": ["Hold step PAD", "D-MOTION (cycle)", "Turn TEMPO/VALUE"],
+		"buttons": ["PAD", "D-MOTION", "TEMPO/VALUE"],
+		"action": "Set per-step probability",
+		"goal": "Make individual steps play only some of the time (1–100) for evolving, generative lines.",
+		"display": "P.100",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 34,
+			"quote": "Sets the probability for notes to play back."
+		}
+	},
+	{
+		"id": "step-sub-steps",
+		"category": "Step Edit",
+		"tier": "essential",
+		"combo": ["Hold step PAD", "D-MOTION (cycle)", "Turn TEMPO/VALUE"],
+		"buttons": ["PAD", "D-MOTION", "TEMPO/VALUE"],
+		"action": "Ratchet a step with sub steps",
+		"goal": "Split a step into several hits and choose which ones sound, for rolls and ratchets.",
+		"caveat": "Applies to every note in the step and has no effect on empty steps or steps in the middle of a tie.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 34,
+			"quote": "Divides up the step to play."
+		}
+	},
+	{
+		"id": "step-tie",
+		"category": "Step Edit",
+		"tier": "essential",
+		"combo": ["Hold step PAD", "HOLD"],
+		"buttons": ["PAD", "HOLD"],
+		"action": "Tie a step into the next step",
+		"goal": "Extend a note across steps for long bass notes and legato lines.",
+		"caveat": "You can’t tie into a step that already contains a note.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 35,
+			"quote": "To input a tie that extends to the next step, press the [HOLD] button while holding down the step pad of the step whose length you wish to change."
+		}
+	},
+	{
+		"id": "chord-step-input",
+		"category": "Step Edit",
+		"tier": "essential",
+		"combo": ["STEP (off)", "REC", "Turn TEMPO/VALUE", "keyboard PAD"],
+		"buttons": ["STEP", "REC", "TEMPO/VALUE", "PAD"],
+		"action": "Enter chords on a step with the keyboard",
+		"goal": "With STEP unlit and REC lit, choose a step with TEMPO/VALUE and toggle up to four keyboard notes on it.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 36,
+			"quote": "Press the note on the keyboard pad corresponding to the note you want to play, to make it light up."
+		}
+	},
+	{
+		"id": "edit-while-playing",
+		"category": "Step Edit",
+		"tier": "deep-dive",
+		"combo": ["STEP", "REC", "PLAY", "Turn TEMPO/VALUE"],
+		"buttons": ["STEP", "REC", "PLAY", "TEMPO/VALUE"],
+		"action": "Edit steps while the pattern plays",
+		"goal": "Light STEP and REC, start playback, then pick steps with TEMPO/VALUE or the pads to edit them while you listen.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 41,
+			"quote": "Editing a step while checking what you played"
+		}
+	},
+	{
+		"id": "chord-note-data",
+		"category": "Step Edit",
+		"tier": "deep-dive",
+		"combo": ["Hold keyboard PAD", "D-MOTION (cycle)", "Turn TEMPO/VALUE"],
+		"buttons": ["PAD", "D-MOTION", "TEMPO/VALUE"],
+		"action": "Set velocity / gate per chord note",
+		"context": "Ver. 1.02",
+		"goal": "While editing a chord step (REC lit, STEP unlit), give each chord note its own velocity and gate.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 36,
+			"quote": "Hold down the keyboard pad of the note that contains the performance data you want to change, and press the [D-MOTION] button to select the performance data to edit."
+		}
+	},
+	{
+		"id": "chord-note-tie",
+		"category": "Step Edit",
+		"tier": "deep-dive",
+		"combo": ["Hold keyboard PAD", "HOLD"],
+		"buttons": ["PAD", "HOLD"],
+		"action": "Tie a single chord note into the next step",
+		"context": "Ver. 1.02",
+		"goal": "Hold one note of a chord over the next step while the others change.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 36,
+			"quote": "After the tie is inputted, the unit automatically advances to the next step and the step number is shown in the display."
+		}
+	},
+	{
+		"id": "external-keyboard-step-input",
+		"category": "Step Edit",
+		"tier": "deep-dive",
+		"combo": ["STEP", "Hold step PAD", "External MIDI note"],
+		"buttons": ["STEP", "PAD"],
+		"action": "Enter step notes from a MIDI keyboard",
+		"goal": "Hold a step pad and play the note on a connected keyboard instead of editing the note number.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 34,
+			"quote": "When an external keyboard is connected, you can also input notes by pressing the step pads on this unit and then playing the desired note on your external keyboard."
+		}
+	},
+	{
+		"id": "motion-step-record",
+		"category": "Motion",
+		"tier": "essential",
+		"combo": ["Hold step PAD", "Turn any KNOB"],
+		"buttons": ["PAD", "KNOB"],
+		"action": "Record a motion on one step",
+		"goal": "Lock a knob value to a single step (e.g. open the filter on step 9 only).",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 35,
+			"quote": "Hold down the step pad and turn a knob to register the motion."
+		}
+	},
+	{
+		"id": "motion-realtime-record",
+		"category": "Motion",
+		"tier": "essential",
+		"combo": ["REC", "PLAY", "Turn any KNOB"],
+		"buttons": ["REC", "PLAY", "KNOB"],
+		"action": "Record knob motion in real time",
+		"goal": "Capture filter sweeps and other moves while the pattern loops.",
+		"caveat": "Up to eight parameters plus pitch bend per pattern; “FULL” means the slots are used up. MIDI CC and pitch bend are only recorded in real time.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 40,
+			"quote": "Turn the knob while you play to register a motion."
+		}
+	},
+	{
+		"id": "motion-selected-step",
+		"category": "Motion",
+		"tier": "deep-dive",
+		"combo": ["REC", "Turn TEMPO/VALUE", "Turn any KNOB"],
+		"buttons": ["REC", "TEMPO/VALUE", "KNOB"],
+		"action": "Add a motion to the selected step",
+		"goal": "In REC step mode, select a step with TEMPO/VALUE and turn a knob to store its value on that step.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 36,
+			"quote": "Turn the knob to register a motion."
+		}
+	},
+	{
+		"id": "clear-motion",
+		"category": "Motion",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 12 (CLEAR MOTION)", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 12", "PAD 2"],
+		"action": "Clear motions (whole pattern or selected step)",
+		"goal": "Remove recorded knob automation; when a step is selected only that step’s motions go.",
+		"display": "CLr.N",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 65,
+			"quote": "Erases all motions in the selected pattern. When a step is selected, this deletes only the motions for that step."
+		}
+	},
+	{
+		"id": "clear-one-knob-motion",
+		"category": "Motion",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 12 (CLEAR MOTION)", "Turn any KNOB"],
+		"buttons": ["SHIFT", "PAD 12", "KNOB"],
+		"action": "Erase one knob’s motion only",
+		"goal": "While “CLr.N” blinks, turn the knob whose motion you want gone — only that parameter is erased.",
+		"display": "CLr.N",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+			"page": 44,
+			"quote": "If “CLr.N” is blinking while the unit is waiting and you turn a knob, the parameter for only that knob is deleted."
+		}
+	},
+	{
+		"id": "peek-knob-value",
+		"category": "Motion",
+		"tier": "deep-dive",
+		"combo": ["Hold STEP / PATTERN", "Turn any KNOB"],
+		"buttons": ["STEP", "PATTERN", "KNOB"],
+		"action": "Check a knob’s value without changing it",
+		"context": "Ver. 1.02",
+		"goal": "See the stored value — for example while a motion plays — without overwriting the sound.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 70,
+			"quote": "Operate while holding down the [STEP] button or operate while holding down the [PATTERN] button (Ver. 1.02)"
+		}
+	},
+	{
+		"id": "peek-shift-value",
+		"category": "Motion",
+		"tier": "deep-dive",
+		"combo": ["Hold PATTERN", "Hold STEP", "Turn any KNOB"],
+		"buttons": ["PATTERN", "STEP", "KNOB"],
+		"action": "Check a SHIFT-layer value without changing it",
+		"goal": "Display the hidden SHIFT parameter of a knob (fine tune, delay time…) without editing it.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 70,
+			"quote": "Operate while holding down the [PATTERN] and [STEP] buttons"
+		}
+	},
+	{
+		"id": "poly-mode",
+		"category": "Poly, Chord & Arp",
+		"tier": "essential",
+		"combo": ["SHIFT", "POLY", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "POLY", "TEMPO/VALUE"],
+		"action": "Choose Mono / Unison / Poly / Chord",
+		"goal": "Set the voice mode; Poly plays up to four notes at once.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 24,
+			"quote": "Lets you play more than one tone at the same time (up to four voices)."
+		}
+	},
+	{
+		"id": "unison-mode",
+		"category": "Poly, Chord & Arp",
+		"tier": "essential",
+		"combo": ["SHIFT", "POLY", "Turn TEMPO/VALUE (Uni)"],
+		"buttons": ["SHIFT", "POLY", "TEMPO/VALUE"],
+		"action": "Fatten a sound with Unison mode",
+		"goal": "Stack the voices on every note for a thick mono lead or bass.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 24,
+			"quote": "Stacks multiple tones to play a layered note."
+		}
+	},
+	{
+		"id": "chord-mode",
+		"category": "Poly, Chord & Arp",
+		"tier": "essential",
+		"combo": ["SHIFT", "POLY", "Turn TEMPO/VALUE (Chd)", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "POLY", "TEMPO/VALUE", "PAD 2"],
+		"action": "One-finger chords (Chord mode)",
+		"goal": "Every key plays a chord: switch voices 2–4 on/off and transpose each by up to ±12 semitones.",
+		"display": "Chd",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 24,
+			"quote": "Press pad [2] (ENTER) while “Chd” is shown in the display to configure the following parameters."
+		}
+	},
+	{
+		"id": "note-priority",
+		"category": "Poly, Chord & Arp",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Last-note or low-note priority (n.Pri)",
+		"goal": "In Mono, Unison or Chord mode, choose whether the last or the lowest held key sounds.",
+		"display": "n.Pri",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 21,
+			"quote": "You can use the Note Priority setting (“n.Pri” in the menu) to select between giving priority to either the last note (LASt) or the lowest note"
+		}
+	},
+	{
+		"id": "arp-on",
+		"category": "Poly, Chord & Arp",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 8 (ARPEGGIO ON)", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PAD 8", "TEMPO/VALUE"],
+		"action": "Turn the arpeggiator on",
+		"goal": "Hold a chord on the keyboard and let the S-1 arpeggiate it.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 49,
+			"quote": "Hold down the [SHIFT] button and press pad [8] (ARPEGGIO ON)."
+		}
+	},
+	{
+		"id": "arp-toggle",
+		"category": "Poly, Chord & Arp",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 8 (ARPEGGIO ON) repeatedly"],
+		"buttons": ["SHIFT", "PAD 8"],
+		"action": "Toggle the arp on/off in one move",
+		"context": "Ver. 1.02",
+		"goal": "Tap pad 8 again while holding SHIFT to flip the arpeggiator on or off without the knob.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 49,
+			"quote": "Press pad [8] (ARPEGGIO ON) repeatedly while holding down the [SHIFT] button to toggle the arpeggio on/off."
+		}
+	},
+	{
+		"id": "arp-type",
+		"category": "Poly, Chord & Arp",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 9 (ARPEGGIO TYPE)", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PAD 9", "TEMPO/VALUE"],
+		"action": "Choose the arp pattern (Up, Down, Up&Down, Random, 2-octave)",
+		"goal": "Change the direction and range of the arpeggio.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 50,
+			"quote": "Hold down the [SHIFT] button and press pad [9] (ARPEGGIO TYPE)."
+		}
+	},
+	{
+		"id": "arp-rate",
+		"category": "Poly, Chord & Arp",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 10 (ARPEGGIO RATE)", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PAD 10", "TEMPO/VALUE"],
+		"action": "Set the arp rate (1/4 to 1/32, triplets)",
+		"goal": "Speed the arpeggio up or down in tempo-synced note values.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 51,
+			"quote": "Hold down the [SHIFT] button and press pad [10] (ARPEGGIO RATE)."
+		}
+	},
+	{
+		"id": "arp-latch",
+		"category": "Poly, Chord & Arp",
+		"tier": "essential",
+		"combo": ["HOLD (while the arp plays)", "keyboard PAD"],
+		"buttons": ["HOLD", "PAD"],
+		"action": "Latch the arpeggio with HOLD",
+		"goal": "Keep the arp running hands-free; play new keys to change the chord.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 51,
+			"quote": "When you press the [HOLD] button to make it light up while an arpeggio is playing, the arpeggio keeps playing even after you take your finger off the keyboard pad."
+		}
+	},
+	{
+		"id": "portamento-mode",
+		"category": "Poly, Chord & Arp",
+		"tier": "essential",
+		"combo": ["SHIFT", "PORTA ON", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PORTA ON", "TEMPO/VALUE"],
+		"action": "Glide between notes (portamento Off / On / Auto)",
+		"goal": "Slide smoothly from note to note; Auto glides only when you play legato.",
+		"caveat": "With the arpeggiator running, Auto only glides when ENV TRG is set to Gate.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 24,
+			"quote": "Portamento is an effect that makes one pitch glide smoothly into another."
+		}
+	},
+	{
+		"id": "portamento-time",
+		"category": "Poly, Chord & Arp",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PORTA TIME", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PORTA TIME", "TEMPO/VALUE"],
+		"action": "Set the glide time",
+		"goal": "Make the portamento slide faster or slower (0–255).",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 24,
+			"quote": "Hold down the [SHIFT] button and press the [PORTA TIME] pad."
+		}
+	},
+	{
+		"id": "shift-knob-layer",
+		"category": "Sound Design",
+		"tier": "essential",
+		"combo": ["SHIFT", "Turn any KNOB"],
+		"buttons": ["SHIFT", "KNOB"],
+		"action": "Reach the hidden SHIFT parameter of a knob",
+		"goal": "Many knobs have a second parameter (fine tune, delay time, pulse width…) when turned with SHIFT held.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 6,
+			"quote": "By turning the knobs while holding down the [SHIFT] button, you can access tone parameters that are different from the normal parameters."
+		}
+	},
+	{
+		"id": "manual-mode",
+		"category": "Sound Design",
+		"tier": "essential",
+		"combo": ["SHIFT", "HOLD (MANUAL)"],
+		"buttons": ["SHIFT", "HOLD"],
+		"action": "Make the sound match the knob positions (manual)",
+		"goal": "Apply every top-panel knob position to the tone at once — the quickest start for sound design from scratch.",
+		"caveat": "Parameters set with SHIFT (the knob assignment layer) are not changed.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 52,
+			"quote": "Press the [SHIFT] + [HOLD] buttons to enter manual mode."
+		}
+	},
+	{
+		"id": "osc-draw",
+		"category": "Sound Design",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 5 (OSC DRAW)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 5", "TEMPO/VALUE", "PAD 2"],
+		"action": "Draw your own waveform (OSC DRAW)",
+		"goal": "Design a custom 16-step single-cycle wave and hear it through the square-wave level knob.",
+		"caveat": "Pulse width modulation is not applied to a drawn waveform.",
+		"steps": [
+			"Hold SHIFT and press pad 5 (OSC DRAW).",
+			"Turn TEMPO/VALUE to choose a parameter (switch, form or multiply) and press pad 2 (ENTER).",
+			"Turn TEMPO/VALUE to edit; set the switch to STEP or SLOPE to use your waveform."
+		],
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 29,
+			"quote": "Hold down the [SHIFT] button and press pad [5] (OSC DRAW)."
+		}
+	},
+	{
+		"id": "osc-draw-form",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["Hold PAD 1–16 (wave step)", "Turn TEMPO/VALUE"],
+		"buttons": ["PAD", "TEMPO/VALUE"],
+		"action": "Edit the drawn waveform step by step",
+		"goal": "In the Form screen, hold a pad (one of 16 wave steps) and turn TEMPO/VALUE to set its height from −100 to 100.",
+		"display": "ForN",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 29,
+			"quote": "You can create original waveforms by dividing a single waveform cycle into 16 steps and individually editing the volume for each step."
+		}
+	},
+	{
+		"id": "osc-draw-switch-knob",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn SAW"],
+		"buttons": ["SHIFT", "SAW"],
+		"action": "Switch OSC DRAW (Off / Step / Slope) from the saw knob",
+		"goal": "Flip between the plain square wave and your drawn waveform without opening the menu.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 29,
+			"quote": "You can also edit the values by turning the OSCILLATOR [ (sawtooth wave level)] knob while holding down the [SHIFT] button."
+		}
+	},
+	{
+		"id": "osc-draw-multiply-knob",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn SQUARE"],
+		"buttons": ["SHIFT", "SQUARE"],
+		"action": "Sweep OSC DRAW Multiply from the square knob",
+		"goal": "With OSC DRAW on, repeat the drawn wave within each cycle for brighter, octave-jumping tones.",
+		"caveat": "When OSC DRAW is switched off, the same move adjusts pulse width instead.",
+		"display": "NULt",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 30,
+			"quote": "You can also edit the value by turning the OSCILLATOR [ (square wave level)] knob while holding down the [SHIFT] button."
+		}
+	},
+	{
+		"id": "wave-editor-exit",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 1 (EXIT)"],
+		"buttons": ["SHIFT", "PAD 1"],
+		"action": "Leave the waveform / chop-pattern editor",
+		"goal": "The pads edit wave steps in these screens, so use SHIFT + pad 1 to return to the parameter list.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 29,
+			"quote": "To exit, hold down the [SHIFT] button and press pad [1] (EXIT)."
+		}
+	},
+	{
+		"id": "osc-chop",
+		"category": "Sound Design",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 6 (OSC CHOP)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 6", "TEMPO/VALUE", "PAD 2"],
+		"action": "Chop the waveform for edgy harmonics (OSC CHOP)",
+		"goal": "Cut slices out of each oscillator waveform to emphasise overtones and get metallic tones.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 31,
+			"quote": "You can chop the waveforms that are generated by the oscillator, and emphasize their harmonics (overtones)."
+		}
+	},
+	{
+		"id": "osc-chop-pattern",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["PAD 1–16 (toggle slices)"],
+		"buttons": ["PAD"],
+		"action": "Cut slices out of the wave (chop pattern)",
+		"goal": "In a chop-pattern screen, toggle any of the 16 slices of the waveform; each of the four waveforms has its own pattern.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 31,
+			"quote": "Press pads [1]–[16] corresponding to the steps you want to edit, which makes the pads go dark."
+		}
+	},
+	{
+		"id": "osc-chop-overtone-knob",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn OSC LFO"],
+		"buttons": ["SHIFT", "OSC LFO"],
+		"action": "Sweep OSC CHOP Overtone from the OSC LFO knob",
+		"goal": "Dial the chop intensity in real time — great for motion recording.",
+		"caveat": "With Overtone at 0 the chop pattern has no effect.",
+		"display": "ovtn",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 31,
+			"quote": "You can also edit the value by turning the OSCILLATOR [LFO] knob while holding down the [SHIFT] button."
+		}
+	},
+	{
+		"id": "osc-chop-comb-knob",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn SUB"],
+		"buttons": ["SHIFT", "SUB"],
+		"action": "Sweep OSC CHOP Comb from the SUB knob",
+		"goal": "Repeat the chop pattern within each cycle for metallic, comb-like tones.",
+		"display": "CoNb",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 31,
+			"quote": "You can also edit the value by turning the OSCILLATOR [SUB] knob while holding down the [SHIFT] button."
+		}
+	},
+	{
+		"id": "pwm-source",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PWM SRC", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PWM SRC", "TEMPO/VALUE"],
+		"action": "Choose the pulse-width modulation source",
+		"goal": "Animate the square wave from the LFO or envelope, or set a fixed width manually.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 13,
+			"quote": "Hold down the [SHIFT] button and press the [PWM SRC] pad."
+		}
+	},
+	{
+		"id": "pwm-depth",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PWM DEPTH", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PWM DEPTH", "TEMPO/VALUE"],
+		"action": "Set pulse width / PWM depth",
+		"goal": "Set the fixed pulse width, or how far the LFO/envelope moves it.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 13,
+			"quote": "Hold down the [SHIFT] button and press the [PWM DEPTH] pad."
+		}
+	},
+	{
+		"id": "pulse-width-knob",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn SQUARE"],
+		"buttons": ["SHIFT", "SQUARE"],
+		"action": "Sweep pulse width from the square knob",
+		"goal": "Change the square wave’s width by hand — record it as a motion for movement.",
+		"caveat": "With OSC DRAW switched on, this move controls Multiply instead.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+			"page": 74,
+			"quote": "OSC PULSE WIDTH ([SHIFT] button + [PWM DEPTH] pad) ([SHIFT] +OSCILLATOR [ ] knob)"
+		}
+	},
+	{
+		"id": "sub-osc-octave",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "SUB OCT", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "SUB OCT", "TEMPO/VALUE"],
+		"action": "Choose the sub-oscillator octave",
+		"goal": "Pick −1 octave, −2 octaves or the asymmetrical −2 octave wave for the sub.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 14,
+			"quote": "Hold down the [SHIFT] button and press the [SUB OCT] pad."
+		}
+	},
+	{
+		"id": "noise-mode-knob",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn NOISE"],
+		"buttons": ["SHIFT", "NOISE"],
+		"action": "Switch pink / white noise",
+		"goal": "Choose the noise colour straight from the NOISE knob.",
+		"caveat": "When Riser Mode is on, SHIFT + NOISE controls the riser instead.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+			"page": 74,
+			"quote": "NOISE MODE ([SHIFT] button + pad [15] (MENU): Noise Mode) ([SHIFT] + OSCILLATOR [NOISE] knob)"
+		}
+	},
+	{
+		"id": "fine-tune",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn RANGE"],
+		"buttons": ["SHIFT", "RANGE"],
+		"action": "Fine-tune the oscillator (±1 octave)",
+		"goal": "Detune the S-1 against other instruments or patterns.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 13,
+			"quote": "You can turn the [RANGE] knob while holding down the [SHIFT] button to alter the pitch within a ±1 octave range"
+		}
+	},
+	{
+		"id": "filter-keyboard-follow",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 7 (FILTER KYBD)", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "PAD 7", "TEMPO/VALUE"],
+		"action": "Make the filter track the keyboard",
+		"goal": "Keep high notes as bright as low ones; 255 makes the cutoff follow the pitch exactly.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 15,
+			"quote": "Hold down the [SHIFT] button and press pad [7] (FILTER KYBD)."
+		}
+	},
+	{
+		"id": "filter-kybd-knob",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn FILTER ENV"],
+		"buttons": ["SHIFT", "FILTER ENV"],
+		"action": "Set filter key tracking from the filter ENV knob",
+		"goal": "Adjust keyboard follow without leaving the panel.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+			"page": 74,
+			"quote": "FILTER KEYBOARD FOLLOW ([SHIFT] button + pad [7] (FILTER KYBD) pad) ([SHIFT] button +FILTER [ENV] knob)"
+		}
+	},
+	{
+		"id": "env-trigger",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "ENV TRG", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "ENV TRG", "TEMPO/VALUE"],
+		"action": "Set the envelope trigger (LFO / Gate / Gate+Trig)",
+		"goal": "Retrigger the envelope on every key, only on non-legato notes, or repeatedly with the LFO.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 64,
+			"quote": "triG (Gate+Trig): The envelope is triggered each time you press a key."
+		}
+	},
+	{
+		"id": "amp-mode",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "AMP", "Turn TEMPO/VALUE"],
+		"buttons": ["SHIFT", "AMP", "TEMPO/VALUE"],
+		"action": "Gate or envelope for the amp (AMP mode)",
+		"goal": "Use a simple organ-like gate, or let the ADSR knobs shape the volume.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 64,
+			"quote": "GAtE (Gate): Sound is played at a set volume only while a key is played."
+		}
+	},
+	{
+		"id": "cycle-values",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PWM SRC / SUB OCT / ENV TRG / AMP / POLY / PORTA ON (repeatedly)"],
+		"buttons": ["SHIFT", "PWM SRC", "SUB OCT", "ENV TRG", "AMP", "POLY", "PORTA ON"],
+		"action": "Cycle values by tapping the key again",
+		"context": "Ver. 1.02",
+		"goal": "While holding SHIFT, tap the same key repeatedly to step through its settings — no knob needed.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 66,
+			"quote": "You can switch between the values in order by repeatedly pressing the following pads while holding down the [SHIFT] button."
+		}
+	},
+	{
+		"id": "lfo-mode-knob",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn RATE"],
+		"buttons": ["SHIFT", "RATE"],
+		"action": "Switch LFO Normal / Fast from the RATE knob",
+		"goal": "Fast mode speeds the LFO cycle up to an extreme degree for more intense modulation.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+			"page": 74,
+			"quote": "LFO MODE ([SHIFT] button + pad [15] (MENU): LFO Mode) ([SHIFT] +LFO [RATE] knob)"
+		}
+	},
+	{
+		"id": "lfo-sync-knob",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn WAVE FORM"],
+		"buttons": ["SHIFT", "WAVE FORM"],
+		"action": "Sync the LFO to tempo from the WAVE FORM knob",
+		"context": "Ver. 1.02",
+		"goal": "Lock wobbles and tremolo to the beat; RATE then picks a note length.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 70,
+			"quote": "LFO WAVE FORM (#12) LFO SYNC (“S”, #106) (Ver.1.02)"
+		}
+	},
+	{
+		"id": "lfo-key-trigger",
+		"category": "Sound Design",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Restart the LFO on every note (LFO.K)",
+		"goal": "Make each note start from the same point of the LFO cycle.",
+		"display": "LFO.K",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 23,
+			"quote": "Sets whether to reset the LFO when a note sounds."
+		}
+	},
+	{
+		"id": "delay-time-knob",
+		"category": "FX & D-MOTION",
+		"tier": "essential",
+		"combo": ["SHIFT", "Turn DELAY"],
+		"buttons": ["SHIFT", "DELAY"],
+		"action": "Set the delay time from the DELAY knob",
+		"goal": "Dial echo timing by hand; DELAY alone sets the level.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 26,
+			"quote": "You can set the delay time by turning the [DELAY] knob while holding down the [SHIFT] button."
+		}
+	},
+	{
+		"id": "delay-settings",
+		"category": "FX & D-MOTION",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 13 (DELAY)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 13", "TEMPO/VALUE", "PAD 2"],
+		"action": "Delay settings: tempo sync, time, feedback, filters",
+		"goal": "Sync the delay to tempo, set feedback, and low/high-cut the repeats.",
+		"display": "d.Syn",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 26,
+			"quote": "Hold down the [SHIFT] button and press [13] (DELAY) pad."
+		}
+	},
+	{
+		"id": "reverb-time-knob",
+		"category": "FX & D-MOTION",
+		"tier": "essential",
+		"combo": ["SHIFT", "Turn REVERB"],
+		"buttons": ["SHIFT", "REVERB"],
+		"action": "Set the reverb time from the REVERB knob",
+		"goal": "Lengthen or shorten the tail by hand; REVERB alone sets the level.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 27,
+			"quote": "Adjust the reverb length (time) by turning the [REVERB] knob while holding down the [SHIFT] button."
+		}
+	},
+	{
+		"id": "reverb-settings",
+		"category": "FX & D-MOTION",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 14 (REVERB)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 14", "TEMPO/VALUE", "PAD 2"],
+		"action": "Reverb type and settings (room, hall, plate, spring…)",
+		"goal": "Choose the reverb type and set pre-delay, filters and density.",
+		"display": "tyPE",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 27,
+			"quote": "Hold down the [SHIFT] button and press pad [14] (REVERB)."
+		}
+	},
+	{
+		"id": "chorus",
+		"category": "FX & D-MOTION",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Add chorus (types 1–4)",
+		"goal": "Thicken pads and leads; type 3 behaves like a fast rotary speaker.",
+		"display": "Cho",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 27,
+			"quote": "This effect adds a tiny amount of pitch modulation, creating a more spacious and thicker sound."
+		}
+	},
+	{
+		"id": "global-delay-reverb",
+		"category": "FX & D-MOTION",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Keep FX tails when switching patterns",
+		"goal": "Use global (system) delay/reverb so tails ring on across pattern changes.",
+		"display": "GL.d.r",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 60,
+			"quote": "As the system settings are given priority, the tail of the delay/reverb continues to sound even while you switch between patterns."
+		}
+	},
+	{
+		"id": "delay-level-mode",
+		"category": "FX & D-MOTION",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Delay knob as send (Pre) or return (Post)",
+		"goal": "Pre lets repeats ring out when you turn DELAY down — dub-style throws; Post mutes them instantly.",
+		"display": "d.L.Nd",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 68,
+			"quote": "With the “PrE” setting, the delay sound fades out smoothly when you turn down the [DELAY] knob"
+		}
+	},
+	{
+		"id": "riser-mode-toggle",
+		"category": "FX & D-MOTION",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 1 (EXIT)", "PAD 2 (ENTER) (together)"],
+		"buttons": ["SHIFT", "PAD 1", "PAD 2"],
+		"action": "Switch Riser Mode (Off / Sync / Quiv / QvPn)",
+		"goal": "Turn the NOISE knob into a riser/downer generator for build-ups — without opening the menu.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 57,
+			"quote": "You can switch between Riser Mode settings each time you press pad [1] (EXIT) and pad [2] (ENTER) at the same time while holding down the [SHIFT] button."
+		}
+	},
+	{
+		"id": "riser-control",
+		"category": "FX & D-MOTION",
+		"tier": "essential",
+		"combo": ["Turn NOISE"],
+		"buttons": ["NOISE"],
+		"action": "Play the riser / downer with the NOISE knob",
+		"goal": "With Riser Mode on, sweep NOISE from minimum to the middle for a rise, then on to maximum for a falling downer.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 57,
+			"quote": "Use the [NOISE] knob to control both the riser and downer effects."
+		}
+	},
+	{
+		"id": "riser-silent-reposition",
+		"category": "FX & D-MOTION",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn NOISE"],
+		"buttons": ["SHIFT", "NOISE"],
+		"action": "Reposition the riser silently",
+		"goal": "Move the NOISE knob without sounding the riser, ready to start the effect from any point.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 57,
+			"quote": "You can change the knob position without outputting the riser sound if you hold down the [SHIFT] button while turning the [NOISE] knob"
+		}
+	},
+	{
+		"id": "riser-shift-release",
+		"category": "FX & D-MOTION",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn NOISE", "Release SHIFT"],
+		"buttons": ["SHIFT", "NOISE"],
+		"action": "Pre-set the riser, then drop it on SHIFT release",
+		"context": "Ver. 1.02",
+		"goal": "Prepare the downer while the riser keeps going, then switch the instant you let go of SHIFT.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 57,
+			"quote": "After you turn the [NOISE] knob to a setting besides minimum or maximum while holding down the [SHIFT] button and then release the [SHIFT] button, the riser sound is output immediately according to the knob position."
+		}
+	},
+	{
+		"id": "d-motion-play",
+		"category": "FX & D-MOTION",
+		"tier": "essential",
+		"combo": ["PLAY", "Hold D-MOTION", "Tilt the unit"],
+		"buttons": ["PLAY", "D-MOTION"],
+		"action": "Tilt to tweak the sound (D-MOTION)",
+		"goal": "Hold D-MOTION and tilt the S-1 back/forth (pitch) or left/right (roll) to modulate the assigned parameters; release to snap back.",
+		"caveat": "Grip both sides firmly and make sure connected cables aren’t bent too much.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 55,
+			"quote": "While holding down the [D-MOTION] button, tilt the unit back and forth (pitch) or left-right (roll)."
+		}
+	},
+	{
+		"id": "d-motion-destination",
+		"category": "FX & D-MOTION",
+		"tier": "essential",
+		"combo": ["SHIFT", "D-MOTION (DESTINATION)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "D-MOTION", "TEMPO/VALUE", "PAD 2"],
+		"action": "Assign what pitch and roll tilt control",
+		"goal": "Map roll and pitch to modulation, cutoff, resonance, pitch bend, pan, expression, or delay/reverb level.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+			"page": 55,
+			"quote": "Hold down the [SHIFT] button and press the [D-MOTION] button."
+		}
+	},
+	{
+		"id": "d-motion-latch",
+		"category": "FX & D-MOTION",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Make D-MOTION latch instead of momentary (d.Lat)",
+		"goal": "Toggle tilt control on and off with one press so both hands are free to tilt.",
+		"display": "d.Lat",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
 			"page": 69,
-			"quote": "Sets the timing at which the"
+			"quote": "On: D-MOTION toggles between ON/OFF each time you press the button (latch operation)."
 		}
 	},
 	{
-		"id": "tr-rec-solo-pad",
-		"category": "Pattern Sequencer",
+		"id": "bend-range",
+		"category": "FX & D-MOTION",
 		"tier": "deep-dive",
-		"combo": ["HOLD"],
-		"buttons": ["HOLD"],
-		"action": "Solo Currently Selected Pad During TR-REC",
-		"context": "While programming in TR-REC mode",
-		"goal": "Isolate and hear only the instrument pad you are currently step-sequencing without muting other tracks manually.",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Set the pitch-bend range for D-MOTION / MIDI (bnd.o)",
+		"goal": "Decide how far D-MOTION or MIDI pitch bend moves the oscillator (120 = ±1 oct, 240 = ±2 oct).",
+		"display": "bnd.o",
 		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 69,
-			"quote": "Plays back only the selected"
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 25,
+			"quote": "Use the [TEMPO/VALUE] knob to select “bnd.o”, and press pad [2] (ENTER)."
 		}
 	},
 	{
-		"id": "delete-pad-mute-motion",
-		"category": "Pattern Sequencer",
+		"id": "modulation-depth",
+		"category": "FX & D-MOTION",
 		"tier": "deep-dive",
-		"combo": ["DEL", "REVERSE"],
-		"buttons": ["DEL", "REVERSE"],
-		"action": "Delete Recorded Pad Mute Automation from a Pattern",
-		"context": "On the PATTERN EDIT screen (or press DEL inside Pad Mute Motion Rec to spot-erase)",
-		"goal": "Remove recorded Pad Mute automation from a pattern while keeping all notes and EFX motion intact.",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Set vibrato depth for D-MOTION / MIDI modulation (Nod.d)",
+		"goal": "Control how strong the LFO vibrato or growl is when modulation comes from tilting or a mod wheel.",
+		"display": "Nod.d",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Deletes the pad mute operations recorded using EFX MOTION REC from a"
+			"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+			"page": 25,
+			"quote": "Use the [TEMPO/VALUE] knob to select “Nod.d”, and press pad [2] (ENTER)."
 		}
 	},
 	{
-		"id": "undo-pattern-chain-edit",
-		"category": "Pattern Sequencer",
-		"tier": "deep-dive",
-		"combo": ["SHIFT", "DEL"],
-		"buttons": ["SHIFT", "DEL"],
-		"action": "Revert Unsaved Edits in Pattern Chain",
-		"context": "On PATTERN CHAIN screen when an asterisk (*) is shown",
-		"goal": "Undo accidental pattern insertions or deletions in a Pattern Chain before exiting.",
+		"id": "write-pattern",
+		"category": "Save & Load",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 16 (WRITE)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 16", "TEMPO/VALUE", "PAD 2"],
+		"action": "Save the pattern (or all patterns)",
+		"goal": "Write the sequence and sound to memory: choose “Ptn” for the current pattern or “ALL” for every pattern.",
+		"display": "Ptn",
 		"citation": {
-			"doc": "docs/reference/roland-v550/06-pattern-sequencer.md",
-			"page": 75,
-			"quote": "Once you’ve edited the pattern chain, an asterisk (*) appears at the top right-hand part of the screen."
+			"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
+			"page": 47,
+			"quote": "Once the power is turned off, any unsaved patterns are reset to their last saved state."
 		}
 	},
 	{
-		"id": "numeric-marker-input",
-		"category": "Sample Edit & Chop",
-		"tier": "deep-dive",
-		"combo": ["START/END", "SHIFT", "Push VALUE"],
-		"buttons": ["START/END", "SHIFT", "VALUE"],
-		"action": "Enter Exact Sample Start / Loop / End Position Numerically",
-		"context": "On START/END screen: press SHIFT + VALUE, then type digits on PAD 1–10 (PAD 10 = 0)",
-		"goal": "Jump a sample marker to an exact sample frame number using the number pads instead of scrolling knobs.",
+		"id": "copy-pattern",
+		"category": "Save & Load",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Copy the pattern to another slot",
+		"goal": "Duplicate a pattern before making a variation of it.",
+		"display": "COPY",
 		"citation": {
-			"doc": "docs/reference/roland-v550/05-editing-samples.md",
+			"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
 			"page": 48,
-			"quote": "You can use a numerical value to set the position of each point."
+			"quote": "Copies the current pattern to a specified pattern."
 		}
 	},
 	{
-		"id": "route-ext-source-bus",
-		"category": "FX & Routing",
-		"tier": "deep-dive",
-		"combo": ["Hold REMAIN", "EXT SOURCE"],
-		"buttons": ["REMAIN", "EXT SOURCE"],
-		"action": "Assign External Input (Line In / Mic / Guitar) Destination Bus",
-		"context": "Hold REMAIN and press EXT SOURCE to cycle BUS 1, BUS 2, or DRY",
-		"goal": "Route your external synth or mic to Bus 1, Bus 2, or Dry independently from your internal sample pads.",
+		"id": "init-pattern",
+		"category": "Save & Load",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Initialize a pattern (blank sequence and sound)",
+		"goal": "Start from a clean slate for sound design or a new sequence.",
+		"caveat": "Nothing is stored until you WRITE — turning the power off brings back the previous state.",
+		"display": "init",
 		"citation": {
-			"doc": "docs/reference/roland-v550/11-appendix-shortcut-keys.md",
-			"page": 162,
-			"quote": "Specifies the external input (INPUT, LINE IN) output destination bus."
+			"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
+			"page": 48,
+			"quote": "This shows how to initialize the currently selected pattern (sequence and tone)."
+		}
+	},
+	{
+		"id": "reload-all",
+		"category": "Save & Load",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Revert the pattern to its last save",
+		"goal": "Throw away all unsaved changes to the current pattern.",
+		"display": "rLod",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
+			"page": 48,
+			"quote": "This shows how to restore the currently selected pattern to its last saved state."
+		}
+	},
+	{
+		"id": "reload-sound-shortcut",
+		"category": "Save & Load",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 1 (EXIT)", "POLY (together)"],
+		"buttons": ["SHIFT", "PAD 1", "POLY"],
+		"action": "Reload just the sound (one-move shortcut)",
+		"goal": "Undo knob tweaks after a jam while keeping your edited sequence.",
+		"display": "rL.Sd",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
+			"page": 48,
+			"quote": "Press the [SHIFT] button, pad [1] (EXIT) and the [POLY] pad at the same time to reload the sound."
+		}
+	},
+	{
+		"id": "reload-sequence",
+		"category": "Save & Load",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Reload just the sequence",
+		"goal": "Restore the saved notes and motions while keeping the current sound.",
+		"display": "rL.Sq",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 69,
+			"quote": "rL.Sq (Reload Sequence): The performance data of the selected pattern is restored to its last saved state."
+		}
+	},
+	{
+		"id": "backup",
+		"category": "Save & Load",
+		"tier": "essential",
+		"combo": ["Hold PLAY", "POWER ON", "USB drive"],
+		"buttons": ["PLAY", "POWER"],
+		"action": "Back up all data to a computer",
+		"goal": "Keep your patterns safe before experiments, firmware updates or a factory reset.",
+		"steps": [
+			"Connect the S-1 to your computer by USB.",
+			"Hold PLAY while turning the power on; the drive takes 1–2 minutes to appear.",
+			"Copy everything in the BACKUP folder, then eject the drive."
+		],
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+			"page": 63,
+			"quote": "The backup files are located in the “BACKUP” folder on the “S-1” drive."
+		}
+	},
+	{
+		"id": "restore",
+		"category": "Save & Load",
+		"tier": "deep-dive",
+		"combo": ["Hold PLAY", "POWER ON", "USB drive", "HOLD"],
+		"buttons": ["PLAY", "POWER", "HOLD"],
+		"action": "Restore a backup from a computer",
+		"goal": "Load a previous backup back onto the S-1.",
+		"steps": [
+			"Start the S-1 in drive mode (hold PLAY while powering on) and connect it by USB.",
+			"Copy the backup files into the RESTORE folder and eject the drive.",
+			"Press HOLD to restore, then turn the S-1 off when “dOnE” appears."
+		],
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+			"page": 63,
+			"quote": "Copy the backup files to the “RESTORE” folder on the “S-1” drive."
+		}
+	},
+	{
+		"id": "factory-reset",
+		"category": "Save & Load",
+		"tier": "deep-dive",
+		"combo": ["Hold HOLD", "POWER ON", "D-MOTION"],
+		"buttons": ["HOLD", "POWER", "D-MOTION"],
+		"action": "Factory reset",
+		"goal": "Return the S-1 to its factory state.",
+		"caveat": "This erases your patterns — back up first. To cancel, turn the power off instead of pressing D-MOTION.",
+		"display": "FACt",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+			"page": 62,
+			"quote": "While holding down the [HOLD] button, turn on the power."
+		}
+	},
+	{
+		"id": "menu-navigation",
+		"category": "Sync, MIDI & System",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)", "PAD 1 (EXIT)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2", "PAD 1"],
+		"action": "Open the menu, pick an item, confirm or exit",
+		"goal": "Every menu setting works the same way: TEMPO/VALUE selects, pad 2 (ENTER) confirms, pad 1 (EXIT) backs out.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 67,
+			"quote": "Hold down the [SHIFT] button and press step pad [15] (MENU)."
+		}
+	},
+	{
+		"id": "larger-value-jumps",
+		"category": "Sync, MIDI & System",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "Turn TEMPO/VALUE (editing a value)"],
+		"buttons": ["SHIFT", "TEMPO/VALUE"],
+		"action": "Change values in bigger jumps",
+		"goal": "Scroll through long value ranges faster while editing a parameter.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+			"page": 5,
+			"quote": "Use this knob with the [SHIFT] button to fine-tune the tempo or to make larger adjustments to the parameter values."
+		}
+	},
+	{
+		"id": "midi-channel",
+		"category": "Sync, MIDI & System",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Set the MIDI channel (CH)",
+		"goal": "Match the S-1 to your sequencer or DAW track.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 68,
+			"quote": "Specifies the MIDI transmit/receive channel."
+		}
+	},
+	{
+		"id": "clock-sync-source",
+		"category": "Sync, MIDI & System",
+		"tier": "essential",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Choose the clock source (Auto / Int / MIDI / USB)",
+		"goal": "Follow a DAW or drum machine, or run on the internal clock.",
+		"caveat": "A cable in the SYNC IN jack always takes priority over this setting.",
+		"display": "SYnC",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 68,
+			"quote": "Sets which synchronization signal is used by this unit."
+		}
+	},
+	{
+		"id": "sync-clock-ppq",
+		"category": "Sync, MIDI & System",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Set sync pulses per beat (S.cLk)",
+		"goal": "Match the SYNC IN/OUT pulse rate (1–24 per beat) to analog-clocked gear.",
+		"display": "S.cLk",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 68,
+			"quote": "Sets the number of sync clocks per beat."
+		}
+	},
+	{
+		"id": "midi-thru",
+		"category": "Sync, MIDI & System",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "MIDI Thru on/off",
+		"goal": "Pass incoming MIDI on to the next device in the chain.",
+		"display": "thru",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 68,
+			"quote": "Sets whether to output the messages that are input from the MIDI IN jack to the MIDI OUT jack (ON) or not (OFF)."
+		}
+	},
+	{
+		"id": "program-change",
+		"category": "Sync, MIDI & System",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Change patterns via MIDI program change",
+		"goal": "Let a DAW or sequencer switch S-1 patterns (rxPc); send them with txPc and set the channel with Pc.Ch.",
+		"display": "rxPc",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 68,
+			"quote": "Sets whether the pattern changes when a program change message is received."
+		}
+	},
+	{
+		"id": "aira-link",
+		"category": "Sync, MIDI & System",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "AIRA LINK for the MX-1",
+		"goal": "Turn on AIRA LINK when the S-1 is connected to an MX-1 mixer over USB.",
+		"caveat": "Takes effect after the power is turned off and on again; otherwise leave it Off.",
+		"display": "A.LnK",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 69,
+			"quote": "Set this to “On” when connecting a device via USB that is compatible with AIRA LINK, such as the MX-1."
+		}
+	},
+	{
+		"id": "battery-only-mode",
+		"category": "Sync, MIDI & System",
+		"tier": "deep-dive",
+		"combo": ["Hold PAD 1 (EXIT)", "POWER ON"],
+		"buttons": ["PAD 1", "POWER"],
+		"action": "Power up in battery-only mode",
+		"goal": "Run from the internal battery, e.g. when connected to an iOS device with a Lightning adapter.",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+			"page": 61,
+			"quote": "This powers up the unit in battery-only mode."
+		}
+	},
+	{
+		"id": "master-tune",
+		"category": "Sync, MIDI & System",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Master tune (433–448 Hz)",
+		"goal": "Tune the whole instrument to other gear or a recording.",
+		"display": "tUnE",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 69,
+			"quote": "Sets the master tuning."
+		}
+	},
+	{
+		"id": "usb-direct-out",
+		"category": "Sync, MIDI & System",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Set the USB audio level independently",
+		"goal": "Record into a DAW at a fixed level regardless of the VOLUME knob.",
+		"display": "USb.d",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 69,
+			"quote": "Configures the volume of the signal output to USB."
+		}
+	},
+	{
+		"id": "key-velocity",
+		"category": "Sync, MIDI & System",
+		"tier": "deep-dive",
+		"combo": ["SHIFT", "PAD 15 (MENU)", "Turn TEMPO/VALUE", "PAD 2 (ENTER)"],
+		"buttons": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+		"action": "Set the keyboard pads’ velocity",
+		"goal": "Choose the fixed velocity (1–127) the keyboard pads play and record.",
+		"display": "vELo",
+		"citation": {
+			"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+			"page": 69,
+			"quote": "Sets the keyboard velocity."
 		}
 	}
 ]

@@ -5,7 +5,9 @@
 	import rawAliases from '#lib/data/aliases.json';
 	import {
 		CATEGORIES,
+		DEVICE,
 		matchesTipButton,
+		matchesTipExactly,
 		type Category,
 		type Tip,
 		type TipAliasesMap,
@@ -87,13 +89,14 @@
 			list = list.filter((t) => t.tier === selectedTier);
 		}
 
-		// 4. Hardware Faceplate button filter (AND logic across selected buttons, sorted by fewest buttons first)
+		// 4. Hardware Faceplate button filter (AND logic across selected buttons; exact matches
+		//    before generic "any pad / any knob" matches, then fewest buttons first)
 		if (activeButtons.length > 0) {
 			list = list.filter((tip) =>
 				activeButtons.every((selectedBtn) => matchesTipButton(tip.buttons, selectedBtn))
 			);
 			if (q.length === 0) {
-				list = [...list].sort((a, b) => a.buttons.length - b.buttons.length);
+				list = sortByHardwareRelevance(list);
 			}
 		}
 
@@ -142,29 +145,31 @@
 				activeButtons.every((selectedBtn) => matchesTipButton(tip.buttons, selectedBtn))
 			);
 			if (q.length === 0) {
-				list = [...list].sort((a, b) => a.buttons.length - b.buttons.length);
+				list = sortByHardwareRelevance(list);
 			}
 		}
 
 		return list;
 	});
 
-	function addStarterPack(type: 'essentials' | 'chop' | 'fx') {
-		let ids: string[] = [];
-		if (type === 'essentials') {
-			ids = tips
-				.filter((t) => t.tier === 'essential')
-				.slice(0, 12)
-				.map((t) => t.id);
-		} else if (type === 'chop') {
-			ids = tips.filter((t) => t.category === 'Sample Edit & Chop').map((t) => t.id);
-		} else if (type === 'fx') {
-			ids = tips
-				.filter((t) => t.category === 'FX & Routing')
-				.slice(0, 8)
-				.map((t) => t.id);
-		}
-		pinnedStore.addMany(ids);
+	function sortByHardwareRelevance(list: Tip[]): Tip[] {
+		const rank = (tip: Tip) => (matchesTipExactly(tip.buttons, activeButtons) ? 0 : 1);
+		return [...list].sort((a, b) => rank(a) - rank(b) || a.buttons.length - b.buttons.length);
+	}
+
+	const STARTER_PACKS = {
+		essentials: tips.filter((t) => t.tier === 'essential').slice(0, 12),
+		sequencer: tips.filter(
+			(t) => t.tier === 'essential' && (t.category === 'Sequencer' || t.category === 'Step Edit')
+		),
+		sound: tips.filter(
+			(t) =>
+				t.tier === 'essential' && (t.category === 'Sound Design' || t.category === 'FX & D-MOTION')
+		)
+	};
+
+	function addStarterPack(type: keyof typeof STARTER_PACKS) {
+		pinnedStore.addMany(STARTER_PACKS[type].map((t) => t.id));
 	}
 
 	const isGroupedByCategory = $derived(
@@ -297,7 +302,7 @@
 						onclick={() => uiStore.setViewMode('all')}
 					>
 						<Layers size={14} />
-						<span>Back to All 101 Shortcuts</span>
+						<span>Back to All {tips.length} Shortcuts</span>
 					</button>
 				</div>
 			</div>
@@ -314,8 +319,8 @@
 				id="shortcut-search"
 				type="search"
 				placeholder={isPinnedView
-					? "Search to filter or add to your sheet (e.g. 'stems', 'resample', 'vinyl sim')..."
-					: "Search shortcuts (e.g. 'stems', 'choke', 'one shot', 'tr-rec', 'dj mode')..."}
+					? "Search to filter or add to your sheet (e.g. 'arp', 'write', 'd-motion')..."
+					: "Search shortcuts (e.g. 'motion record', 'glide', 'arp', 'osc draw', 'scatter')..."}
 				bind:value={searchQuery}
 				autocomplete="off"
 			/>
@@ -380,21 +385,21 @@
 	<div class="print-sheet-header" aria-hidden="true">
 		<h1 class="print-sheet-header__title">
 			{#if isPinnedView}
-				ROLAND SP-404MKII — CUSTOM STUDIO CHEAT SHEET
+				{DEVICE.name.toUpperCase()} — CUSTOM STUDIO CHEAT SHEET
 			{:else if selectedCategory !== 'ALL'}
-				ROLAND SP-404MKII — {selectedCategory} CHEAT SHEET
+				{DEVICE.name.toUpperCase()} — {selectedCategory} CHEAT SHEET
 			{:else}
-				ROLAND SP-404MKII — MASTER WORKFLOW CHEAT SHEET
+				{DEVICE.name.toUpperCase()} — MASTER WORKFLOW CHEAT SHEET
 			{/if}
 		</h1>
 		<div class="print-sheet-header__meta">
-			<span>Firmware v5.50</span>
+			<span>Firmware v{DEVICE.firmware}</span>
 			<span>•</span>
 			<span>{filteredTips.length} Shortcuts</span>
 			<span>•</span>
-			<span>Verified Roland Hardware Spec</span>
+			<span>Verified against the {DEVICE.manualTitle}</span>
 			<span>•</span>
-			<span>frstudios.co.ke</span>
+			<span>gustavares.github.io/s1cheatsheet</span>
 		</div>
 	</div>
 
@@ -437,7 +442,7 @@
 	<!-- Workspace Split: Interactive Faceplate + Shortcut Cards (Web View) -->
 	<div class="workspace" class:workspace--with-panel={uiStore.showFaceplate}>
 		{#if uiStore.showFaceplate}
-			<aside class="workspace__panel" aria-label="SP-404MKII Hardware Controller Filter">
+			<aside class="workspace__panel" aria-label="S-1 Hardware Controller Filter">
 				<Faceplate
 					{activeButtons}
 					{selectedTip}
@@ -532,8 +537,8 @@
 						</div>
 						<h3>Your Custom Studio Sheet is Empty</h3>
 						<p>
-							Build your personal desk reference. Search any workflow above (e.g. <em>"stems"</em>,
-							<em>"resample"</em>, <em>"vinyl sim"</em>) to add shortcuts, or pick a starter kit:
+							Build your personal desk reference. Search any workflow above (e.g. <em>"arp"</em>,
+							<em>"motion record"</em>, <em>"write"</em>) to add shortcuts, or pick a starter kit:
 						</p>
 						<div class="starter-kits-row">
 							<button
@@ -542,15 +547,19 @@
 								onclick={() => addStarterPack('essentials')}
 							>
 								<Plus size={14} />
-								<span>Add 12 Essentials</span>
+								<span>Add {STARTER_PACKS.essentials.length} Essentials</span>
 							</button>
-							<button type="button" class="starter-kit-btn" onclick={() => addStarterPack('chop')}>
+							<button
+								type="button"
+								class="starter-kit-btn"
+								onclick={() => addStarterPack('sequencer')}
+							>
 								<Plus size={14} />
-								<span>Sample Edit & Chop (6)</span>
+								<span>Sequencer & Step Edit ({STARTER_PACKS.sequencer.length})</span>
 							</button>
-							<button type="button" class="starter-kit-btn" onclick={() => addStarterPack('fx')}>
+							<button type="button" class="starter-kit-btn" onclick={() => addStarterPack('sound')}>
 								<Plus size={14} />
-								<span>FX & Routing (8)</span>
+								<span>Sound & FX ({STARTER_PACKS.sound.length})</span>
 							</button>
 						</div>
 						<div class="starter-browse-row">
@@ -560,7 +569,7 @@
 								onclick={() => uiStore.setViewMode('all')}
 							>
 								<Layers size={14} />
-								<span>Browse All 101 Shortcuts</span>
+								<span>Browse All {tips.length} Shortcuts</span>
 							</button>
 						</div>
 					</div>
@@ -948,9 +957,10 @@
 		width: auto;
 	}
 
-	@media (min-width: 860px) {
+	/* The S-1 panel is landscape, so it gets a wide sticky column only on large screens */
+	@media (min-width: 1100px) {
 		.workspace--with-panel {
-			grid-template-columns: minmax(340px, 390px) minmax(0, 1fr);
+			grid-template-columns: minmax(560px, 1.15fr) minmax(0, 1fr);
 		}
 
 		.workspace__panel {
@@ -982,12 +992,6 @@
 
 		.mobile-panel-bar {
 			display: none;
-		}
-	}
-
-	@media (min-width: 1120px) {
-		.workspace--with-panel {
-			grid-template-columns: 430px minmax(0, 1fr);
 		}
 	}
 

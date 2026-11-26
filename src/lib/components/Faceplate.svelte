@@ -1,26 +1,17 @@
 <script lang="ts">
 	/**
 	 * @file Faceplate.svelte
-	 * @description Interactive Hardware Faceplate Controller & Visualizer
+	 * @description Interactive Roland S-1 front panel (SVG) & bidirectional highlighter
 	 *
-	 * This component renders the physical instrument chassis and manages the bidirectional
-	 * hardware interaction:
-	 * 1. Hardware -> Cards (Active Filter): Clicking any knob, button, bank, or pad toggles
-	 *    its ID in `activeButtons`. The cards list filters in real-time to shortcuts that use it.
-	 * 2. Card -> Hardware (Inspector Highlight): Clicking a shortcut card sets `selectedTip`.
-	 *    The faceplate lights up the exact button combination and displays the combo in the
-	 *    circular OLED display.
-	 * 3. Spatial Muscle Memory: The faceplate maintains a 1:1 physical layout across all screen
-	 *    sizes (including phone viewports), with an optional `Thumb Zoom` toggle for thumb tapping.
-	 *
-	 * Adapting for Another Hardware Sampler (e.g. SP-303 or SP-404SX):
-	 * - Update the button data arrays (`topKnobs`, `leftFx`, `rightFx`, `fnRow1`, `pads`, etc.)
-	 *   to match the physical buttons and labels of the target machine.
-	 * - Update the pad grid dimensions (e.g. 2x4 for SP-303, 3x4 for SP-404SX, 4x4 for MKII).
-	 * - Replace or restyle the circular OLED display with the target device's screen (e.g. vintage
-	 *   orange 3-digit 7-segment LED for SP-303/404SX).
+	 * 1. Hardware -> Cards (Active Filter): Clicking any knob, button, key or pad toggles its ID
+	 *    in `activeButtons`; the card list filters to shortcuts that use it.
+	 * 2. Card -> Hardware (Inspector Highlight): Clicking a shortcut card sets `selectedTip`; the
+	 *    panel lights up the exact controls and the LED display shows the code the S-1 shows.
+	 * 3. Spatial Muscle Memory: the SVG keeps the real panel geometry (positions come from
+	 *    `PANEL_CONTROLS` in device.js, measured from the panel diagram in the Owner's Manual);
+	 *    the Zoom toggle enlarges it inside a scroll area for thumb tapping on phones.
 	 */
-	import type { Tip } from '#lib/types.js';
+	import { GENERIC_CONTROLS, PANEL_CONTROLS, type PanelControl, type Tip } from '#lib/types.js';
 
 	interface Props {
 		activeButtons: string[];
@@ -41,478 +32,404 @@
 	}: Props = $props();
 
 	const highlightedButtons = $derived(selectedTip ? selectedTip.buttons : activeButtons);
-
 	const isShiftActive = $derived(highlightedButtons.includes('SHIFT'));
 	const isAnyPadActive = $derived(highlightedButtons.includes('PAD'));
-	const isDjModeActive = $derived(
-		highlightedButtons.includes('BANK D/I') && highlightedButtons.includes('BANK E/J')
-	);
+	const isAnyKnobActive = $derived(highlightedButtons.includes('KNOB'));
 
-	let isThumbZoom = $state(false);
+	let isZoomed = $state(false);
 
-	// Zone 1 (Top): 4 Rotary Knobs (VOLUME, CTRL 1, CTRL 2, CTRL 3)
-	const topKnobs = [
-		{ id: 'VOLUME', label: 'VOLUME', sub: 'MIN / MAX' },
-		{ id: 'CTRL 1', label: 'CTRL 1', sub: 'CUTOFF' },
-		{ id: 'CTRL 2', label: 'CTRL 2', sub: 'RESONANCE' },
-		{ id: 'CTRL 3', label: 'CTRL 3', sub: 'DRIVE' }
+	const knobs = PANEL_CONTROLS.filter((c) => c.kind === 'knob');
+	const rectButtons = PANEL_CONTROLS.filter((c) => c.kind === 'button');
+	const blackKeys = PANEL_CONTROLS.filter((c) => c.kind === 'key');
+	const whitePads = PANEL_CONTROLS.filter((c) => c.kind === 'pad');
+	const powerSwitch = PANEL_CONTROLS.find((c) => c.kind === 'switch');
+
+	const KNOB_RADIUS = { small: 19, medium: 25, large: 42 } as const;
+	const RING_COLOURS = { white: '#f1f1ee', green: '#4fb58f', orange: '#e0823d', dark: 'none' };
+
+	// White-pad function labels as printed under the keys (grouped labels share a bracket).
+	const PAD_GROUPS = [
+		{ label: 'OSC', from: 5, to: 6 },
+		{ label: 'ARPEGGIO', from: 8, to: 10 },
+		{ label: 'CLEAR', from: 11, to: 12 }
 	];
+	const PAD_WORDS: Record<number, string[]> = {
+		5: ['DRAW'],
+		6: ['CHOP'],
+		7: ['FILTER', 'KYBD'],
+		8: ['ON'],
+		9: ['TYPE'],
+		10: ['RATE'],
+		11: ['NOTE'],
+		12: ['MOTION']
+	};
+	const groupedPad = (n: number) => PAD_GROUPS.some((g) => n >= g.from && n <= g.to);
 
-	// Zone 2 (Upper-Mid): 6 Direct FX Buttons flanking the Circular Display
-	const leftFx = [
-		{ id: 'FILTER+DRIVE', label: 'FILTER +DRIVE', pos: 'top' },
-		{ id: 'RESONATOR', label: 'RESONATOR', pos: 'mid' },
-		{ id: 'DELAY', label: 'DELAY', pos: 'bot' }
-	];
-
-	const rightFx = [
-		{ id: 'ISOLATOR', label: 'ISOLATOR', pos: 'top' },
-		{ id: 'DJFX LOOPER', label: 'DJFX LOOPER', pos: 'mid' },
-		{ id: 'MFX', label: 'MFX', pos: 'bot' }
-	];
-
-	// Zone 3 (Middle): 3 Function Rows + VALUE (PUSH ENTER) Encoder
-	const patternSeqGroup = [
-		{ id: 'PATTERN SELECT', label: 'PATTERN SELECT', sub: 'UNDO' },
-		{ id: 'PATTERN EDIT', label: 'PATTERN EDIT', sub: 'MICROSCOPE' },
-		{ id: 'RECORD SETTING', label: 'RECORD SETTING', sub: 'SOUND GEN' }
-	];
-
-	const sampleEditGroup = [
-		{ id: 'START/END', label: 'START/ END', sub: 'CHOP' },
-		{ id: 'PITCH/SPEED', label: 'PITCH/ SPEED', sub: 'ENVELOPE' },
-		{ id: 'MARK', label: 'MARK', sub: 'SAVE EFX' }
-	];
-
-	const row2Sampling = [
-		{ id: 'DEL', label: 'DEL', sub: 'ERASE' },
-		{ id: 'REC', label: 'REC', sub: 'TR-REC' },
-		{ id: 'RESAMPLE', label: 'RESAMPLE', sub: 'MERGE' }
-	];
-
-	const row2SampleMode = [
-		{ id: 'BPM SYNC', label: 'BPM SYNC', sub: 'SYNC ALL' },
-		{ id: 'GATE', label: 'GATE', sub: 'ALL GATE' },
-		{ id: 'LOOP', label: 'LOOP', sub: 'PING-PONG' },
-		{ id: 'REVERSE', label: 'REVERSE', sub: 'PAD MUTE' },
-		{ id: 'ROLL', label: 'ROLL', sub: 'ROLL SET' }
-	];
-
-	const row3Left = [
-		{ id: 'EXIT', label: 'EXIT', sub: 'STOP ALL' },
-		{ id: 'COPY', label: 'COPY', sub: 'PROTECT' },
-		{ id: 'REMAIN', label: 'REMAIN', sub: 'LIVE MODE' }
-	];
-
-	const bankButtons = [
-		{ id: 'BANK A/F', label: 'A/F', dj: false },
-		{ id: 'BANK B/G', label: 'B/G', dj: false },
-		{ id: 'BANK C/H', label: 'C/H', dj: false },
-		{ id: 'BANK D/I', label: 'D/I', dj: true },
-		{ id: 'BANK E/J', label: 'E/J', dj: true }
-	];
-
-	// Zone 4 (Bottom): 4x4 Performance Pads + Right Vertical 4-Button Column
-	const pads = [
-		{ id: 'PAD 1', num: '1', dj: 'BEND+', shift: 'FIXED VELOCITY' },
-		{ id: 'PAD 2', num: '2', dj: 'BPM+', shift: '16 VELOCITY' },
-		{ id: 'PAD 3', num: '3', dj: 'BEND+', shift: 'CUE' },
-		{ id: 'PAD 4', num: '4', dj: 'BPM+', shift: 'CHROMATIC' },
-		{ id: 'PAD 5', num: '5', dj: 'BEND-', shift: 'EXCHANGE' },
-		{ id: 'PAD 6', num: '6', dj: 'BPM-', shift: 'INIT PARAM' },
-		{ id: 'PAD 7', num: '7', dj: 'BEND-', shift: 'PAD LINK' },
-		{ id: 'PAD 8', num: '8', dj: 'BPM-', shift: 'MUTE GROUPS' },
-		{ id: 'PAD 9', num: '9', dj: '|<<', shift: 'METRONOME' },
-		{ id: 'PAD 10', num: '10', dj: 'SYNC', shift: 'COUNT-IN' },
-		{ id: 'PAD 11', num: '11', dj: '|<<', shift: 'TAP TEMPO' },
-		{ id: 'PAD 12', num: '12', dj: 'SYNC', shift: 'GAIN' },
-		{ id: 'PAD 13', num: '13', dj: '▶/⏸', shift: 'UTILITY' },
-		{ id: 'PAD 14', num: '14', dj: 'CUE', shift: 'IMPORT/EXPORT' },
-		{ id: 'PAD 15', num: '15', dj: '▶/⏸', shift: 'PAD SETTING' },
-		{ id: 'PAD 16', num: '16', dj: 'CUE', shift: 'EFX SETTING' }
-	];
-
-	const rightPadColumn = [
-		{ id: 'BUS FX', label: 'BUS FX', sub: 'MUTE BUS' },
-		{ id: 'HOLD', label: 'HOLD', sub: 'PAUSE' },
-		{ id: 'EXT SOURCE', label: 'EXT SOURCE', sub: 'INPUT SETTING' },
-		{ id: 'SUB PAD', label: 'SUB PAD', sub: 'PROJECT' }
-	];
+	const PAD_PITCH = 84;
+	const padX = (n: number) => 116 + PAD_PITCH * (n - 1);
 
 	function isSelected(id: string): boolean {
-		if (highlightedButtons.includes(id)) return true;
-		if (id.startsWith('BANK ') && highlightedButtons.includes('BANK')) return true;
-		return false;
+		return highlightedButtons.includes(id);
 	}
+
+	function ariaLabel(c: PanelControl): string {
+		const name = c.id === c.label || /^PAD \d+$/.test(c.id) ? c.id : `${c.id} (${c.label})`;
+		const kind = c.kind === 'knob' ? ' knob' : c.kind === 'key' ? ' key' : '';
+		return `${name}${kind}${c.sub && c.kind !== 'switch' ? ` — ${c.sub}` : ''}`;
+	}
+
+	function handleKeydown(event: KeyboardEvent, id: string) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			onToggleButton(id);
+		}
+	}
+
+	const displayText = $derived.by(() => {
+		if (selectedTip) return selectedTip.display ?? `P.${selectedTip.citation.page}`;
+		return String(matchCount);
+	});
+
+	// Four 7-segment cells; a "." lights the decimal point of the preceding cell (e.g. "CLr.n").
+	const DISPLAY_CELL_X = [124, 184, 244, 304];
+	const displayCells = $derived.by(() => {
+		const cells: { ch: string; dot: boolean }[] = [];
+		for (const ch of displayText) {
+			const last = cells.at(-1);
+			if (ch === '.' && last && !last.dot) last.dot = true;
+			else cells.push({ ch, dot: false });
+		}
+		while (cells.length < 4) cells.unshift({ ch: '', dot: false });
+		return cells.slice(-4);
+	});
 </script>
 
 <section
 	class="faceplate"
 	class:faceplate--shift={isShiftActive}
-	class:faceplate--dj={isDjModeActive}
-	class:faceplate--thumb-zoom={isThumbZoom}
-	aria-label="Interactive SP-404MKII Hardware Panel"
+	aria-label="Interactive Roland S-1 front panel"
 >
 	<div class="faceplate__branding">
 		<div class="brand-identity">
 			<span class="brand-roland">Roland</span>
-			<span class="brand-model">SP-404MKII</span>
+			<span class="brand-model">S-1</span>
+			<span class="brand-tagline">Tweak Synth</span>
 		</div>
 		<button
 			type="button"
 			class="layout-mode-btn"
-			class:layout-mode-btn--active={isThumbZoom}
-			aria-pressed={isThumbZoom}
-			onclick={() => (isThumbZoom = !isThumbZoom)}
-			title={isThumbZoom
-				? 'Return to 1:1 hardware layout'
-				: 'Expand middle section for easier thumb tapping'}
+			class:layout-mode-btn--active={isZoomed}
+			aria-pressed={isZoomed}
+			onclick={() => (isZoomed = !isZoomed)}
+			title={isZoomed ? 'Fit the whole panel' : 'Enlarge the panel for easier tapping'}
 		>
-			{isThumbZoom ? '1:1 Hardware' : 'Thumbs Mode'}
+			{isZoomed ? 'Fit Panel' : 'Zoom'}
 		</button>
 	</div>
 
-	<!-- Zone 1 (Top): 4 Rotary Knobs (VOLUME, CTRL 1, CTRL 2, CTRL 3) -->
-	<div class="zone-knobs" role="group" aria-label="Top Parameter Knobs">
-		{#each topKnobs as knob (knob.id)}
+	<div class="faceplate__scroll" class:faceplate__scroll--zoomed={isZoomed}>
+		<svg
+			class="panel"
+			viewBox="0 0 1500 850"
+			role="group"
+			aria-label="S-1 controls: click to filter shortcuts"
+		>
+			<defs>
+				<radialGradient id="knobBody" cx="40%" cy="35%" r="70%">
+					<stop offset="0%" stop-color="#4a4b4f" />
+					<stop offset="100%" stop-color="#141416" />
+				</radialGradient>
+				<linearGradient id="padFace" x1="0" y1="0" x2="0" y2="1">
+					<stop offset="0%" stop-color="#fbfbfb" />
+					<stop offset="100%" stop-color="#cfd1d5" />
+				</linearGradient>
+				<filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur stdDeviation="6" result="blur" />
+					<feMerge>
+						<feMergeNode in="blur" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+			</defs>
+
+			<!-- Chassis -->
+			<rect class="chassis" x="8" y="24" width="1484" height="818" rx="46" />
+
+			<!-- Top strip: branding, charge LED, jacks (decorative) -->
+			<g aria-hidden="true">
+				<text class="silk silk--brand" x="62" y="104">Roland</text>
+				<text class="silk silk--model" x="64" y="140">S-1</text>
+				<circle cx="655" cy="97" r="6" class="led led--charge" />
+				<text class="silk silk--small" x="672" y="104">CHARGE</text>
+				{#each [868, 975, 1090, 1200] as jx (jx)}
+					<circle cx={jx} cy="97" r="22" class="jack" />
+					<circle cx={jx} cy="97" r="12" class="jack__hole" />
+				{/each}
+				<text class="silk silk--label" x="922" y="150" text-anchor="middle">IN — SYNC — OUT</text>
+				<text class="silk silk--label" x="1145" y="150" text-anchor="middle">IN — MIX — OUT</text>
+			</g>
+
+			<!-- Left zone: 7-segment display + TEMPO/VALUE + PLAY/REC -->
+			<g aria-hidden="true">
+				<rect class="zone-plate" x="62" y="178" width="282" height="378" rx="14" />
+				<rect class="display" x="92" y="203" width="244" height="122" rx="10" />
+				{#each displayCells as cell, ci (ci)}
+					<text class="display__ghost" x={DISPLAY_CELL_X[ci]} y="290" text-anchor="middle">8</text>
+					<circle class="display__dot-ghost" cx={DISPLAY_CELL_X[ci] + 27} cy="286" r="5" />
+					<text class="display__text" x={DISPLAY_CELL_X[ci]} y="290" text-anchor="middle"
+						>{cell.ch}</text
+					>
+					{#if cell.dot}
+						<circle class="display__dot" cx={DISPLAY_CELL_X[ci] + 27} cy="286" r="5" />
+					{/if}
+				{/each}
+			</g>
+
+			<!-- Section titles and printed divider lines -->
+			<g aria-hidden="true">
+				<text class="silk silk--section" x="432" y="200" text-anchor="middle">LFO</text>
+				<text class="silk silk--section" x="750" y="200" text-anchor="middle">OSCILLATOR</text>
+				<text class="silk silk--section" x="1154" y="200" text-anchor="middle">FILTER</text>
+				<text class="silk silk--section" x="1380" y="200" text-anchor="middle">EFX</text>
+				<line class="divider" x1="512" y1="210" x2="512" y2="430" />
+				<line class="divider" x1="993" y1="210" x2="993" y2="430" />
+				<line class="divider" x1="1313" y1="210" x2="1313" y2="556" />
+				<line class="divider" x1="680" y1="470" x2="680" y2="556" />
+				<line class="divider" x1="372" y1="448" x2="955" y2="448" />
+				<line class="divider" x1="1027" y1="448" x2="1300" y2="448" />
+				<text class="silk silk--section" x="991" y="457" text-anchor="middle">ENV</text>
+
+				<!-- RANGE footage marks -->
+				<text class="silk silk--tiny" x="570" y="208" text-anchor="middle">16′</text>
+				<text class="silk silk--tiny" x="615" y="208" text-anchor="middle">8′</text>
+				<text class="silk silk--tiny" x="550" y="246" text-anchor="middle">32′</text>
+				<text class="silk silk--tiny" x="636" y="246" text-anchor="middle">4′</text>
+				<text class="silk silk--tiny" x="560" y="280" text-anchor="middle">64′</text>
+				<text class="silk silk--tiny" x="625" y="280" text-anchor="middle">2′</text>
+
+				<!-- WAVE FORM positions -->
+				<path class="wave-icon" d="M 397 333 l 8 -9 l 8 9" />
+				<path class="wave-icon" d="M 452 333 v -9 h 7 v 9 h 7 v -9" />
+				<path class="wave-icon" d="M 382 360 l 12 -9 v 9 l 12 -9" />
+				<path class="wave-icon" d="M 382 388 l 12 9 v -9 l 12 9" />
+				<text class="silk silk--tiny" x="462" y="360">RND</text>
+				<text class="silk silk--tiny" x="462" y="392">NOISE</text>
+			</g>
+
+			<!-- Knobs -->
+			{#each knobs as knob (knob.id)}
+				{@const r = KNOB_RADIUS[knob.size ?? 'medium']}
+				{@const ringColour = RING_COLOURS[knob.ring ?? 'dark']}
+				<g
+					class="ctl ctl--knob"
+					class:ctl--active={isSelected(knob.id)}
+					class:ctl--any={isAnyKnobActive && !isSelected(knob.id)}
+					transform="translate({knob.x} {knob.y})"
+					role="button"
+					tabindex="0"
+					aria-pressed={isSelected(knob.id)}
+					aria-label={ariaLabel(knob)}
+					onclick={() => onToggleButton(knob.id)}
+					onkeydown={(e) => handleKeydown(e, knob.id)}
+				>
+					<circle class="ctl__hit" r={r + 16} />
+					<circle class="ctl__focus" r={r + 12} />
+					{#if ringColour !== 'none'}
+						<circle class="knob__ring" r={r + 6} style:stroke={ringColour} />
+					{/if}
+					<circle class="knob__body" {r} />
+					<line class="knob__pointer" x1="0" y1={-r + 3} x2="0" y2={-r * 0.35} />
+					{#if knob.id !== 'TEMPO/VALUE'}
+						<circle class="knob__dot" cx={-r * 0.72} cy={r + 13} r="3" />
+						<circle class="knob__dot" cx={r * 0.72} cy={r + 13} r="3" />
+					{/if}
+					{#if knob.icon === 'square'}
+						<path class="wave-icon" d="M -16 64 v -14 h 10 v 14 h 10 v -14 h 10 v 14" />
+					{:else if knob.icon === 'saw'}
+						<path class="wave-icon" d="M -14 64 l 26 -16 v 16" />
+					{:else}
+						<text
+							class="silk silk--label"
+							y={r + (knob.size === 'large' ? 26 : 40)}
+							text-anchor="middle">{knob.label}</text
+						>
+					{/if}
+				</g>
+			{/each}
+
+			<!-- Rectangular buttons: PLAY, REC, PATTERN, STEP, D-MOTION, SHIFT, HOLD -->
+			{#each rectButtons as btn (btn.id)}
+				<g
+					class="ctl ctl--button"
+					class:ctl--active={isSelected(btn.id)}
+					transform="translate({btn.x} {btn.y})"
+					role="button"
+					tabindex="0"
+					aria-pressed={isSelected(btn.id)}
+					aria-label={ariaLabel(btn)}
+					onclick={() => onToggleButton(btn.id)}
+					onkeydown={(e) => handleKeydown(e, btn.id)}
+				>
+					<rect class="ctl__hit" x="-52" y="-34" width="104" height={btn.sub ? 104 : 68} />
+					<rect class="ctl__focus" x="-48" y="-30" width="96" height="60" rx="10" />
+					<rect class="button__cap" x="-40" y="-23" width="80" height="46" rx="6" />
+					{#if btn.id === 'PLAY'}
+						<path class="button__play" d="M -9 -10 L 11 0 L -9 10 Z" />
+					{:else if btn.id === 'REC'}
+						<circle class="button__rec" r="9" />
+					{:else}
+						<text class="button__text" y="7" text-anchor="middle">{btn.label}</text>
+					{/if}
+					{#if btn.sub}
+						<text class="silk silk--sub" y="47" text-anchor="middle">{btn.sub}</text>
+					{/if}
+				</g>
+			{/each}
+
+			<!-- Rear-panel POWER switch (needed for power-on shortcuts) -->
+			{#if powerSwitch}
+				<g
+					class="ctl ctl--switch"
+					class:ctl--active={isSelected(powerSwitch.id)}
+					transform="translate({powerSwitch.x} {powerSwitch.y})"
+					role="button"
+					tabindex="0"
+					aria-pressed={isSelected(powerSwitch.id)}
+					aria-label="POWER switch (rear panel)"
+					onclick={() => onToggleButton(powerSwitch.id)}
+					onkeydown={(e) => handleKeydown(e, powerSwitch.id)}
+				>
+					<rect class="ctl__hit" x="-30" y="-14" width="150" height="30" />
+					<rect class="ctl__focus" x="-20" y="-12" width="128" height="26" rx="6" />
+					<rect class="switch__tab" x="-12" y="-8" width="24" height="20" rx="3" />
+					<text class="silk silk--tiny" x="20" y="8">POWER (rear)</text>
+				</g>
+			{/if}
+
+			<!-- Black keyboard pads (SHIFT functions printed on the keys) -->
+			{#each blackKeys as key (key.id)}
+				<g
+					class="ctl ctl--key"
+					class:ctl--active={isSelected(key.id)}
+					transform="translate({key.x} {key.y})"
+					role="button"
+					tabindex="0"
+					aria-pressed={isSelected(key.id)}
+					aria-label={ariaLabel(key)}
+					onclick={() => onToggleButton(key.id)}
+					onkeydown={(e) => handleKeydown(e, key.id)}
+				>
+					<rect class="ctl__hit" x="-38" y="-38" width="76" height="76" />
+					<rect class="ctl__focus" x="-31" y="-38" width="62" height="76" rx="8" />
+					<rect class="key__cap" x="-24" y="-32" width="48" height="64" rx="4" />
+					{#each key.label.split(' ') as word, wi (wi)}
+						<text class="key__text" y={-16 + wi * 16} text-anchor="middle">{word}</text>
+					{/each}
+					{#if key.sub}
+						<rect class="key__arrow-box" x="-12" y="8" width="24" height="16" rx="2" />
+						<text class="key__text" y="21" text-anchor="middle">{key.sub}</text>
+					{/if}
+				</g>
+			{/each}
+
+			<!-- White keyboard / step pads [1]–[16] -->
+			<g aria-hidden="true">
+				{#each PAD_GROUPS as group (group.label)}
+					{@const x1 = padX(group.from) - 34}
+					{@const x2 = padX(group.to) + 34}
+					{@const mid = (x1 + x2) / 2}
+					{@const half = group.label.length * 7 + 10}
+					<line class="pad-group" {x1} y1="764" x2={mid - half} y2="764" />
+					<line class="pad-group" x1={mid + half} y1="764" {x2} y2="764" />
+					<text class="silk silk--fn" x={mid} y="770" text-anchor="middle">{group.label}</text>
+				{/each}
+			</g>
+			{#each whitePads as pad, i (pad.id)}
+				{@const n = i + 1}
+				{@const words = PAD_WORDS[n] ?? [pad.sub ?? '']}
+				<g
+					class="ctl ctl--pad"
+					class:ctl--active={isSelected(pad.id)}
+					class:ctl--any={isAnyPadActive && !isSelected(pad.id)}
+					transform="translate({pad.x} {pad.y})"
+					role="button"
+					tabindex="0"
+					aria-pressed={isSelected(pad.id)}
+					aria-label={ariaLabel(pad)}
+					onclick={() => onToggleButton(pad.id)}
+					onkeydown={(e) => handleKeydown(e, pad.id)}
+				>
+					<rect class="ctl__hit" x="-42" y="-48" width="84" height="134" />
+					<rect class="ctl__focus" x="-36" y="-48" width="72" height="96" rx="10" />
+					<rect class="pad__cap" x="-29" y="-40" width="58" height="80" rx="6" />
+					<text class="pad__num" y="30" text-anchor="middle">{pad.label}</text>
+					{#each words as word, wi (wi)}
+						<text
+							class="silk silk--fn pad__fn"
+							y={(groupedPad(n) ? 84 : 62) + wi * 20}
+							text-anchor="middle">{word}</text
+						>
+					{/each}
+				</g>
+			{/each}
+		</svg>
+	</div>
+
+	<div class="faceplate__readout" role="status" aria-live="polite">
+		{#if selectedTip}
+			<div class="readout__main">
+				<span class="readout__combo">{selectedTip.combo.join(' + ')}</span>
+				<span class="readout__action">{selectedTip.action}</span>
+			</div>
+			<button type="button" class="readout__clear" onclick={onClearSelectedTip}>
+				Clear card preview
+			</button>
+		{:else if activeButtons.length > 0}
+			<div class="readout__main">
+				<span class="readout__combo">{activeButtons.join(' + ')}</span>
+				<span class="readout__action">
+					{matchCount}
+					{matchCount === 1 ? 'matching shortcut' : 'matching shortcuts'}
+				</span>
+			</div>
+			<button type="button" class="readout__clear" onclick={onClearButtons}>
+				Clear selection
+			</button>
+		{:else}
+			<p class="readout__hint">
+				Tap any control to filter shortcuts, or a card to light up its buttons. The display shows
+				the code the S-1 shows (or the manual page).
+			</p>
+		{/if}
+	</div>
+
+	<div class="faceplate__generic" role="group" aria-label="Generic controls">
+		{#each GENERIC_CONTROLS as generic (generic.id)}
 			<button
 				type="button"
-				class="hw-knob"
-				class:hw-knob--active={isSelected(knob.id)}
-				aria-pressed={isSelected(knob.id)}
-				onclick={() => onToggleButton(knob.id)}
+				class="generic-btn"
+				class:generic-btn--active={isSelected(generic.id)}
+				aria-pressed={isSelected(generic.id)}
+				onclick={() => onToggleButton(generic.id)}
 			>
-				<span class="hw-knob__label">{knob.label}</span>
-				<svg class="hw-knob__dial" viewBox="0 0 48 48" aria-hidden="true">
-					<circle cx="24" cy="24" r="20" class="dial-outer" />
-					<circle cx="24" cy="24" r="14" class="dial-inner" />
-					<line x1="24" y1="6" x2="24" y2="16" class="dial-pointer" />
-				</svg>
-				<span class="hw-knob__sub">{knob.sub}</span>
+				{generic.label}
 			</button>
 		{/each}
-	</div>
-
-	<!-- Zone 2 (Upper-Mid): Left FX + Circular OLED Display Bezel + Right FX -->
-	<div class="zone-fx-display">
-		<div class="fx-column fx-column--left" role="group" aria-label="Left Direct FX">
-			{#each leftFx as btn (btn.id)}
-				<button
-					type="button"
-					class="hw-btn hw-btn--fx hw-btn--fx-{btn.pos}"
-					class:hw-btn--active={isSelected(btn.id)}
-					aria-pressed={isSelected(btn.id)}
-					onclick={() => onToggleButton(btn.id)}
-				>
-					<span class="hw-btn__led" aria-hidden="true"></span>
-					<span class="hw-btn__label">{btn.label}</span>
-				</button>
-			{/each}
-		</div>
-
-		<!-- Circular Bezel housing the OLED Screen -->
-		<div class="oled-bezel">
-			<div class="oled-screen" role="status" aria-live="polite">
-				<div class="oled-screen__topbar">
-					<span>{selectedTip ? 'CARD PREVIEW' : 'OLED'}</span>
-					<span>
-						{#if selectedTip}
-							{selectedTip.category.toUpperCase()}
-						{:else}
-							{matchCount} {matchCount === 1 ? 'MATCH' : 'MATCHES'}
-						{/if}
-					</span>
-				</div>
-				<div class="oled-screen__main">
-					{#if selectedTip}
-						<div class="oled-preview">
-							<div class="oled-combo">{selectedTip.combo.join(' + ')}</div>
-							<div class="oled-action">{selectedTip.action}</div>
-						</div>
-					{:else if activeButtons.length > 0}
-						<div class="oled-combo">
-							{activeButtons.join(' + ')}
-						</div>
-					{:else}
-						<div class="oled-idle">CLICK BUTTON OR CARD TO HIGHLIGHT</div>
-					{/if}
-				</div>
-				<div class="oled-screen__footer">
-					{#if selectedTip}
-						<button type="button" class="oled-clear-btn" onclick={onClearSelectedTip}>
-							Clear card preview
-						</button>
-					{:else if activeButtons.length > 0}
-						<button type="button" class="oled-clear-btn" onclick={onClearButtons}>
-							Clear selection
-						</button>
-					{:else}
-						<span>CLICK SHIFT TO REVEAL SUB-LABELS</span>
-					{/if}
-				</div>
-			</div>
-		</div>
-
-		<div class="fx-column fx-column--right" role="group" aria-label="Right Direct FX">
-			{#each rightFx as btn (btn.id)}
-				<button
-					type="button"
-					class="hw-btn hw-btn--fx hw-btn--fx-{btn.pos}"
-					class:hw-btn--active={isSelected(btn.id)}
-					aria-pressed={isSelected(btn.id)}
-					onclick={() => onToggleButton(btn.id)}
-				>
-					<span class="hw-btn__led" aria-hidden="true"></span>
-					<span class="hw-btn__label">{btn.label}</span>
-				</button>
-			{/each}
-		</div>
-	</div>
-
-	<!-- Zone 3 (Middle): 3 Function Rows + VALUE (PUSH ENTER) Encoder -->
-	<div class="zone-functions">
-		<!-- Row 1: PATTERN SEQUENCER (3) + SAMPLE EDIT (3) + VALUE Encoder (1) -->
-		<div class="fn-row-1">
-			<div class="fn-group">
-				<span class="fn-group__title">PATTERN SEQUENCER</span>
-				<div class="fn-group__grid fn-group__grid--3">
-					{#each patternSeqGroup as btn (btn.id)}
-						<button
-							type="button"
-							class="hw-btn hw-btn--rect"
-							class:hw-btn--active={isSelected(btn.id)}
-							aria-pressed={isSelected(btn.id)}
-							onclick={() => onToggleButton(btn.id)}
-						>
-							<span class="hw-btn__label">{btn.label}</span>
-							{#if btn.sub}
-								<span class="hw-btn__shift">{btn.sub}</span>
-							{/if}
-						</button>
-					{/each}
-				</div>
-			</div>
-
-			<div class="fn-group">
-				<span class="fn-group__title">SAMPLE EDIT</span>
-				<div class="fn-group__grid fn-group__grid--3">
-					{#each sampleEditGroup as btn (btn.id)}
-						<button
-							type="button"
-							class="hw-btn hw-btn--rect"
-							class:hw-btn--active={isSelected(btn.id)}
-							aria-pressed={isSelected(btn.id)}
-							onclick={() => onToggleButton(btn.id)}
-						>
-							<span class="hw-btn__label">{btn.label}</span>
-							{#if btn.sub}
-								<span class="hw-btn__shift">{btn.sub}</span>
-							{/if}
-						</button>
-					{/each}
-				</div>
-			</div>
-
-			<!-- #6 VALUE (PUSH ENTER) Rotary Encoder on the right of Row 1 -->
-			<div class="fn-group fn-group--encoder">
-				<span class="fn-group__title">PUSH ENTER</span>
-				<button
-					type="button"
-					class="hw-knob hw-knob--encoder"
-					class:hw-knob--active={isSelected('VALUE')}
-					aria-pressed={isSelected('VALUE')}
-					onclick={() => onToggleButton('VALUE')}
-				>
-					<svg class="hw-knob__dial hw-knob__dial--encoder" viewBox="0 0 48 48" aria-hidden="true">
-						<circle cx="24" cy="24" r="20" class="dial-outer" />
-						<circle cx="24" cy="24" r="14" class="dial-inner" />
-						<circle cx="24" cy="24" r="4.5" class="dial-center" />
-					</svg>
-					<span class="hw-knob__label">VALUE</span>
-				</button>
-			</div>
-		</div>
-
-		<!-- Row 2: DEL + SAMPLING (REC, RESAMPLE) | BPM SYNC, GATE, LOOP, REVERSE, ROLL (SAMPLE MODE) -->
-		<div class="fn-row-2">
-			<div class="fn-group">
-				<div class="fn-group__title-split" aria-hidden="true">
-					<span></span>
-					<span class="fn-group__title fn-group__title--sampling">SAMPLING</span>
-				</div>
-				<div class="fn-group__grid fn-group__grid--3">
-					{#each row2Sampling as btn (btn.id)}
-						<button
-							type="button"
-							class="hw-btn hw-btn--rect"
-							class:hw-btn--active={isSelected(btn.id)}
-							aria-pressed={isSelected(btn.id)}
-							onclick={() => onToggleButton(btn.id)}
-						>
-							<span class="hw-btn__label">{btn.label}</span>
-							{#if btn.sub}
-								<span class="hw-btn__shift">{btn.sub}</span>
-							{/if}
-						</button>
-					{/each}
-				</div>
-			</div>
-
-			<div class="fn-group">
-				<span class="fn-group__title fn-group__title--right">SAMPLE MODE</span>
-				<div class="fn-group__grid fn-group__grid--5">
-					{#each row2SampleMode as btn (btn.id)}
-						<button
-							type="button"
-							class="hw-btn hw-btn--rect"
-							class:hw-btn--active={isSelected(btn.id)}
-							aria-pressed={isSelected(btn.id)}
-							onclick={() => onToggleButton(btn.id)}
-						>
-							<span class="hw-btn__label">{btn.label}</span>
-							{#if btn.sub}
-								<span class="hw-btn__shift">{btn.sub}</span>
-							{/if}
-						</button>
-					{/each}
-				</div>
-			</div>
-		</div>
-
-		<!-- Row 3: EXIT, COPY, REMAIN | BANK (A/F, B/G, C/H, D/I, E/J) | SHIFT -->
-		<div class="fn-row-3">
-			<div class="fn-group">
-				<span class="fn-group__title" aria-hidden="true">&nbsp;</span>
-				<div class="fn-group__grid fn-group__grid--3">
-					{#each row3Left as btn (btn.id)}
-						<button
-							type="button"
-							class="hw-btn hw-btn--rect"
-							class:hw-btn--active={isSelected(btn.id)}
-							aria-pressed={isSelected(btn.id)}
-							onclick={() => onToggleButton(btn.id)}
-						>
-							<span class="hw-btn__label">{btn.label}</span>
-							{#if btn.sub}
-								<span class="hw-btn__shift">{btn.sub}</span>
-							{/if}
-						</button>
-					{/each}
-				</div>
-			</div>
-
-			<div class="fn-group">
-				<div class="fn-group__title-bank">
-					<span class="fn-group__title">BANK</span>
-					<span class="fn-group__dj-tag" class:fn-group__dj-tag--active={isDjModeActive}>
-						┌─ DJ (D/I + E/J) ─┐
-					</span>
-				</div>
-				<div class="fn-group__grid fn-group__grid--6">
-					{#each bankButtons as bank (bank.id)}
-						<button
-							type="button"
-							class="hw-btn hw-btn--rect hw-btn--bank"
-							class:hw-btn--active={isSelected(bank.id)}
-							aria-pressed={isSelected(bank.id)}
-							aria-label="Bank {bank.label}"
-							onclick={() => onToggleButton(bank.id)}
-						>
-							<span class="hw-btn__label">{bank.label}</span>
-							<span class="hw-btn__shift">VOL</span>
-						</button>
-					{/each}
-
-					<button
-						type="button"
-						class="hw-btn hw-btn--rect hw-btn--shift-key"
-						class:hw-btn--active={isSelected('SHIFT')}
-						aria-pressed={isSelected('SHIFT')}
-						onclick={() => onToggleButton('SHIFT')}
-					>
-						<span class="hw-btn__label">SHIFT</span>
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Zone 4 (Bottom): 4x4 Performance Pads + Right Vertical Column (BUS FX, HOLD, EXT SOURCE, SUB PAD) -->
-	<div class="zone-bottom-header">
-		<div class="dj-channel-brackets" aria-hidden="true">
-			<span class="dj-bracket" class:dj-bracket--active={isDjModeActive}>┌──── CH1 ────┐</span>
-			<span class="dj-bracket" class:dj-bracket--active={isDjModeActive}>┌──── CH2 ────┐</span>
-		</div>
-		<button
-			type="button"
-			class="any-pad-btn"
-			class:any-pad-btn--active={isSelected('PAD')}
-			aria-pressed={isSelected('PAD')}
-			onclick={() => onToggleButton('PAD')}
-		>
-			Any [PAD]
-		</button>
-	</div>
-
-	<div class="zone-bottom-matrix">
-		<!-- Left: 4x4 Performance Pads [1]–[16] -->
-		<div class="zone-pads" role="group" aria-label="Performance Pads 1 to 16">
-			{#each pads as pad (pad.id)}
-				<button
-					type="button"
-					class="hw-pad"
-					class:hw-pad--active={isSelected(pad.id)}
-					class:hw-pad--any-active={isAnyPadActive && !isSelected(pad.id)}
-					aria-pressed={isSelected(pad.id)}
-					onclick={() => onToggleButton(pad.id)}
-				>
-					<div class="hw-pad__top">
-						<span class="hw-pad__num">{pad.num}</span>
-						<span class="hw-pad__dj">{pad.dj}</span>
-					</div>
-					<span class="hw-pad__shift">{pad.shift}</span>
-				</button>
-			{/each}
-		</div>
-
-		<!-- Right Vertical Column: BUS FX, HOLD, EXT SOURCE, SUB PAD -->
-		<div class="zone-pad-side-col" role="group" aria-label="Bus FX, Hold, Ext Source, and Sub Pad">
-			{#each rightPadColumn as btn (btn.id)}
-				<button
-					type="button"
-					class="hw-btn hw-btn--side"
-					class:hw-btn--active={isSelected(btn.id)}
-					aria-pressed={isSelected(btn.id)}
-					onclick={() => onToggleButton(btn.id)}
-				>
-					<span class="hw-btn__label">{btn.label}</span>
-					<span class="hw-btn__shift">{btn.sub}</span>
-				</button>
-			{/each}
-		</div>
 	</div>
 </section>
 
 <style>
 	.faceplate {
-		container-type: inline-size;
-		container-name: faceplate;
 		inline-size: 100%;
 		display: flex;
 		flex-direction: column;
-		gap: clamp(0.45rem, 1.8vw, 0.65rem);
-		padding: clamp(0.45rem, 2.2vw, 1rem);
+		gap: 0.55rem;
+		padding: clamp(0.45rem, 2.2vw, 0.9rem);
 		background: #13161c;
 		border: 1px solid #262b36;
 		border-radius: 0.85rem;
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 		user-select: none;
-	}
-
-	@supports (font-size: 1cqi) {
-		.faceplate {
-			padding: clamp(0.42rem, 2.4cqi, 1rem);
-		}
 	}
 
 	.faceplate__branding {
@@ -546,9 +463,15 @@
 		color: #e2e8f0;
 	}
 
+	.brand-tagline {
+		font-size: 0.68rem;
+		font-weight: 600;
+		color: #64748b;
+	}
+
 	.layout-mode-btn {
-		padding: 0.16rem 0.5rem;
-		font-size: 0.56rem;
+		padding: 0.16rem 0.6rem;
+		font-size: 0.62rem;
 		font-weight: 700;
 		color: #94a3b8;
 		background: #1a1e26;
@@ -557,836 +480,430 @@
 		cursor: pointer;
 		margin: 0;
 		line-height: 1.2;
-		transition:
-			color 0.12s ease,
-			border-color 0.12s ease,
-			background-color 0.12s ease;
 	}
 
-	.layout-mode-btn:hover:not(:disabled) {
+	.layout-mode-btn:hover {
 		color: #e2e8f0;
-		border-color: #64748b;
+		border-color: #475569;
 	}
 
 	.layout-mode-btn--active {
-		background: rgba(234, 88, 12, 0.18);
 		color: #fdba74;
-		border-color: #f97316;
+		border-color: #ea580c;
+		background: rgba(234, 88, 12, 0.12);
 	}
 
-	/* Zone 1 (Top): 4 Knobs (VOLUME, CTRL 1, CTRL 2, CTRL 3) */
-	.zone-knobs {
-		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 0.35rem;
-		padding: 0.4rem 0.45rem;
-		background: #0f1116;
-		border-radius: 0.5rem;
-		border: 1px solid #1e222b;
+	.faceplate__scroll {
+		inline-size: 100%;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		border-radius: 0.6rem;
 	}
 
-	.hw-knob {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.12rem;
-		padding: 0.25rem 0.15rem;
-		background: transparent;
-		border: 1px solid transparent;
-		border-radius: 0.45rem;
-		cursor: pointer;
-		margin: 0;
-		color: #cbd5e1;
-		min-inline-size: 0;
+	.panel {
+		display: block;
+		inline-size: 100%;
+		block-size: auto;
 	}
 
-	.hw-knob:hover:not(:disabled) {
-		background: #1a1e26;
-		border-color: #363e4d;
+	.faceplate__scroll--zoomed .panel {
+		inline-size: max(100%, 1100px);
 	}
 
-	.hw-knob--active {
-		background: rgba(234, 88, 12, 0.18);
-		border-color: #f97316;
-		color: #ffffff;
+	/* Static panel artwork */
+	.chassis {
+		fill: #2a2b2e;
+		stroke: #3c3e43;
+		stroke-width: 3;
 	}
 
-	.hw-knob__dial {
-		width: clamp(1.85rem, 5.5vw, 2.25rem);
-		height: clamp(1.85rem, 5.5vw, 2.25rem);
+	.zone-plate {
+		fill: #232427;
 	}
 
-	.hw-knob__dial--encoder {
-		width: clamp(1.75rem, 5vw, 2.1rem);
-		height: clamp(1.75rem, 5vw, 2.1rem);
+	.silk {
+		fill: #e7e7e4;
+		font-family:
+			system-ui,
+			-apple-system,
+			'Segoe UI',
+			sans-serif;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		pointer-events: none;
 	}
 
-	@supports (font-size: 1cqi) {
-		.hw-knob__dial {
-			width: clamp(1.85rem, 5.8cqi, 2.25rem);
-			height: clamp(1.85rem, 5.8cqi, 2.25rem);
-		}
-
-		.hw-knob__dial--encoder {
-			width: clamp(1.75rem, 5.2cqi, 2.1rem);
-			height: clamp(1.75rem, 5.2cqi, 2.1rem);
-		}
+	.silk--brand {
+		font-size: 44px;
+		font-weight: 800;
+		letter-spacing: 0.02em;
 	}
 
-	.dial-outer {
-		fill: #1b1f28;
-		stroke: #475569;
-		stroke-width: 2;
+	.silk--model {
+		font-size: 24px;
 	}
 
-	.hw-knob--encoder .dial-outer {
-		stroke: #64748b;
-		stroke-dasharray: 3 2;
+	.silk--section {
+		font-size: 24px;
 	}
 
-	.hw-knob--active .dial-outer {
-		stroke: #f97316;
-		fill: #2c1d11;
+	.silk--label {
+		font-size: 21px;
 	}
 
-	.dial-inner {
-		fill: #101318;
-		stroke: #2e3644;
-		stroke-width: 1.5;
+	.silk--sub {
+		font-size: 17px;
+		fill: #c9cbcf;
 	}
 
-	.dial-pointer {
-		stroke: #e2e8f0;
-		stroke-width: 2.2;
-		stroke-linecap: round;
+	.silk--small {
+		font-size: 18px;
 	}
 
-	.dial-center {
-		fill: #94a3b8;
+	.silk--tiny {
+		font-size: 15px;
+		fill: #c9cbcf;
 	}
 
-	.hw-knob--active .dial-center {
+	.silk--fn {
+		font-size: 18px;
+		fill: #d4d5d8;
+	}
+
+	.faceplate--shift .pad__fn,
+	.faceplate--shift .key__text {
 		fill: #fdba74;
 	}
 
-	.hw-knob__label {
-		font-size: 0.62rem;
-		font-weight: 800;
-		color: inherit;
-		line-height: 1.1;
+	.divider,
+	.pad-group {
+		stroke: #9a9ca1;
+		stroke-width: 2;
 	}
 
-	.hw-knob__sub {
-		font-size: 0.5rem;
-		color: #64748b;
-		text-align: center;
-		line-height: 1.1;
+	.wave-icon {
+		fill: none;
+		stroke: #e7e7e4;
+		stroke-width: 2.5;
+		stroke-linejoin: round;
+		pointer-events: none;
 	}
 
-	/* Zone 2 (Upper-Mid): Direct FX + Circular OLED Display Bezel (1:1 Hardware Geometry by default) */
-	.zone-fx-display {
-		display: grid;
-		grid-template-columns: 1fr 1.38fr 1fr;
-		gap: clamp(0.25rem, 1.4cqi, 0.45rem);
+	.led--charge {
+		fill: #34d27a;
+	}
+
+	.jack {
+		fill: #19191b;
+		stroke: #4b4d52;
+		stroke-width: 3;
+	}
+
+	.jack__hole {
+		fill: #050505;
+	}
+
+	.display {
+		fill: #0b0b0c;
+		stroke: #3a3b3f;
+		stroke-width: 2;
+	}
+
+	.display__ghost,
+	.display__text {
+		font-family: 'DSEG7 Classic', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+		font-size: 66px;
+		font-weight: 700;
+		font-style: italic;
+	}
+
+	.display__ghost,
+	.display__dot-ghost {
+		fill: rgba(255, 50, 40, 0.09);
+	}
+
+	.display__dot {
+		fill: #ff3b30;
+	}
+
+	.display__text {
+		fill: #ff3b30;
+		filter: drop-shadow(0 0 6px rgba(255, 59, 48, 0.65));
+	}
+
+	/* Interactive controls */
+	.ctl {
+		cursor: pointer;
+		outline: none;
+	}
+
+	.ctl__hit {
+		fill: transparent;
+	}
+
+	.ctl__focus {
+		fill: none;
+		stroke: #fbbf24;
+		stroke-width: 3;
+		opacity: 0;
+	}
+
+	.ctl:focus-visible .ctl__focus {
+		opacity: 1;
+	}
+
+	.knob__ring {
+		fill: none;
+		stroke-width: 6;
+	}
+
+	.knob__body {
+		fill: url(#knobBody);
+		stroke: #0c0c0d;
+		stroke-width: 2;
+		transition: stroke 0.15s ease;
+	}
+
+	.knob__pointer {
+		stroke: #f4f4f2;
+		stroke-width: 4;
+		stroke-linecap: round;
+	}
+
+	.knob__dot {
+		fill: #e7e7e4;
+	}
+
+	.ctl--knob:hover .knob__body {
+		stroke: #94a3b8;
+	}
+
+	.ctl--knob.ctl--active .knob__body {
+		stroke: #f97316;
+		stroke-width: 6;
+		filter: url(#glow);
+	}
+
+	.ctl--knob.ctl--any .knob__body {
+		stroke: #fb923c;
+		stroke-width: 3;
+		stroke-dasharray: 6 5;
+	}
+
+	.button__cap {
+		fill: #55575c;
+		stroke: #1d1e20;
+		stroke-width: 2;
+		transition:
+			fill 0.15s ease,
+			stroke 0.15s ease;
+	}
+
+	.button__text {
+		fill: #f1f1ef;
+		font-family:
+			system-ui,
+			-apple-system,
+			'Segoe UI',
+			sans-serif;
+		font-size: 17px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		pointer-events: none;
+	}
+
+	.button__play {
+		fill: #4ade80;
+	}
+
+	.button__rec {
+		fill: #ef4444;
+	}
+
+	.ctl--button:hover .button__cap,
+	.ctl--switch:hover .switch__tab {
+		stroke: #94a3b8;
+	}
+
+	.ctl--button.ctl--active .button__cap,
+	.ctl--switch.ctl--active .switch__tab {
+		fill: #ea580c;
+		stroke: #fdba74;
+		filter: url(#glow);
+	}
+
+	.switch__tab {
+		fill: #3b3d42;
+		stroke: #1d1e20;
+		stroke-width: 2;
+	}
+
+	.key__cap {
+		fill: #1c1d20;
+		stroke: #4a4c51;
+		stroke-width: 2;
+		transition:
+			fill 0.15s ease,
+			stroke 0.15s ease;
+	}
+
+	.key__text {
+		fill: #e7e7e4;
+		font-family:
+			system-ui,
+			-apple-system,
+			'Segoe UI',
+			sans-serif;
+		font-size: 14px;
+		font-weight: 700;
+		pointer-events: none;
+	}
+
+	.key__arrow-box {
+		fill: none;
+		stroke: #8b8d92;
+		stroke-width: 1.5;
+	}
+
+	.ctl--key:hover .key__cap {
+		stroke: #94a3b8;
+	}
+
+	.ctl--key.ctl--active .key__cap {
+		fill: #c2410c;
+		stroke: #fdba74;
+		filter: url(#glow);
+	}
+
+	.pad__cap {
+		fill: url(#padFace);
+		stroke: #8f9298;
+		stroke-width: 2;
+		transition:
+			fill 0.15s ease,
+			stroke 0.15s ease;
+	}
+
+	.pad__num {
+		fill: #2b2c30;
+		font-family:
+			system-ui,
+			-apple-system,
+			'Segoe UI',
+			sans-serif;
+		font-size: 18px;
+		font-weight: 700;
+		pointer-events: none;
+	}
+
+	.ctl--pad:hover .pad__cap {
+		stroke: #f8fafc;
+	}
+
+	.ctl--pad.ctl--active .pad__cap {
+		fill: #fb923c;
+		stroke: #fff7ed;
+		stroke-width: 3;
+		filter: url(#glow);
+	}
+
+	.ctl--pad.ctl--any .pad__cap {
+		stroke: #f97316;
+		stroke-width: 4;
+		stroke-dasharray: 8 6;
+	}
+
+	/* Readout + generic controls (HTML) */
+	.faceplate__readout {
+		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
+		justify-content: space-between;
+		gap: 0.4rem 0.75rem;
+		min-block-size: 2.6rem;
+		padding: 0.5rem 0.7rem;
+		background: #0b0d11;
+		border: 1px solid #252b36;
+		border-radius: 0.55rem;
 	}
 
-	.fx-column {
+	.readout__main {
 		display: flex;
 		flex-direction: column;
-		gap: clamp(0.24rem, 1.2cqi, 0.35rem);
+		gap: 0.15rem;
 		min-inline-size: 0;
 	}
 
-	.fx-column--left .hw-btn--fx-top,
-	.fx-column--left .hw-btn--fx-bot {
-		margin-inline-end: -0.15rem;
-	}
-
-	.fx-column--right .hw-btn--fx-top,
-	.fx-column--right .hw-btn--fx-bot {
-		margin-inline-start: -0.15rem;
-	}
-
-	.oled-bezel {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: clamp(0.38rem, 2cqi, 0.7rem);
-		background: #0f1117;
-		border: 1.5px solid #262b36;
-		border-radius: 999px;
-		aspect-ratio: 1.05 / 1;
-	}
-
-	.oled-screen {
-		inline-size: 100%;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		padding: 0.45rem 0.55rem;
-		background: #07090d;
-		border: 1px solid #2b3240;
-		border-radius: 0.4rem;
-		font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
-		color: #f8fafc;
-	}
-
-	.oled-screen__topbar {
-		display: flex;
-		justify-content: space-between;
-		font-size: 0.58rem;
+	.readout__combo {
+		font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+		font-size: 0.78rem;
 		font-weight: 700;
-		color: #94a3b8;
-		border-bottom: 1px solid #191e28;
-		padding-bottom: 0.16rem;
-	}
-
-	.oled-screen__main {
-		display: flex;
-		align-items: safe center;
-		justify-content: center;
-		text-align: center;
-		min-block-size: 2rem;
-		padding-block: 0.18rem;
-	}
-
-	.oled-preview {
-		display: flex;
-		flex-direction: column;
-		gap: 0.14rem;
-		align-items: center;
-	}
-
-	.oled-combo {
-		font-size: 0.7rem;
-		font-weight: 800;
 		color: #fdba74;
-		letter-spacing: 0.03em;
 		overflow-wrap: anywhere;
 	}
 
-	.oled-action {
-		font-size: 0.54rem;
-		font-weight: 600;
+	.readout__action {
+		font-size: 0.78rem;
 		color: #cbd5e1;
-		line-height: 1.25;
-		max-inline-size: 24ch;
 	}
 
-	.oled-idle {
-		font-size: 0.62rem;
-		color: #64748b;
-	}
-
-	.oled-screen__footer {
-		display: flex;
-		justify-content: center;
-		font-size: 0.54rem;
-		color: #64748b;
-		border-top: 1px solid #191e28;
-		padding-top: 0.16rem;
-	}
-
-	.oled-clear-btn {
-		padding: 0.12rem 0.45rem;
-		font-family: inherit;
-		font-size: 0.6rem;
-		font-weight: 700;
-		color: #fdba74;
-		background: rgba(234, 88, 12, 0.15);
-		border: 1px solid #ea580c;
-		border-radius: 0.2rem;
-		cursor: pointer;
+	.readout__hint {
 		margin: 0;
-		width: auto;
-	}
-
-	/* Zone 3 (Middle): 3 Function Rows + VALUE Encoder (1:1 Hardware Geometry by default) */
-	.zone-functions {
-		display: flex;
-		flex-direction: column;
-		gap: clamp(0.32rem, 1.4cqi, 0.45rem);
-		padding-top: 0.25rem;
-		border-top: 1px solid #1f2430;
-	}
-
-	.fn-row-1,
-	.fn-row-2,
-	.fn-row-3 {
-		display: grid;
-		gap: clamp(0.2rem, 1.1cqi, 0.35rem);
-		align-items: end;
-	}
-
-	.fn-row-1 {
-		grid-template-columns: 3fr 3fr 1.2fr;
-	}
-
-	.fn-row-2 {
-		grid-template-columns: 3fr 5fr;
-	}
-
-	.fn-row-3 {
-		grid-template-columns: 3fr 6fr;
-	}
-
-	.fn-group {
-		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
-		min-inline-size: 0;
-	}
-
-	.fn-group--encoder {
-		align-items: center;
-		justify-content: flex-end;
-	}
-
-	.fn-group__title {
-		font-size: 0.5rem;
-		font-weight: 700;
-		letter-spacing: 0.06em;
-		color: #64748b;
-		padding-inline: 0.1rem;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.fn-group__title--right {
-		text-align: right;
-	}
-
-	.fn-group__title-split {
-		display: grid;
-		grid-template-columns: 1fr 2fr;
-		gap: 0.3rem;
-		align-items: center;
-	}
-
-	.fn-group__title--sampling {
-		text-align: center;
-		border-bottom: 1px solid #2e3543;
-		padding-bottom: 0.05rem;
-	}
-
-	.fn-group__title-bank {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.25rem;
-	}
-
-	.fn-group__dj-tag {
-		font-size: 0.46rem;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-		color: #64748b;
-		padding-inline-end: 16%;
-	}
-
-	.fn-group__dj-tag--active {
-		color: #fdba74;
-	}
-
-	.fn-group__grid {
-		display: grid;
-		gap: clamp(0.16rem, 0.9cqi, 0.3rem);
-	}
-
-	.fn-group__grid--3 {
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-	}
-
-	.fn-group__grid--5 {
-		grid-template-columns: repeat(5, minmax(0, 1fr));
-	}
-
-	.fn-group__grid--6 {
-		grid-template-columns: repeat(6, minmax(0, 1fr));
-	}
-
-	/* Shared Hardware Button Styles (Unified quiet graphite palette) */
-	.hw-btn {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: clamp(0.18rem, 0.8cqi, 0.3rem) clamp(0.06rem, 0.5cqi, 0.18rem);
-		margin: 0;
-		background: #1c2029;
-		color: #e2e8f0;
-		border: 1px solid #2e3543;
-		border-radius: 0.32rem;
-		box-shadow: 0 2px 0 #0b0d12;
-		cursor: pointer;
-		text-align: center;
-		min-block-size: 2.15rem;
-		min-inline-size: 0;
-		transition:
-			transform 0.08s ease,
-			border-color 0.12s ease,
-			background-color 0.12s ease;
-	}
-
-	.hw-btn:hover:not(:disabled) {
-		border-color: #64748b;
-		background: #242936;
-	}
-
-	.hw-btn--fx {
-		flex-direction: row;
-		gap: clamp(0.14rem, 0.7cqi, 0.25rem);
-		min-block-size: 1.9rem;
-		border-radius: 999px;
-		padding-inline: clamp(0.22rem, 1.1cqi, 0.4rem);
-	}
-
-	.hw-btn__led {
-		width: 0.32rem;
-		height: 0.32rem;
-		border-radius: 50%;
-		background: #384152;
-		flex-shrink: 0;
-	}
-
-	.hw-btn--active .hw-btn__led {
-		background: #ffffff;
-	}
-
-	.hw-btn__label {
-		font-size: clamp(0.42rem, 1.55vw, 0.58rem);
-		font-weight: 700;
-		line-height: 1.08;
-		letter-spacing: -0.01em;
-		overflow-wrap: break-word;
-	}
-
-	@supports (font-size: 1cqi) {
-		.hw-btn__label {
-			font-size: clamp(0.41rem, 1.5cqi, 0.58rem);
-		}
-	}
-
-	/* Progressive disclosure: SHIFT sub-labels hidden until SHIFT is active or button is hovered/focused/active */
-	.hw-btn__shift {
-		display: none;
-		margin-top: 0.12rem;
-		font-size: 0.46rem;
-		font-weight: 700;
-		color: #cbd5e1;
-		padding: 0.03rem 0.15rem;
-		border-radius: 0.15rem;
-		line-height: 1.05;
-		max-inline-size: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.faceplate--shift .hw-btn__shift,
-	.hw-btn:hover .hw-btn__shift,
-	.hw-btn:focus-visible .hw-btn__shift,
-	.hw-btn--active .hw-btn__shift {
-		display: block;
-	}
-
-	.faceplate--shift .hw-btn__shift {
-		color: #fdba74;
-	}
-
-	.hw-btn--shift-key {
-		border-color: #475569;
-		color: #f8fafc;
-	}
-
-	/* Zone 4 (Bottom): 4x4 Pads + Right Vertical Column (BUS FX, HOLD, EXT SOURCE, SUB PAD) */
-	.zone-bottom-header {
-		display: grid;
-		grid-template-columns: minmax(0, 4fr) minmax(66px, 1.05fr);
-		gap: 0.45rem;
-		align-items: center;
-		padding-top: 0.25rem;
-		border-top: 1px solid #1f2430;
-	}
-
-	.dj-channel-brackets {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.38rem;
-		font-size: 0.5rem;
-		font-weight: 700;
-		color: #64748b;
-		letter-spacing: 0.04em;
-		text-align: center;
-	}
-
-	.dj-bracket--active {
-		color: #fdba74;
-	}
-
-	.any-pad-btn {
-		padding: 0.16rem 0.35rem;
-		font-size: 0.56rem;
-		font-weight: 700;
+		font-size: 0.74rem;
+		line-height: 1.4;
 		color: #94a3b8;
-		background: #1a1e26;
-		border: 1px solid #2e3543;
-		border-radius: 999px;
-		cursor: pointer;
-		margin: 0;
-		width: 100%;
-		text-align: center;
-		white-space: nowrap;
 	}
 
-	.any-pad-btn:hover:not(:disabled) {
+	.readout__clear {
+		padding: 0.25rem 0.6rem;
+		font-size: 0.7rem;
+		font-weight: 700;
 		color: #e2e8f0;
-		border-color: #64748b;
-	}
-
-	.any-pad-btn--active {
-		background: #ea580c;
-		color: #ffffff;
-		border-color: #fdba74;
-	}
-
-	.zone-bottom-matrix {
-		display: grid;
-		grid-template-columns: minmax(0, 4fr) minmax(66px, 1.05fr);
-		gap: 0.45rem;
-		align-items: stretch;
-	}
-
-	.zone-pads {
-		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 0.38rem;
-	}
-
-	.zone-pad-side-col {
-		display: grid;
-		grid-template-rows: repeat(4, minmax(0, 1fr));
-		gap: 0.38rem;
-		padding-inline-start: 0.35rem;
-		border-inline-start: 1px solid #1f2430;
-	}
-
-	.hw-btn--side {
-		block-size: 100%;
-		min-block-size: 2.7rem;
-		padding: 0.3rem 0.2rem;
-	}
-
-	.hw-pad {
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		justify-content: space-between;
-		padding: clamp(0.3rem, 1.2vw, 0.44rem);
-		margin: 0;
-		aspect-ratio: 1.15 / 1;
-		background: #1b1f27;
-		border: 1.5px solid #2e3543;
+		background: #1a1e26;
+		border: 1px solid #334155;
 		border-radius: 0.4rem;
 		cursor: pointer;
-		min-inline-size: 0;
-		transition:
-			border-color 0.12s ease,
-			background-color 0.12s ease,
-			transform 0.08s ease;
+		margin: 0;
 	}
 
-	.hw-pad:hover:not(:disabled) {
+	.readout__clear:hover {
 		border-color: #64748b;
-		background: #232833;
 	}
 
-	.hw-pad__top {
+	.faceplate__generic {
 		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 0.15rem;
-		width: 100%;
-	}
-
-	.hw-pad__num {
-		font-size: clamp(0.76rem, 2.2vw, 0.88rem);
-		font-weight: 800;
-		color: #e2e8f0;
-		line-height: 1;
-	}
-
-	/* DJ sub-labels only show when DJ mode banks are selected or pad is hovered/focused */
-	.hw-pad__dj {
-		display: none;
-		font-size: 0.45rem;
-		font-weight: 700;
-		color: #94a3b8;
-		line-height: 1;
-		white-space: nowrap;
-	}
-
-	.faceplate--dj .hw-pad__dj,
-	.hw-pad:hover .hw-pad__dj,
-	.hw-pad:focus-visible .hw-pad__dj {
-		display: inline;
-	}
-
-	/* SHIFT pad sub-labels hidden by default, shown when SHIFT is active or pad is hovered/focused/active */
-	.hw-pad__shift {
-		display: none;
-		align-self: stretch;
-		text-align: left;
-		font-size: clamp(0.45rem, 1.35vw, 0.52rem);
-		font-weight: 700;
-		color: #94a3b8;
-		letter-spacing: 0.01em;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.faceplate--shift .hw-pad__shift,
-	.hw-pad:hover .hw-pad__shift,
-	.hw-pad:focus-visible .hw-pad__shift,
-	.hw-pad--active .hw-pad__shift {
-		display: block;
-	}
-
-	.faceplate--shift .hw-pad__shift {
-		color: #fdba74;
-	}
-
-	@supports (font-size: 1cqi) {
-		.hw-pad {
-			padding: clamp(0.3rem, 1.25cqi, 0.44rem);
-		}
-
-		.hw-pad__num {
-			font-size: clamp(0.76rem, 2.2cqi, 0.88rem);
-		}
-
-		.hw-pad__shift {
-			font-size: clamp(0.45rem, 1.3cqi, 0.52rem);
-		}
-	}
-
-	/* Active/Selected State: The ONLY place bright SP-404 orange appears */
-	.hw-btn--active,
-	.hw-pad--active {
-		background: #ea580c !important;
-		color: #ffffff !important;
-		border-color: #fdba74 !important;
-		box-shadow: 0 0 10px rgba(249, 115, 22, 0.4) !important;
-		transform: translateY(1px);
-	}
-
-	.hw-btn--active .hw-btn__shift,
-	.hw-pad--active .hw-pad__shift,
-	.hw-pad--active .hw-pad__dj,
-	.hw-pad--active .hw-pad__num {
-		color: #ffffff;
-	}
-
-	/* Generic "Any [PAD]" highlight across the 4x4 grid when a tip uses 'PAD' */
-	.hw-pad--any-active {
-		background: rgba(234, 88, 12, 0.16);
-		border-color: #f97316;
-		border-style: dashed;
-		box-shadow: inset 0 0 8px rgba(249, 115, 22, 0.22);
-	}
-
-	.hw-pad--any-active .hw-pad__num {
-		color: #fdba74;
-	}
-
-	/* Optional Thumb Zoom Mode: expands FX and Middle Function rows into full-width thumb-friendly rows */
-	.faceplate--thumb-zoom .zone-fx-display {
-		grid-template-columns: 1fr;
-		gap: 0.45rem;
-	}
-
-	.faceplate--thumb-zoom .fx-column {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.35rem;
-	}
-
-	.faceplate--thumb-zoom .fx-column--left .hw-btn--fx-top,
-	.faceplate--thumb-zoom .fx-column--left .hw-btn--fx-bot,
-	.faceplate--thumb-zoom .fx-column--right .hw-btn--fx-top,
-	.faceplate--thumb-zoom .fx-column--right .hw-btn--fx-bot {
-		margin-inline: 0;
-	}
-
-	.faceplate--thumb-zoom .oled-bezel {
-		border-radius: 1rem;
-		aspect-ratio: auto;
-		padding: 0.55rem;
-	}
-
-	.faceplate--thumb-zoom .fn-row-1,
-	.faceplate--thumb-zoom .fn-row-2,
-	.faceplate--thumb-zoom .fn-row-3 {
-		grid-template-columns: 1fr;
+		flex-wrap: wrap;
 		gap: 0.4rem;
 	}
 
-	.faceplate--thumb-zoom .fn-group__grid {
-		gap: 0.32rem;
+	.generic-btn {
+		padding: 0.28rem 0.7rem;
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: #cbd5e1;
+		background: #171b22;
+		border: 1px dashed #475569;
+		border-radius: 999px;
+		cursor: pointer;
+		margin: 0;
 	}
 
-	.faceplate--thumb-zoom .hw-btn {
-		min-block-size: 2.65rem;
-		padding: 0.32rem 0.22rem;
+	.generic-btn:hover {
+		color: #fff;
+		border-color: #94a3b8;
 	}
 
-	.faceplate--thumb-zoom .hw-btn__label {
-		font-size: 0.58rem;
+	.generic-btn--active {
+		color: #fff7ed;
+		background: rgba(234, 88, 12, 0.22);
+		border: 1px solid #f97316;
 	}
 
 	@media (pointer: coarse) {
-		.hw-btn {
-			min-block-size: 2.35rem;
-		}
-
-		.hw-btn--fx {
-			min-block-size: 2.05rem;
-		}
-
-		.any-pad-btn,
-		.oled-clear-btn,
-		.layout-mode-btn {
-			min-block-size: 1.9rem;
-			padding-inline: 0.6rem;
-		}
-	}
-
-	/* Compact Vertical Viewport Modes (Laptops & Lower Screen Heights) */
-	@media (min-width: 860px) and (max-height: 880px) {
-		.faceplate:not(.faceplate--thumb-zoom) {
-			gap: 0.35rem;
-			padding: 0.45rem 0.65rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .faceplate__branding {
-			padding-bottom: 0.2rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .brand-roland {
-			font-size: 0.72rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .brand-model {
-			font-size: 0.78rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .zone-knobs {
-			padding: 0.22rem 0.35rem;
-			gap: 0.25rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-knob__dial {
-			width: 1.55rem;
-			height: 1.55rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-knob__dial--encoder {
-			width: 1.45rem;
-			height: 1.45rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .oled-bezel {
-			padding: 0.28rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .oled-screen {
-			min-height: 2.35rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .zone-fn {
-			gap: 0.28rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-btn {
-			min-block-size: 1.78rem;
-			padding: 0.12rem 0.1rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-btn--fx {
-			min-block-size: 1.62rem;
-			padding-inline: 0.25rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-btn--side {
-			min-block-size: 2.15rem;
-			padding: 0.15rem 0.1rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .zone-pads {
-			gap: 0.26rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .zone-pad-side-col {
-			gap: 0.26rem;
-			padding-inline-start: 0.25rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-pad {
-			aspect-ratio: 1.3 / 1;
-			padding: 0.24rem 0.3rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-pad__num {
-			font-size: 0.76rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-pad__shift {
-			font-size: 0.48rem;
-		}
-	}
-
-	@media (min-width: 860px) and (max-height: 760px) {
-		.faceplate:not(.faceplate--thumb-zoom) {
-			gap: 0.25rem;
-			padding: 0.35rem 0.5rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-knob__dial {
-			width: 1.35rem;
-			height: 1.35rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-knob__dial--encoder {
-			width: 1.25rem;
-			height: 1.25rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .oled-screen {
-			min-height: 2.1rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-btn {
-			min-block-size: 1.55rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-btn--fx {
-			min-block-size: 1.45rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-btn--side {
-			min-block-size: 1.85rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-pad {
-			aspect-ratio: 1.55 / 1;
-			padding: 0.16rem 0.25rem;
-		}
-
-		.faceplate:not(.faceplate--thumb-zoom) .hw-pad__num {
-			font-size: 0.7rem;
+		.generic-btn,
+		.layout-mode-btn,
+		.readout__clear {
+			min-block-size: 2.25rem;
 		}
 	}
 </style>

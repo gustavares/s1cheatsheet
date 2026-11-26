@@ -20,7 +20,16 @@
 	import { pinnedStore } from '#lib/stores/pinned.svelte.js';
 	import { uiStore } from '#lib/stores/ui.svelte.js';
 	import { pwaStore } from '#lib/stores/pwa.svelte.js';
+	import { DEVICE } from '#lib/types.js';
+	import rawTips from '#lib/data/tips.json';
 	import type { LayoutProps } from './$types';
+
+	const tipCount = rawTips.length;
+	const REPO_URL = 'https://github.com/gustavares/s1cheatsheet';
+	const UPSTREAM_URL = 'https://github.com/cntrvsy/sp404mk2cheatsheet';
+	const SITE_URL = 'https://gustavares.github.io/s1cheatsheet/';
+	const pageTitle = `${DEVICE.name} Interactive Cheat Sheet & Button Lookup`;
+	const pageDescription = `Interactive shortcut finder and clickable front-panel filter for the ${DEVICE.name} (${DEVICE.tagline}). ${tipCount} shortcuts, each verified against a verbatim quote from the official ${DEVICE.manualTitle}.`;
 
 	let { children }: LayoutProps = $props();
 
@@ -57,19 +66,20 @@
 	const jsonLd = JSON.stringify({
 		'@context': 'https://schema.org',
 		'@type': 'WebApplication',
-		name: 'Roland SP-404MKII Interactive Cheat Sheet',
-		alternateName: 'SP-404MKII Shortcuts & Button Reference',
+		name: `${DEVICE.name} Interactive Cheat Sheet`,
+		alternateName: `${DEVICE.model} Shortcuts & Button Reference`,
+		url: SITE_URL,
 		applicationCategory: 'MusicApplication',
 		operatingSystem: 'All',
 		browserRequirements: 'Requires JavaScript',
-		description:
-			'Fast interactive lookup table, 1:1 hardware faceplate filter, and desk cheat sheet builder for Roland SP-404MKII shortcuts (v5.50).',
-		author: {
-			'@type': 'Organization',
-			name: 'frstudios',
-			url: 'https://frstudios.co.ke'
+		description: pageDescription,
+		isBasedOn: {
+			'@type': 'SoftwareSourceCode',
+			name: 'sp404mk2cheatsheet',
+			codeRepository: UPSTREAM_URL,
+			author: { '@type': 'Organization', name: 'frstudios', url: 'https://frstudios.co.ke' }
 		},
-		license: 'https://github.com/cntrvsy/sp404mk2cheatsheet/blob/main/LICENSE'
+		license: `${REPO_URL}/blob/main/LICENSE`
 	});
 </script>
 
@@ -80,34 +90,25 @@
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 	<link rel="apple-touch-icon" href={asset('icon-192.png')} />
-	<title>Roland SP-404MKII Interactive Cheat Sheet & Button Lookup</title>
-	<meta
-		name="description"
-		content="Fast interactive shortcut finder and hardware button filter for Roland SP-404MKII shortcuts, hidden combos, and workflow tips. 100% verified against Roland v5.50 Reference Manual."
-	/>
+	<title>{pageTitle}</title>
+	<meta name="description" content={pageDescription} />
 	<meta
 		name="keywords"
-		content="Roland SP-404MKII, SP-404, SP-404MK2, cheat sheet, shortcuts, sampler, beatmaking, lo-fi, Roland manual, frstudios"
+		content="Roland S-1, AIRA Compact, Tweak Synth, S-1 shortcuts, cheat sheet, synthesizer, motion recording, arpeggiator, OSC DRAW, D-MOTION, Roland manual"
 	/>
-	<meta name="author" content="frstudios" />
 	<meta name="theme-color" content="#0d0f13" />
 
 	<!-- Open Graph / Facebook / Discord -->
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content="Roland SP-404MKII Interactive Cheat Sheet & Button Lookup" />
-	<meta
-		property="og:description"
-		content="Fast interactive shortcut finder and 1:1 hardware faceplate filter for Roland SP-404MKII. 101 shortcuts verified against Roland v5.50 Reference Manual."
-	/>
-	<meta property="og:site_name" content="SP-404MKII Cheat Sheet" />
+	<meta property="og:title" content={pageTitle} />
+	<meta property="og:description" content={pageDescription} />
+	<meta property="og:url" content={SITE_URL} />
+	<meta property="og:site_name" content="{DEVICE.model} Cheat Sheet" />
 
 	<!-- Twitter / X -->
 	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="Roland SP-404MKII Interactive Cheat Sheet" />
-	<meta
-		name="twitter:description"
-		content="Fast interactive shortcut finder and 1:1 hardware faceplate filter for Roland SP-404MKII. 101 shortcuts verified against Roland v5.50 Reference Manual."
-	/>
+	<meta name="twitter:title" content="{DEVICE.name} Interactive Cheat Sheet" />
+	<meta name="twitter:description" content={pageDescription} />
 
 	<!-- Structured Data -->
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -122,13 +123,13 @@
 	<div class="container header-inner">
 		<!-- Left: Instrument Identity -->
 		<div class="brand-group">
-			<a href={resolve('/')} class="brand-badge" aria-label="Roland SP-404MKII Cheat Sheet home">
-				<img src={asset('icon.svg')} alt="404" width="24" height="24" />
+			<a href={resolve('/')} class="brand-badge" aria-label="{DEVICE.name} Cheat Sheet home">
+				<img src={asset('icon.svg')} alt={DEVICE.model} width="24" height="24" />
 			</a>
 			<div class="brand-text">
 				<div class="brand-title-row">
-					<span class="brand-model">SP-404MKII</span>
-					<span class="version-tag">v5.50</span>
+					<span class="brand-model">{DEVICE.model}</span>
+					<span class="version-tag">v{DEVICE.firmware}</span>
 				</div>
 			</div>
 		</div>
@@ -146,7 +147,7 @@
 				onclick={() => uiStore.setViewMode('all')}
 			>
 				<span>All</span>
-				<span class="view-tab__count">101</span>
+				<span class="view-tab__count">{tipCount}</span>
 			</button>
 
 			<button
@@ -203,7 +204,10 @@
 	<div class="container footer-inner">
 		<div class="footer-attribution">
 			<span>
-				Made with <Heart size={14} class="heart-icon heart-icon--filled" /> by
+				Based on <a href={UPSTREAM_URL} target="_blank" rel="noopener noreferrer"
+					>sp404mk2cheatsheet</a
+				>
+				by <Heart size={14} class="heart-icon heart-icon--filled" />
 				<a href="https://frstudios.co.ke" target="_blank" rel="noopener noreferrer">frstudios</a>
 			</span>
 			<span class="footer-dot" aria-hidden="true">·</span>
@@ -211,17 +215,10 @@
 				About & AI Disclosure
 			</button>
 			<span class="footer-dot" aria-hidden="true">·</span>
-			<a
-				href="https://github.com/cntrvsy/sp404mk2cheatsheet"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="footer-link"
-			>
-				GitHub
-			</a>
+			<a href={REPO_URL} target="_blank" rel="noopener noreferrer" class="footer-link"> GitHub </a>
 			<span class="footer-dot" aria-hidden="true">·</span>
 			<a
-				href="https://github.com/cntrvsy/sp404mk2cheatsheet/blob/main/LICENSE"
+				href="{REPO_URL}/blob/main/LICENSE"
 				target="_blank"
 				rel="noopener noreferrer"
 				class="footer-link"
@@ -230,9 +227,9 @@
 			</a>
 		</div>
 		<p class="footer-disclaimer">
-			Roland and SP-404MKII are registered trademarks of Roland Corporation. This project is an
-			independent educational cheatsheet verified against the official Roland v5.50 Reference
-			Manual.
+			Roland, AIRA and S-1 are trademarks or registered trademarks of Roland Corporation. This
+			project is an independent educational cheat sheet, not affiliated with or endorsed by Roland,
+			and is verified against the official Roland {DEVICE.manualTitle}.
 		</p>
 	</div>
 </footer>
@@ -258,7 +255,7 @@
 					<Download size={20} class="pwa-modal-icon" />
 					<div>
 						<h2 id="pwa-modal-title" class="pwa-modal-title">
-							Install SP-404MKII Offline Companion
+							Install {DEVICE.model} Offline Companion
 						</h2>
 						<p class="pwa-modal-subtitle">
 							Fast, standalone studio reference that works 100% without internet
@@ -379,11 +376,17 @@
 		>
 			<div class="about-modal-header">
 				<div class="about-modal-title-group">
-					<img src={asset('icon.svg')} alt="404" width="28" height="28" class="about-modal-icon" />
+					<img
+						src={asset('icon.svg')}
+						alt={DEVICE.model}
+						width="28"
+						height="28"
+						class="about-modal-icon"
+					/>
 					<div>
 						<div class="about-modal-title-row">
-							<h2 id="about-modal-title" class="about-modal-title">SP-404MKII Companion</h2>
-							<span class="about-version-badge">v5.50</span>
+							<h2 id="about-modal-title" class="about-modal-title">{DEVICE.model} Companion</h2>
+							<span class="about-version-badge">v{DEVICE.firmware}</span>
 						</div>
 						<p class="about-modal-subtitle">Interactive Studio Reference & Cheat Sheet</p>
 					</div>
@@ -445,12 +448,15 @@
 				<div class="about-section">
 					<h3 class="about-section-heading">About This Tool</h3>
 					<p class="about-text">
-						Built for beatmakers and live performers. Preserves 1:1 hardware faceplate muscle memory
-						with 101 shortcuts strictly verified with verbatim citations against the official Roland
-						SP-404MKII Reference Manual.
+						Built for synth players and live performers. A clickable {DEVICE.name} front panel with
+						{tipCount} shortcuts, each backed by a verbatim quote and page number from the official Roland
+						{DEVICE.manualTitle}.
 					</p>
 					<p class="about-text">
-						Crafted with <Heart size={13} class="inline-heart" /> by
+						An S-1 port of
+						<a href={UPSTREAM_URL} target="_blank" rel="noopener noreferrer" class="about-link">
+							sp404mk2cheatsheet</a
+						>, the SP-404MKII cheat sheet crafted with <Heart size={13} class="inline-heart" /> by
 						<a
 							href="https://frstudios.co.ke"
 							target="_blank"
@@ -495,10 +501,11 @@
 								</a>
 							</div>
 							<p class="about-text disclosure-desc">
-								This project adheres to the <strong>0rwx</strong> open disclosure specification. AI coding
-								assistants were utilized for architecture design, document ingestion scripts, and CI validation
-								pipelines, paired with manual verification against the official Roland v5.50 Reference
-								Manual.
+								This project adheres to the <strong>0rwx</strong> open disclosure specification. The
+								original project used AI coding assistants for architecture, ingestion scripts and
+								CI validation. This S-1 port, including the tips, was produced with an AI coding
+								assistant; every tip’s quote is checked verbatim against the official Roland {DEVICE.manualTitle}
+								by the CI validator.
 							</p>
 						</div>
 					</div>
@@ -507,12 +514,7 @@
 				<!-- Links & Legal -->
 				<div class="about-footer-row">
 					<div class="about-links">
-						<a
-							href="https://github.com/cntrvsy/sp404mk2cheatsheet"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="about-sublink"
-						>
+						<a href={REPO_URL} target="_blank" rel="noopener noreferrer" class="about-sublink">
 							<svg
 								width="14"
 								height="14"
@@ -533,7 +535,7 @@
 						</a>
 						<span class="about-dot">·</span>
 						<a
-							href="https://github.com/cntrvsy/sp404mk2cheatsheet/blob/main/LICENSE"
+							href="{REPO_URL}/blob/main/LICENSE"
 							target="_blank"
 							rel="noopener noreferrer"
 							class="about-sublink"
@@ -542,8 +544,8 @@
 						</a>
 					</div>
 					<p class="about-disclaimer">
-						Roland and SP-404MKII are registered trademarks of Roland Corporation. This project is
-						an independent educational tool not affiliated with or endorsed by Roland.
+						Roland, AIRA and S-1 are trademarks or registered trademarks of Roland Corporation. This
+						project is an independent educational tool not affiliated with or endorsed by Roland.
 					</p>
 				</div>
 			</div>
