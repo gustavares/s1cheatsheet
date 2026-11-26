@@ -1,46 +1,46 @@
-# Roland SP-404MKII Interactive Cheat Sheet
+# Roland S-1 Interactive Cheat Sheet
 
-A fast, visual shortcut finder and hardware companion for the **Roland SP-404MKII** (Firmware v5.50), built with SvelteKit and TypeScript.
+A fast, visual shortcut finder and hardware companion for the **Roland S-1** (AIRA Compact Tweak Synth, firmware 1.02), built with SvelteKit and TypeScript.
 
-🔗 **Live Tool:** [SP-404MKII Cheat Sheet](https://cntrvsy.github.io/sp404mk2cheatsheet/) &nbsp;|&nbsp; <a href="https://0rwx.com/"><img src="./static/AI-W-light.svg" alt="AI Usage Disclosed via 0rwx" height="18" align="center" /></a>
+This is an S-1 port of **[sp404mk2cheatsheet](https://github.com/cntrvsy/sp404mk2cheatsheet)** by **[frstudios](https://frstudios.co.ke)** ([live](https://cntrvsy.github.io/sp404mk2cheatsheet/)), the original Roland SP-404MKII cheat sheet. Its git history is preserved here.
+
+🔗 **Live Tool:** [S-1 Cheat Sheet](https://gustavares.github.io/s1cheatsheet/)
 
 ---
 
 ## Features
 
-- **Bidirectional Hardware Highlighting:** Click knobs, pads, or buttons on the virtual faceplate to filter matching shortcuts. Click any card to preview the button combo and OLED screen state.
-- **Physical Muscle-Memory Layout:** Preserves 1:1 hardware geometry across mobile and desktop, with a thumb-zoom toggle for touch targets.
-- **Cross-Gear DAW / Slang Search:** Search using MPC, Ableton, FL Studio, or community terms (_"choke group"_, _"one shot"_, _"16 levels"_, _"lazy chop"_, _"resample bounce"_) via [`src/lib/data/aliases.json`](./src/lib/data/aliases.json).
-- **Curated Studio Sheet & PDF:** Pin go-to shortcuts into a custom sheet and export a high-density, ink-friendly 1–2 page reference table.
-- **Strict Verification:** 101 shortcuts with verbatim citations checked against the official Roland Reference Manual on every build.
+- **Bidirectional Hardware Highlighting:** Click any knob, button, black key or pad on the SVG front panel to filter shortcuts. Click a card to light up its controls and see the code the S-1's 4-digit LED display shows (e.g. `CLr.n`, `N.Prb`).
+- **Real Panel Layout:** The faceplate follows the panel diagram in the Owner's Manual: 16 keyboard/step pads, the black function keys, all 20 knobs, the buttons, the LED display and the rear POWER switch. **Zoom** enlarges it for thumbs on phones.
+- **Synth Slang Search:** Search with terms like _"motion record"_, _"chord"_, _"arp"_, _"poly"_, _"glide"_, _"LFO"_, _"OSC draw"_, _"D-Motion"_, _"scatter"_, _"random"_, _"ratchet"_ or _"swing"_ via [`src/lib/data/aliases.json`](./src/lib/data/aliases.json).
+- **Curated Studio Sheet & PDF:** Pin go-to shortcuts into a custom sheet and export an ink-friendly 1–2 page reference table.
+- **Strict Verification:** 121 shortcuts, each with a verbatim quote and page number from the official Roland S-1 Owner's Manual, checked on every build.
 
 ---
 
 ## Verification Pipeline
 
-To eliminate hearsay and firmware drift, all data is verified against the manual:
+All data is verified against the manual, not hearsay:
 
-- **Reference Corpus ([`docs/reference/roland-v550/`](./docs/reference/roland-v550/)):** Roland v5.50 manual chapters extracted with page anchors (`<!-- [Page N] -->`).
-- **Closed-Loop CI Validator ([`scripts/validate-tips.mjs`](./scripts/validate-tips.mjs)):** Runs during `npm run check` to ensure:
-  1. Tip `buttons` exactly match the hardware IDs in `combo`.
-  2. Each tip's `citation.quote` exists verbatim on the referenced manual page.
-  3. Search aliases in `aliases.json` maintain 1:1 coverage without keyword bloat.
-- **PDF Ingestion ([`scripts/ingest-pdf.mjs`](./scripts/ingest-pdf.mjs)):** Parses new manuals into chapter markdown files with auto-extracted shortcuts:
-  ```sh
-  npm run docs:ingest -- --pdf /path/to/manual.pdf --slug roland-v600 --title "Roland SP-404MKII Manual v6.00"
-  ```
+- **Source of truth:** the official [Roland S-1 Owner's Manual (Version 1.02)](https://www.roland.com/global/support/by_product/s-1/owners_manuals/), matching the latest S-1 system program (Ver 1.02). Roland publishes no separate Reference Manual for the S-1.
+- **Pinned manifest ([`docs/reference/sources.json`](./docs/reference/sources.json)):** the PDF URL, its SHA-256 and the chapter layout.
+- **Ingestion ([`scripts/ingest-pdf.mjs`](./scripts/ingest-pdf.mjs)):** `npm run docs:sync` downloads the PDF, checks the hash and extracts page-anchored markdown (`<!-- [Page N] -->`) into `docs/reference/roland-s1-v102/` using the pinned [`unpdf`](https://github.com/unjs/unpdf) (pdf.js), so every machine gets identical text. The generated text is **git-ignored**: the manual is Roland's copyrighted work, so this repo only carries the short quotes in `tips.json`. If Roland publishes a new revision, the hash check fails until the tips are re-verified.
+- **Closed-loop validator ([`scripts/validate-tips.mjs`](./scripts/validate-tips.mjs)):** runs in `npm run check` and CI to ensure:
+  1. Tip `buttons` exactly match the hardware IDs parsed from `combo`, and every ID is a control drawn on the faceplate.
+  2. Each tip's `citation.quote` exists verbatim on the cited manual page (240 characters max).
+  3. Optional `display` codes and `Ver. 1.02` tags appear on the cited page.
+  4. Search aliases in `aliases.json` keep 1:1 coverage without keyword bloat (an alias may be shared by at most 2 tips).
 
 ---
 
-## Porting to Other Samplers (SP-303, SP-404SX, etc.)
+## Porting to Other Instruments
 
-The engine is modular and can be adapted for any hardware device:
+The engine is modular and can be adapted to other hardware:
 
-1. **Ingest Manual:** Run `npm run docs:ingest -- --pdf <file.pdf> --slug <id> --title "<title>"` to generate anchored chapter markdown.
-2. **Define Hardware Types ([`src/lib/types.ts`](./src/lib/types.ts)):** Update `Category`, `CATEGORIES`, and button IDs (e.g. 8 pads for SP-303, 12 for SP-404SX).
-3. **Update Validator ([`scripts/validate-tips.mjs`](./scripts/validate-tips.mjs)):** Align `VALID_CATEGORIES` and `comboTokenToButtons()` with your machine's conventions.
-4. **Author Tips & Slang:** Populate [`src/lib/data/tips.json`](./src/lib/data/tips.json) with verbatim quotes and map colloquial terms in [`src/lib/data/aliases.json`](./src/lib/data/aliases.json).
-5. **Adapt Faceplate ([`src/lib/components/Faceplate.svelte`](./src/lib/components/Faceplate.svelte)):** Adjust the SVG layout and control arrays (`topKnobs`, `fxButtons`, `pads`) to match the hardware's front panel.
+1. **Pin the manual:** add it to [`docs/reference/sources.json`](./docs/reference/sources.json) (URL, SHA-256, chapters) and run `npm run docs:sync`, or ingest a local file with `npm run docs:ingest -- --pdf <file.pdf> --slug <id> --title "<title>"`.
+2. **Describe the hardware ([`src/lib/device.js`](./src/lib/device.js)):** `DEVICE`, `CATEGORIES`, `PANEL_CONTROLS` (IDs and panel positions) and the combo-token grammar. Both [`src/lib/types.ts`](./src/lib/types.ts) and the validator import this file.
+3. **Author tips & slang:** populate [`src/lib/data/tips.json`](./src/lib/data/tips.json) with verbatim quotes and map colloquial terms in [`src/lib/data/aliases.json`](./src/lib/data/aliases.json).
+4. **Adapt the faceplate ([`src/lib/components/Faceplate.svelte`](./src/lib/components/Faceplate.svelte)):** redraw the panel artwork; controls are rendered from `PANEL_CONTROLS`.
 
 ---
 
@@ -53,7 +53,7 @@ npm install
 # Start development server
 npm run dev
 
-# Run tip citation validator and Svelte type-checking
+# Download/extract the manual (first run needs network), validate tips, and type-check
 npm run check
 
 # Check code formatting and ESLint rules
@@ -62,6 +62,10 @@ npm run lint
 # Build static production site (./build)
 npm run build
 ```
+
+Behind an HTTPS proxy on Node 22.21+, run `NODE_USE_ENV_PROXY=1 npm run check` so the manual download uses the proxy.
+
+Pushing to `main` deploys to GitHub Pages through [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml) (Pages source: **GitHub Actions**). The base path is the repository name (`/s1cheatsheet`).
 
 ---
 
@@ -73,13 +77,13 @@ npm run build
   </a>
 </p>
 
-This project complies with the **[0rwx](https://0rwx.com/)** open AI disclosure specification. AI coding assistants were utilized for interactive architecture, citation validation tooling, and documentation formatting, paired with manual verification against the official Roland SP-404MKII v5.50 Reference Manual.
+This project complies with the **[0rwx](https://0rwx.com/)** open AI disclosure specification. The original project used AI coding assistants for architecture, citation validation tooling and documentation. This S-1 port, including the tips, the faceplate and this README, was produced with an AI coding assistant. Every tip's quote is checked verbatim against the official Roland S-1 Owner's Manual (Version 1.02) by the validator.
 
 ---
 
 ## License & Attribution
 
-- Built with ❤️ by **[frstudios](https://frstudios.co.ke)**
-- Repository: **[github.com/cntrvsy/sp404mk2cheatsheet](https://github.com/cntrvsy/sp404mk2cheatsheet)**
-- Licensed under the **[MIT License](./LICENSE)**
-- _Disclaimer:_ Roland and SP-404MKII are registered trademarks of Roland Corporation. This project is an independent educational tool.
+- Original project: **[sp404mk2cheatsheet](https://github.com/cntrvsy/sp404mk2cheatsheet)**, built with ❤️ by **[frstudios](https://frstudios.co.ke)**
+- S-1 port: **[github.com/gustavares/s1cheatsheet](https://github.com/gustavares/s1cheatsheet)**
+- Licensed under the **[MIT License](./LICENSE)** (original copyright notice retained)
+- _Disclaimer:_ Roland, AIRA and S-1 are trademarks or registered trademarks of Roland Corporation. This project is an independent educational tool, not affiliated with or endorsed by Roland. Manual excerpts are short quotations for reference; the manual itself is © Roland Corporation.
