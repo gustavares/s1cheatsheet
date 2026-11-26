@@ -15,6 +15,7 @@ This is an S-1 port of **[sp404mk2cheatsheet](https://github.com/cntrvsy/sp404mk
 - **Synth Slang Search:** Search with terms like _"motion record"_, _"chord"_, _"arp"_, _"poly"_, _"glide"_, _"LFO"_, _"OSC draw"_, _"D-Motion"_, _"scatter"_, _"random"_, _"ratchet"_ or _"swing"_ via [`src/lib/data/aliases.json`](./src/lib/data/aliases.json).
 - **Curated Studio Sheet & PDF:** Pin go-to shortcuts into a custom sheet and export an ink-friendly 1–2 page reference table.
 - **Strict Verification:** 121 shortcuts, each with a verbatim quote and page number from the official Roland S-1 Owner's Manual, checked on every build.
+- **Connect your S-1 (Web MIDI, opt-in):** in Chrome or Edge on a desktop computer, press **Connect S-1** to control an S-1 plugged in over USB. Drag a knob (or focus it and press ↑/↓) to send its CC; knob moves on the hardware rotate and light up the on-screen knobs. Controls with no MIDI CC are hatched. Nothing is requested or sent until you connect.
 
 ---
 
@@ -30,6 +31,7 @@ All data is verified against the manual, not hearsay:
   2. Each tip's `citation.quote` exists verbatim on the cited manual page (240 characters max).
   3. Optional `display` codes and `Ver. 1.02` tags appear on the cited page.
   4. Search aliases in `aliases.json` keep 1:1 coverage without keyword bloat (an alias may be shared by at most 2 tips).
+- **MIDI implementation ([`src/lib/data/midi.json`](./src/lib/data/midi.json)):** the S-1's MIDI implementation chart and control change list (manual pp. 73–74), checked by [`scripts/validate-midi.mjs`](./scripts/validate-midi.mjs): each CC entry is the verbatim line of the manual's control change list, transmit/receive flags are re-parsed from the chart, and no listed CC may be missing.
 
 ---
 

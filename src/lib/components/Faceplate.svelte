@@ -12,6 +12,9 @@
 	 *    the Zoom toggle enlarges it inside a scroll area for thumb tapping on phones.
 	 */
 	import { GENERIC_CONTROLS, PANEL_CONTROLS, type PanelControl, type Tip } from '#lib/types.js';
+	import { CCS_BY_CONTROL, KNOB_CC, MIDI_MAPPED_CONTROLS, knobAngle } from '#lib/midi.js';
+	import { midiStore } from '#lib/stores/midi.svelte.js';
+	import MidiPanel from './MidiPanel.svelte';
 
 	interface Props {
 		activeButtons: string[];
@@ -72,17 +75,120 @@
 		return highlightedButtons.includes(id);
 	}
 
+	// ── Connect S-1 (Web MIDI) mode ──────────────────────────────────────────────
+	const midiOn = $derived(midiStore.status === 'connected');
+
+	const noMidi = (id: string) => midiOn && !MIDI_MAPPED_CONTROLS.has(id);
+	const sendsCc = (id: string) => midiOn && KNOB_CC.has(id);
+	const ccValue = (id: string) => {
+		const entry = KNOB_CC.get(id);
+		return entry ? midiStore.values[entry.cc] : undefined;
+	};
+
+	function midiTitle(id: string): string {
+		const knobCc = KNOB_CC.get(id);
+		const others = (CCS_BY_CONTROL.get(id) ?? []).filter((e) => e !== knobCc);
+		if (!knobCc && others.length === 0) {
+			return 'Not controllable over MIDI (no CC in the S-1 MIDI implementation)';
+		}
+		const parts: string[] = [];
+		if (knobCc) {
+			const value = midiStore.values[knobCc.cc];
+			parts.push(
+				`CC ${knobCc.cc} · ${knobCc.parameter}${value === undefined ? '' : ` = ${value}`} — drag ↕ or press ↑/↓ to send`
+			);
+		}
+		if (others.length > 0) {
+			parts.push(
+				`Via SHIFT/menu (shown when received): ${others.map((e) => `CC ${e.cc} ${e.parameter}`).join(', ')}`
+			);
+		}
+		return parts.join('. ');
+	}
+
 	function ariaLabel(c: PanelControl): string {
 		const name = c.id === c.label || /^PAD \d+$/.test(c.id) ? c.id : `${c.id} (${c.label})`;
 		const kind = c.kind === 'knob' ? ' knob' : c.kind === 'key' ? ' key' : '';
-		return `${name}${kind}${c.sub && c.kind !== 'switch' ? ` — ${c.sub}` : ''}`;
+		const base = `${name}${kind}${c.sub && c.kind !== 'switch' ? ` — ${c.sub}` : ''}`;
+		if (!midiOn) return base;
+		const knobCc = KNOB_CC.get(c.id);
+		if (knobCc) {
+			const value = midiStore.values[knobCc.cc];
+			return `${base} — MIDI CC ${knobCc.cc}${value === undefined ? '' : `, value ${value}`}`;
+		}
+		return MIDI_MAPPED_CONTROLS.has(c.id) ? base : `${base} — not controllable over MIDI`;
 	}
+
+	let drag: { id: string; cc: number; startY: number; startValue: number; moved: boolean } | null =
+		null;
+	let suppressClick = false;
+	const DRAG_PX_FOR_FULL_RANGE = 160;
+
+	function knobPointerDown(event: PointerEvent, id: string) {
+		suppressClick = false;
+		const entry = KNOB_CC.get(id);
+		if (!midiOn || !entry || event.button !== 0) return;
+		drag = {
+			id,
+			cc: entry.cc,
+			startY: event.clientY,
+			startValue: midiStore.values[entry.cc] ?? 64,
+			moved: false
+		};
+		(event.currentTarget as Element).setPointerCapture(event.pointerId);
+	}
+
+	function knobPointerMove(event: PointerEvent) {
+		if (!drag) return;
+		const dy = drag.startY - event.clientY;
+		if (!drag.moved && Math.abs(dy) < 4) return;
+		drag.moved = true;
+		const value = Math.max(
+			0,
+			Math.min(127, Math.round(drag.startValue + (dy * 127) / DRAG_PX_FOR_FULL_RANGE))
+		);
+		if (value !== midiStore.values[drag.cc]) midiStore.sendCC(drag.cc, value);
+	}
+
+	function knobPointerEnd() {
+		if (!drag) return;
+		suppressClick = drag.moved;
+		drag = null;
+	}
+
+	function handleControlClick(id: string) {
+		if (suppressClick) {
+			suppressClick = false;
+			return;
+		}
+		onToggleButton(id);
+	}
+
+	const KNOB_KEY_STEPS: Record<string, number> = {
+		ArrowUp: 1,
+		ArrowRight: 1,
+		ArrowDown: -1,
+		ArrowLeft: -1,
+		PageUp: 10,
+		PageDown: -10
+	};
 
 	function handleKeydown(event: KeyboardEvent, id: string) {
 		if (event.key === 'Enter' || event.key === ' ') {
 			event.preventDefault();
 			onToggleButton(id);
+			return;
 		}
+		const entry = KNOB_CC.get(id);
+		if (!midiOn || !entry) return;
+		const current = midiStore.values[entry.cc] ?? 64;
+		let next: number | null = null;
+		if (event.key in KNOB_KEY_STEPS) next = current + KNOB_KEY_STEPS[event.key];
+		else if (event.key === 'Home') next = 0;
+		else if (event.key === 'End') next = 127;
+		if (next === null) return;
+		event.preventDefault();
+		midiStore.sendCC(entry.cc, Math.max(0, Math.min(127, next)));
 	}
 
 	const displayText = $derived.by(() => {
@@ -127,14 +233,26 @@
 		</button>
 	</div>
 
+	<MidiPanel />
+
 	<div class="faceplate__scroll" class:faceplate__scroll--zoomed={isZoomed}>
 		<svg
 			class="panel"
+			class:panel--midi={midiOn}
 			viewBox="0 0 1500 850"
 			role="group"
 			aria-label="S-1 controls: click to filter shortcuts"
 		>
 			<defs>
+				<pattern
+					id="noMidiHatch"
+					width="10"
+					height="10"
+					patternUnits="userSpaceOnUse"
+					patternTransform="rotate(45)"
+				>
+					<rect width="4" height="10" fill="rgba(203, 213, 225, 0.55)" />
+				</pattern>
 				<radialGradient id="knobBody" cx="40%" cy="35%" r="70%">
 					<stop offset="0%" stop-color="#4a4b4f" />
 					<stop offset="100%" stop-color="#141416" />
@@ -224,21 +342,34 @@
 					class="ctl ctl--knob"
 					class:ctl--active={isSelected(knob.id)}
 					class:ctl--any={isAnyKnobActive && !isSelected(knob.id)}
+					class:ctl--midi-cc={sendsCc(knob.id)}
+					class:ctl--no-midi={noMidi(knob.id)}
+					class:ctl--midi-flash={midiOn && midiStore.flashing[knob.id]}
 					transform="translate({knob.x} {knob.y})"
 					role="button"
 					tabindex="0"
 					aria-pressed={isSelected(knob.id)}
 					aria-label={ariaLabel(knob)}
-					onclick={() => onToggleButton(knob.id)}
+					onclick={() => handleControlClick(knob.id)}
 					onkeydown={(e) => handleKeydown(e, knob.id)}
+					onpointerdown={(e) => knobPointerDown(e, knob.id)}
+					onpointermove={knobPointerMove}
+					onpointerup={knobPointerEnd}
+					onpointercancel={knobPointerEnd}
 				>
+					{#if midiOn}<title>{midiTitle(knob.id)}</title>{/if}
 					<circle class="ctl__hit" r={r + 16} />
 					<circle class="ctl__focus" r={r + 12} />
 					{#if ringColour !== 'none'}
 						<circle class="knob__ring" r={r + 6} style:stroke={ringColour} />
 					{/if}
 					<circle class="knob__body" {r} />
-					<line class="knob__pointer" x1="0" y1={-r + 3} x2="0" y2={-r * 0.35} />
+					<g transform="rotate({midiOn ? knobAngle(ccValue(knob.id)) : 0})">
+						<line class="knob__pointer" x1="0" y1={-r + 3} x2="0" y2={-r * 0.35} />
+					</g>
+					{#if noMidi(knob.id)}
+						<circle class="no-midi-hatch" r={r + 6} />
+					{/if}
 					{#if knob.id !== 'TEMPO/VALUE'}
 						<circle class="knob__dot" cx={-r * 0.72} cy={r + 13} r="3" />
 						<circle class="knob__dot" cx={r * 0.72} cy={r + 13} r="3" />
@@ -262,14 +393,17 @@
 				<g
 					class="ctl ctl--button"
 					class:ctl--active={isSelected(btn.id)}
+					class:ctl--no-midi={noMidi(btn.id)}
+					class:ctl--midi-flash={midiOn && midiStore.flashing[btn.id]}
 					transform="translate({btn.x} {btn.y})"
 					role="button"
 					tabindex="0"
 					aria-pressed={isSelected(btn.id)}
 					aria-label={ariaLabel(btn)}
-					onclick={() => onToggleButton(btn.id)}
+					onclick={() => handleControlClick(btn.id)}
 					onkeydown={(e) => handleKeydown(e, btn.id)}
 				>
+					{#if midiOn}<title>{midiTitle(btn.id)}</title>{/if}
 					<rect class="ctl__hit" x="-52" y="-34" width="104" height={btn.sub ? 104 : 68} />
 					<rect class="ctl__focus" x="-48" y="-30" width="96" height="60" rx="10" />
 					<rect class="button__cap" x="-40" y="-23" width="80" height="46" rx="6" />
@@ -283,6 +417,9 @@
 					{#if btn.sub}
 						<text class="silk silk--sub" y="47" text-anchor="middle">{btn.sub}</text>
 					{/if}
+					{#if noMidi(btn.id)}
+						<rect class="no-midi-hatch" x="-40" y="-23" width="80" height="46" rx="6" />
+					{/if}
 				</g>
 			{/each}
 
@@ -291,14 +428,16 @@
 				<g
 					class="ctl ctl--switch"
 					class:ctl--active={isSelected(powerSwitch.id)}
+					class:ctl--no-midi={noMidi(powerSwitch.id)}
 					transform="translate({powerSwitch.x} {powerSwitch.y})"
 					role="button"
 					tabindex="0"
 					aria-pressed={isSelected(powerSwitch.id)}
-					aria-label="POWER switch (rear panel)"
-					onclick={() => onToggleButton(powerSwitch.id)}
+					aria-label="POWER switch (rear panel){midiOn ? ' — not controllable over MIDI' : ''}"
+					onclick={() => handleControlClick(powerSwitch.id)}
 					onkeydown={(e) => handleKeydown(e, powerSwitch.id)}
 				>
+					{#if midiOn}<title>{midiTitle(powerSwitch.id)}</title>{/if}
 					<rect class="ctl__hit" x="-30" y="-14" width="150" height="30" />
 					<rect class="ctl__focus" x="-20" y="-12" width="128" height="26" rx="6" />
 					<rect class="switch__tab" x="-12" y="-8" width="24" height="20" rx="3" />
@@ -311,14 +450,17 @@
 				<g
 					class="ctl ctl--key"
 					class:ctl--active={isSelected(key.id)}
+					class:ctl--no-midi={noMidi(key.id)}
+					class:ctl--midi-flash={midiOn && midiStore.flashing[key.id]}
 					transform="translate({key.x} {key.y})"
 					role="button"
 					tabindex="0"
 					aria-pressed={isSelected(key.id)}
 					aria-label={ariaLabel(key)}
-					onclick={() => onToggleButton(key.id)}
+					onclick={() => handleControlClick(key.id)}
 					onkeydown={(e) => handleKeydown(e, key.id)}
 				>
+					{#if midiOn}<title>{midiTitle(key.id)}</title>{/if}
 					<rect class="ctl__hit" x="-38" y="-38" width="76" height="76" />
 					<rect class="ctl__focus" x="-31" y="-38" width="62" height="76" rx="8" />
 					<rect class="key__cap" x="-24" y="-32" width="48" height="64" rx="4" />
@@ -328,6 +470,9 @@
 					{#if key.sub}
 						<rect class="key__arrow-box" x="-12" y="8" width="24" height="16" rx="2" />
 						<text class="key__text" y="21" text-anchor="middle">{key.sub}</text>
+					{/if}
+					{#if noMidi(key.id)}
+						<rect class="no-midi-hatch" x="-24" y="-32" width="48" height="64" rx="4" />
 					{/if}
 				</g>
 			{/each}
@@ -351,18 +496,24 @@
 					class="ctl ctl--pad"
 					class:ctl--active={isSelected(pad.id)}
 					class:ctl--any={isAnyPadActive && !isSelected(pad.id)}
+					class:ctl--no-midi={noMidi(pad.id)}
+					class:ctl--midi-flash={midiOn && midiStore.flashing[pad.id]}
 					transform="translate({pad.x} {pad.y})"
 					role="button"
 					tabindex="0"
 					aria-pressed={isSelected(pad.id)}
 					aria-label={ariaLabel(pad)}
-					onclick={() => onToggleButton(pad.id)}
+					onclick={() => handleControlClick(pad.id)}
 					onkeydown={(e) => handleKeydown(e, pad.id)}
 				>
+					{#if midiOn}<title>{midiTitle(pad.id)}</title>{/if}
 					<rect class="ctl__hit" x="-42" y="-48" width="84" height="134" />
 					<rect class="ctl__focus" x="-36" y="-48" width="72" height="96" rx="10" />
 					<rect class="pad__cap" x="-29" y="-40" width="58" height="80" rx="6" />
 					<text class="pad__num" y="30" text-anchor="middle">{pad.label}</text>
+					{#if noMidi(pad.id)}
+						<rect class="no-midi-hatch" x="-29" y="-40" width="58" height="80" rx="6" />
+					{/if}
 					{#each words as word, wi (wi)}
 						<text
 							class="silk silk--fn pad__fn"
@@ -811,6 +962,35 @@
 		stroke: #f97316;
 		stroke-width: 4;
 		stroke-dasharray: 8 6;
+	}
+
+	/* Connect S-1 (Web MIDI) mode */
+	.panel--midi .ctl--midi-cc {
+		cursor: ns-resize;
+		touch-action: none;
+	}
+
+	.ctl--midi-cc .knob__body {
+		stroke: #22d3ee;
+		stroke-width: 3;
+	}
+
+	.ctl--no-midi {
+		opacity: 0.5;
+	}
+
+	.no-midi-hatch {
+		fill: url(#noMidiHatch);
+		pointer-events: none;
+	}
+
+	.ctl--midi-flash .knob__body,
+	.ctl--midi-flash .button__cap,
+	.ctl--midi-flash .key__cap,
+	.ctl--midi-flash .pad__cap {
+		stroke: #22d3ee;
+		stroke-width: 6;
+		filter: url(#glow);
 	}
 
 	/* Readout + generic controls (HTML) */
