@@ -1,28 +1,506 @@
 {
-	"$comment": "Guided lessons (Studio → Lessons). Each step lights `controls` on the drawing, switches the Visualizer to `view` and, with a `goal`, advances by itself once the S-1 (or the drawing) reports the knob moves: every `when` condition holds (CC value min/max, 0–127) and at least `moves` CC messages for the `touch` CCs (default: the `when` CCs) arrived during the step. Steps without a goal have a Next button. `cite` is a verbatim quote from that page of the S-1 manual (checked by `npm run validate:lessons`). `setup` holds knob CCs sent by 'Set up the lesson', on top of baseSetup.",
+	"$comment": "Guided lessons (Studio → Lessons). `track` is core (take in order) or side (optional, `parent` is the core lesson it hangs off). `chapter` is the manual chapter file for the By chapter browser. Each step lights `controls`, switches the Visualizer to `view` and, with a `goal`, advances when the S-1 sends something the MIDI chart says it transmits: CC `when`/`touch`, `notes` (Note On), `program` (program change; only if txPc is On), or `realtime` start/stop. Steps without a goal are manual (a Done button). Clock is not a goal. The S-1 has no SysEx. `cite` is doc + page + section + a verbatim quote from that page (checked by `npm run validate:lessons`). `caveat` is what the manual or the chart does not say. `setup` holds knob CCs sent by Set up the lesson, on top of baseSetup.",
+	"chapters": [
+		{
+			"id": "01-panel-and-playing.md",
+			"title": "Panel Descriptions, Keyboard Pads, Patterns & Tempo"
+		},
+		{
+			"id": "02-creating-sounds.md",
+			"title": "Creating Sounds (OSC, FILTER, AMP, ENV, LFO, Controller, EFX, OSC DRAW, OSC CHOP)"
+		},
+		{
+			"id": "03-sequencer-and-motions.md",
+			"title": "Editing Notes, Performance Data & Motions; Useful Sequencer Functions"
+		},
+		{
+			"id": "04-save-copy-reload.md",
+			"title": "Saving, Copying, Initializing & Reloading Patterns"
+		},
+		{
+			"id": "05-other-useful-functions.md",
+			"title": "Arpeggio, Manual, Step Loop, Key Transpose, D-MOTION, Riser, Metronome, Master Probability, Global Delay/Reverb"
+		},
+		{
+			"id": "06-connect-reset-backup.md",
+			"title": "Connecting to a Computer, Factory Reset, Backup & Restore"
+		},
+		{
+			"id": "07-functions-menus-knobs.md",
+			"title": "Using the Functions & Menus, Knob Assignments"
+		},
+		{
+			"id": "08-specs-signal-midi.md",
+			"title": "Main Specifications, Signal Flow & MIDI Implementation"
+		}
+	],
 	"baseSetup": {
 		"13": 0,
-		"25": 0,
-		"91": 0,
-		"92": 0,
+		"19": 0,
+		"20": 127,
+		"21": 0,
 		"23": 0,
 		"24": 0,
-		"71": 0,
-		"74": 127,
-		"73": 0,
-		"75": 64,
+		"25": 0,
 		"30": 127,
+		"71": 0,
 		"72": 20,
-		"20": 127,
-		"19": 0,
-		"21": 0
+		"73": 0,
+		"74": 127,
+		"75": 64,
+		"91": 0,
+		"92": 0
 	},
 	"lessons": [
 		{
+			"id": "first-sound",
+			"track": "core",
+			"chapter": "01-panel-and-playing.md",
+			"title": "Your first sound",
+			"blurb": "Play a note, hold it, and move the keyboard up or down an octave.",
+			"steps": [
+				{
+					"title": "Play a pad",
+					"do": "Press a white keyboard pad. The S-1 transmits Note On (and not Note Off), so this step moves on when a note arrives.",
+					"listen": "A note, at whatever tone is stored in the current pattern.",
+					"look": "A repeating wave, and a pitch readout if the Visualizer can lock onto it.",
+					"controls": [
+						"PAD 1",
+						"PAD 2",
+						"PAD 3",
+						"PAD 4",
+						"PAD 5",
+						"PAD 6",
+						"PAD 7",
+						"PAD 8",
+						"PAD 9",
+						"PAD 10",
+						"PAD 11",
+						"PAD 12",
+						"PAD 13",
+						"PAD 14",
+						"PAD 15",
+						"PAD 16"
+					],
+					"view": "scope",
+					"goal": {
+						"notes": 1
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 8,
+						"section": "Playing with the keyboard pads",
+						"quote": "You can use the keyboard pads to play notes on this unit right after turning it on."
+					}
+				},
+				{
+					"title": "Hold the note",
+					"do": "Press HOLD so it lights, then tap a pad and let go. Press HOLD again to clear it.",
+					"listen": "The note stays after you lift your finger.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["HOLD", "PAD"],
+					"view": "scope",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 6,
+						"section": "[HOLD]",
+						"quote": "Turns the keyboard pad hold function on/off."
+					}
+				},
+				{
+					"title": "Shift the octave",
+					"do": "Hold SHIFT and press OCT+ or OCT−. The range is −4 to +4. Hold SHIFT and press OCT− and OCT+ together to jump back to zero (added in Ver. 1.02).",
+					"listen": "The same tone, an octave at a time.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "OCT-", "OCT+"],
+					"view": "scope",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 8,
+						"section": "Switching the octave",
+						"quote": "Hold down the [SHIFT] button and press the [OCT-] [OCT+] pads."
+					}
+				}
+			]
+		},
+		{
+			"id": "pattern-chain",
+			"track": "side",
+			"parent": "first-sound",
+			"chapter": "01-panel-and-playing.md",
+			"title": "Patterns, and chaining the next one",
+			"blurb": "A pattern is the sequence and the tone together. Pick one, and reserve the next.",
+			"steps": [
+				{
+					"title": "What a pattern is",
+					"do": "Look at the display. A dot on the right means this pattern has unsaved edits. Banks 1–4 and numbers 1–16 make 64 patterns. 1-01–1-16 are the presets.",
+					"caveat": "Nothing on the panel sends a message just for “you read the display”. Press Done.",
+					"controls": ["PATTERN"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 9,
+						"section": "What’s a pattern?",
+						"quote": "On the S-1, the performance data (sequence) in the sequencer as well as the tones (sounds) used in performance are handled together as a single set of data."
+					}
+				},
+				{
+					"title": "Choose bank and number",
+					"do": "Hold PATTERN and press pad 1–4 for the bank. Let go, then press pad 1–16 for the number. With PATTERN lit, TEMPO/VALUE also scrolls patterns. If Tx Program Change is On, the S-1 sends a program change and this step moves on.",
+					"caveat": "txPc defaults are not printed as a CC, and there is no SysEx to read the switch. If the page keeps waiting, txPc is Off — press Skip. The chart’s program-change range is 0–63, on its own channel (default 16).",
+					"controls": ["PATTERN", "PAD", "TEMPO/VALUE"],
+					"goal": { "program": true },
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 9,
+						"section": "Selecting a pattern",
+						"quote": "Hold down the [PATTERN] button and press the [1]–[4] pads to select a bank."
+					}
+				},
+				{
+					"title": "Reserve the next pattern",
+					"do": "While a pattern is playing, select another one the same way. It waits, then starts when the current pattern ends. That is the pattern chain.",
+					"listen": "The new pattern takes over on the bar, without a stop.",
+					"caveat": "The manual says the reserved pattern starts by itself. It does not say the S-1 sends a program change at that moment unless txPc is On.",
+					"controls": ["PATTERN", "PLAY", "PAD"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 9,
+						"section": "Selecting a pattern",
+						"quote": "Once the current pattern finishes playing, the next pattern you reserved automatically begins playing."
+					}
+				}
+			]
+		},
+		{
+			"id": "voices",
+			"track": "side",
+			"parent": "first-sound",
+			"chapter": "02-creating-sounds.md",
+			"title": "Mono, unison, poly and chords",
+			"blurb": "One note, a stacked unison, up to four voices, or a chord on a single pad.",
+			"setup": {},
+			"steps": [
+				{
+					"title": "Poly mode",
+					"do": "Hold SHIFT, press POLY and turn TEMPO/VALUE to PoLy. Then play a chord on the pads.",
+					"listen": "Up to four notes at once.",
+					"look": "Several sets of harmonics stack up in the spectrum.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "POLY", "TEMPO/VALUE"],
+					"view": "spectrum",
+					"goal": {
+						"touch": [80]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 24,
+						"section": "Setting the sound triggering mode (POLY)",
+						"quote": "Lets you play more than one tone at the same time (up to four voices)."
+					}
+				},
+				{
+					"title": "One-finger chords",
+					"do": "Keep turning TEMPO/VALUE to Chd, then press pad 2 (ENTER) to switch voices 2–4 on and shift their keys. Now one pad plays a chord.",
+					"listen": "A full chord from a single finger.",
+					"look": "One pad, several stacks of harmonics.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "POLY", "TEMPO/VALUE", "PAD 2"],
+					"view": "spectrum",
+					"goal": {
+						"touch": [80, 81, 82, 83, 85, 86, 87],
+						"moves": 2
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 24,
+						"section": "Chd (Chord)",
+						"quote": "Plays voices 2–4 at the same time for each note that you play, according to the parameter settings below."
+					}
+				},
+				{
+					"title": "Mono",
+					"do": "Hold SHIFT, press POLY, and turn TEMPO/VALUE until the display reads Nono. One note at a time.",
+					"listen": "A second pad replaces the first instead of stacking.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "POLY", "TEMPO/VALUE"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 24,
+						"section": "Nono (Mono)",
+						"quote": "Nono (Mono) Monophonic mode. Plays single tones."
+					}
+				},
+				{
+					"title": "Unison",
+					"do": "On that same screen, turn TEMPO/VALUE to Uni. Several voices play the one note you hold.",
+					"listen": "Thicker than mono, still a single pitch.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "POLY", "TEMPO/VALUE"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 24,
+						"section": "Uni (Unison)",
+						"quote": "Uni (Unison) Unison mode. Stacks multiple tones to play a layered note."
+					}
+				},
+				{
+					"title": "Which note wins",
+					"do": "In Mono, Unison or Chord, with ENV TRG set to LFO or Gate, open the menu (SHIFT + pad 15), choose n.Pri, and pick LASt or the low-note priority. Press pad 1 (EXIT) when you are done looking.",
+					"caveat": "Note Priority is a menu item. The control-change list has no CC for it, so the page cannot see LASt or Low.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 1"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 21,
+						"section": "Note Priority",
+						"quote": "You can use the Note Priority setting (“n.Pri” in the menu) to select between giving priority to either the last note (LASt) or the lowest note (Loľ) that you play."
+					}
+				}
+			]
+		},
+		{
+			"id": "key-transpose",
+			"track": "side",
+			"parent": "first-sound",
+			"chapter": "05-other-useful-functions.md",
+			"title": "Key transpose",
+			"blurb": "Shift the keyboard and the sequencer by up to five octaves, or grab ±12 while a pattern plays.",
+			"steps": [
+				{
+					"title": "Transpose from the step button",
+					"do": "Hold SHIFT and press STEP (KEY TRANSPOSE). Turn TEMPO/VALUE. The range is −60 to +60, half steps.",
+					"listen": "Everything, pads and the sequence, moves together.",
+					"caveat": "CC 77 TRANSPOSE SW is receive-only on the MIDI chart, so turning this on the S-1 is not something the page can hear.",
+					"controls": ["SHIFT", "STEP", "TEMPO/VALUE"],
+					"view": "scope",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 54,
+						"section": "Transposing (key transpose)",
+						"quote": "You can transpose the pitches played by the keyboard pads and the sequencer."
+					}
+				},
+				{
+					"title": "Grab a quick interval",
+					"do": "While that screen is up, hold SHIFT and press a keyboard pad. Ver. 1.02 limits that shortcut to −12…+12, which is handy while a pattern plays. The same trAn item is also in the menu.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "PAD", "TEMPO/VALUE"],
+					"view": "scope",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 54,
+						"section": "Ver. 1.02",
+						"quote": "At this time, you can also hold down the [SHIFT] button and press a keyboard pad to make this setting within a range of -12 to +12. (Ver. 1.02)"
+					}
+				}
+			]
+		},
+		{
+			"id": "battery",
+			"track": "side",
+			"parent": "first-sound",
+			"chapter": "01-panel-and-playing.md",
+			"title": "Power, charging and the battery",
+			"blurb": "What the CHARGE lamp means, how USB charging works, and the battery-only boot.",
+			"steps": [
+				{
+					"title": "Read the CHARGE lamp",
+					"do": "Look at the CHARGE indicator, not a knob. Orange is charging, green is full, blinking green and orange is a charging error. Off USB, a red lamp means the battery is low and the unit will power down within 30 minutes.",
+					"caveat": "The lamp is not MIDI. VOLUME is not in the control-change list either, so the page cannot see how loud the MIX OUT is. Press Done.",
+					"controls": ["VOLUME", "POWER"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 4,
+						"section": "CHARGE indicator",
+						"quote": "Red (lit):The remaining battery power is low. Charge the battery."
+					}
+				},
+				{
+					"title": "Charge from USB, slowly",
+					"do": "USB bus power charges the battery. Use the included cable and a 5 V, 500 mA (or higher) supply. Do not use a charge-only cable, and do not use a fast charger that puts out more than 5 V.",
+					"caveat": "You do not have to unplug anything for this step. The manual’s warning is the lesson.",
+					"controls": ["POWER"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 7,
+						"section": "USB port",
+						"quote": "Do not use a fast-charging USB power adaptor (which outputs at voltages higher than 5 V) to charge this unit, as this may cause the unit to malfunction."
+					}
+				},
+				{
+					"title": "Battery-only power-up",
+					"do": "When a phone or the MX-1 must not feed power, hold pad 1 (EXIT) while you turn POWER on. The manual calls that battery-only mode. Skip it if you are in the middle of a USB lesson — it drops the connection.",
+					"caveat": "Expected life in the specifications is about 4.5 hours, and a charge takes about 3 hours. Those figures vary, and the manual says so.",
+					"controls": ["POWER", "PAD 1"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+						"page": 61,
+						"section": "battery-only mode",
+						"quote": "While holding down pad [1] (EXIT), turn on the power."
+					}
+				}
+			]
+		},
+		{
+			"id": "usb-audio-midi",
+			"track": "side",
+			"parent": "first-sound",
+			"chapter": "06-connect-reset-backup.md",
+			"title": "USB audio and MIDI",
+			"blurb": "One Type-C port carries audio and MIDI. No driver. No hub. No charge-only cable.",
+			"steps": [
+				{
+					"title": "Plug in",
+					"do": "Connect the S-1’s USB Type-C port to the computer with a data cable, not a charge-only cable, and not through a hub. The manual says no driver is required: USB Audio Device Class 2.0. Android is not guaranteed.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["POWER"],
+					"view": "scope",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+						"page": 61,
+						"section": "Connecting to a computer or mobile device",
+						"quote": "You can transmit and receive audio and MIDI data by connecting a USB cable from your computer or mobile device (smartphone or tablet) to this unit."
+					}
+				},
+				{
+					"title": "Let the page hear a note",
+					"do": "Press Connect S-1 above the drawing if you have not, then play a pad. A Note On on the synth channel (default 3) is the proof the USB MIDI path is alive.",
+					"listen": "The note, and the step advancing by itself.",
+					"caveat": "USB audio is separate. The menu item USb.d (USB Direct Out) sets that level, or follows VOLUME when it is OFF. USb.d is not a control change.",
+					"controls": [
+						"PAD 1",
+						"PAD 2",
+						"PAD 3",
+						"PAD 4",
+						"PAD 5",
+						"PAD 6",
+						"PAD 7",
+						"PAD 8",
+						"PAD 9",
+						"PAD 10",
+						"PAD 11",
+						"PAD 12",
+						"PAD 13",
+						"PAD 14",
+						"PAD 15",
+						"PAD 16"
+					],
+					"view": "scope",
+					"goal": {
+						"notes": 1
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+						"page": 73,
+						"section": "Note On",
+						"quote": "Velocity Note On Note Off"
+					}
+				},
+				{
+					"title": "AIRA LINK, if you use an MX-1",
+					"do": "Leave A.Lnk OFF unless you are connecting an AIRA LINK device such as the MX-1. The manual says the change takes effect after you power off and on. Press pad 1 (EXIT) to leave the menu without changing it.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 1"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 69,
+						"section": "AIRA Link",
+						"quote": "Set this to “On” when connecting a device via USB that is compatible with AIRA LINK, such as the MX-1."
+					}
+				}
+			]
+		},
+		{
+			"id": "firmware",
+			"track": "side",
+			"parent": "first-sound",
+			"chapter": "08-specs-signal-midi.md",
+			"title": "This manual is firmware 1.02",
+			"blurb": "The book and the MIDI chart are Version 1.02. The Ver. 1.02 lines in the book are the steps. The update-history page is not.",
+			"steps": [
+				{
+					"title": "The chart’s date",
+					"do": "The MIDI implementation chart in the back of the manual is dated 18 Apr 2023 and marked Version 1.02. That is the firmware this cheat sheet is checked against.",
+					"caveat": "Roland’s system-program page tells you to hold STEP and turn the power on to see the installed version. That check is not written in the owner’s manual, so it is not a step here. The same page’s bug-fix list (USB MIDI output, MX-1 AIRA Link, triplet names, probability with sub-steps, and others) is not a procedure in the book either.",
+					"controls": ["STEP", "POWER"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+						"page": 73,
+						"section": "Version 1.02",
+						"quote": "Date: Apr. 18, 2023"
+					}
+				},
+				{
+					"title": "Where the new lines are",
+					"do": "When the manual added something in 1.02 it marks the line Ver. 1.02. You already meet some of them in other lessons: octave reset, transpose-by-pad, arp on/off by tapping the pad, the riser SHIFT-release, metronome reset, and LFO Sync (CC 106). This step is only the map.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "OCT-", "OCT+"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 8,
+						"section": "Ver. 1.02",
+						"quote": "By holding down the [SHIFT] button and pressing the [OCT-] pad and the [OCT+] pad, you can reset the octave setting (to zero). (Ver. 1.02)"
+					}
+				}
+			]
+		},
+		{
+			"id": "specs",
+			"track": "side",
+			"parent": "first-sound",
+			"chapter": "08-specs-signal-midi.md",
+			"title": "What the specification page actually says",
+			"blurb": "Four voices, 64 patterns, 64 steps, three effects, and a signal-flow figure with no sentences.",
+			"steps": [
+				{
+					"title": "The numbers",
+					"do": "The specification page is the short list: 4-voice polyphony, 64 user patterns, a 64-step sequencer, effects DELAY, REVERB and CHORUS, a 4-character display, and the jacks (SYNC, MIX/phones, MIDI, USB Type-C for audio and MIDI).",
+					"caveat": "Page 72 is the signal-flow figure. The text extract is only the heading “Signal flow”, so this lesson does not describe a routing the manual’s words don’t give.",
+					"controls": ["PAD"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+						"page": 71,
+						"section": "Main Specifications",
+						"quote": "Maximum Polyphony 4 voices"
+					}
+				},
+				{
+					"title": "Power in the spec",
+					"do": "Power is the lithium-ion battery or USB bus power, 500 mA. The manual’s own estimate is about 4.5 hours of use and about 3 hours to charge, and it says those figures vary.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["POWER", "VOLUME"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+						"page": 71,
+						"section": "Power Supply",
+						"quote": "Power Supply Lithium-ion battery Obtained via USB port (USB bus power)"
+					}
+				}
+			]
+		},
+		{
 			"id": "oscillators",
+			"track": "core",
+			"chapter": "02-creating-sounds.md",
 			"title": "Oscillators and waveforms",
 			"blurb": "Saw and square: the raw material of every S-1 sound.",
-			"setup": { "20": 0, "19": 0 },
+			"setup": {
+				"19": 0,
+				"20": 0
+			},
 			"steps": [
 				{
 					"title": "Start with a sawtooth",
@@ -31,9 +509,18 @@
 					"look": "A ramp that climbs, then drops straight down once per cycle.",
 					"controls": ["SAW"],
 					"view": "scope",
-					"goal": { "when": [{ "cc": 20, "min": 100 }] },
+					"goal": {
+						"when": [
+							{
+								"cc": 20,
+								"min": 100
+							}
+						]
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 12,
+						"section": "OSCILLATOR section",
 						"quote": "The wave includes the nth harmonic at a volume of 1/n, with the fundamental wave considered as “1”."
 					}
 				},
@@ -46,12 +533,20 @@
 					"view": "scope",
 					"goal": {
 						"when": [
-							{ "cc": 20, "max": 15 },
-							{ "cc": 19, "min": 100 }
+							{
+								"cc": 20,
+								"max": 15
+							},
+							{
+								"cc": 19,
+								"min": 100
+							}
 						]
 					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 12,
+						"section": "OSCILLATOR section",
 						"quote": "However, the even-numbered harmonics are left out entirely."
 					}
 				},
@@ -64,12 +559,20 @@
 					"view": "spectrum",
 					"goal": {
 						"when": [
-							{ "cc": 19, "min": 80 },
-							{ "cc": 20, "min": 80 }
+							{
+								"cc": 19,
+								"min": 80
+							},
+							{
+								"cc": 20,
+								"min": 80
+							}
 						]
 					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 12,
+						"section": "OSCILLATOR section",
 						"quote": "Square waves are composed of a fundamental sine wave and the sine waves of the odd-numbered harmonics, all at a fixed ratio."
 					}
 				},
@@ -80,9 +583,14 @@
 					"look": "The pitch readout jumps by octaves while the wave keeps its shape.",
 					"controls": ["RANGE"],
 					"view": "scope",
-					"goal": { "touch": [14], "moves": 2 },
+					"goal": {
+						"touch": [14],
+						"moves": 2
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 13,
+						"section": "[RANGE] knob",
 						"quote": "By switching the settings from 64′ all the way down to 2′, you can change the tonal range in octaves."
 					}
 				}
@@ -90,6 +598,9 @@
 		},
 		{
 			"id": "sub-and-noise",
+			"track": "side",
+			"parent": "oscillators",
+			"chapter": "02-creating-sounds.md",
 			"title": "Sub oscillator and noise",
 			"blurb": "Add weight underneath, or hiss with no pitch at all.",
 			"setup": {},
@@ -101,19 +612,36 @@
 					"look": "The pitch readout drops an octave and the wave repeats half as often.",
 					"controls": ["SUB"],
 					"view": "scope",
-					"goal": { "when": [{ "cc": 21, "min": 90 }] },
-					"cite": { "page": 14, "quote": "Adjusts the level of the sub oscillator." }
+					"goal": {
+						"when": [
+							{
+								"cc": 21,
+								"min": 90
+							}
+						]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 14,
+						"section": "[SUB] knob",
+						"quote": "Adjusts the level of the sub oscillator."
+					}
 				},
 				{
 					"title": "Pick the sub’s octave",
 					"do": "Hold SHIFT and press the SUB OCT key, then turn TEMPO/VALUE: -1oc, -2oc or -2o.A.",
 					"listen": "-2oc sits two octaves down; -2o.A is a thinner, asymmetrical version.",
 					"look": "At -2oc each cycle is twice as long again.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
 					"controls": ["SHIFT", "SUB OCT", "TEMPO/VALUE"],
 					"view": "scope",
-					"goal": { "touch": [22] },
+					"goal": {
+						"touch": [22]
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 14,
+						"section": "SUB OCT",
 						"quote": "Hold down the [SHIFT] button and press the [SUB OCT] pad."
 					}
 				},
@@ -122,28 +650,342 @@
 					"do": "Turn SAW and SUB down and NOISE up. (If NOISE plays a rising riser instead, Riser Mode is on: switch it OFF in the menu.)",
 					"listen": "A hiss with no pitch, the stuff of wind, snares and sweeps.",
 					"look": "The spectrum fills from bottom to top with no harmonic peaks, and the scope can’t find a pitch.",
+					"caveat": "If Riser Mode is not OFF, this knob controls the riser instead of the noise level. Riser Mode itself is not a control change.",
 					"controls": ["NOISE", "SAW", "SUB"],
 					"view": "spectrum",
-					"goal": { "when": [{ "cc": 23, "min": 90 }] },
-					"cite": { "page": 14, "quote": "Adjusts the level of the noise." }
+					"goal": {
+						"when": [
+							{
+								"cc": 23,
+								"min": 90
+							}
+						]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 14,
+						"section": "[NOISE] knob",
+						"quote": "Adjusts the level of the noise."
+					}
 				},
 				{
 					"title": "Pink or white",
 					"do": "Hold SHIFT and turn NOISE to switch between pink and white noise.",
 					"listen": "White noise is brighter; pink noise is darker and softer.",
 					"look": "White noise puts more energy in the highs.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
 					"controls": ["SHIFT", "NOISE"],
 					"view": "spectrum",
-					"goal": { "touch": [78] },
+					"goal": {
+						"touch": [78]
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
 						"page": 74,
+						"section": "NOISE MODE",
 						"quote": "NOISE MODE ([SHIFT] button + pad [15] (MENU): Noise Mode) ([SHIFT] + OSCILLATOR [NOISE] knob)"
 					}
 				}
 			]
 		},
 		{
+			"id": "pwm",
+			"track": "side",
+			"parent": "oscillators",
+			"chapter": "02-creating-sounds.md",
+			"title": "Pulse width",
+			"blurb": "The square wave’s up/down balance, set by hand or moved by the LFO or the envelope.",
+			"steps": [
+				{
+					"title": "Where the width comes from",
+					"do": "Hold SHIFT and press PWM SRC. Turn TEMPO/VALUE: NAn holds a fixed width, LFO sweeps it, Env follows the envelope. The page advances when CC 16 (OSC PWM SOURCE) moves.",
+					"listen": "The square gets hollow, nasal, or moves.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "PWM SRC", "TEMPO/VALUE", "SQUARE"],
+					"view": "scope",
+					"goal": {
+						"touch": [16]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 13,
+						"section": "PWM SRC",
+						"quote": "Use the PWM source switch to select whether to set the pulse width to a fixed preset value (“NAn”) , or to apply time-based changes using the LFO (“LFO”) or envelope generator (“Env”) signals."
+					}
+				},
+				{
+					"title": "Turn the width",
+					"do": "Hold SHIFT and turn the square-wave knob (or use the PWM DEPTH key). That sends CC 15, OSC PULSE WIDTH. The panel talks about 0–255; the CC is still 0–127, and the manual never maps one onto the other.",
+					"listen": "Even harmonics come and go as the wave goes lopsided.",
+					"look": "The square’s top and bottom stop matching.",
+					"controls": ["SHIFT", "SQUARE", "PWM DEPTH"],
+					"view": "scope",
+					"goal": {
+						"touch": [15],
+						"moves": 3
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 13,
+						"section": "pulse width",
+						"quote": "“Pulse width” refers to how wide the upper width is compared to the entire wave, expressed as a percentage."
+					}
+				}
+			]
+		},
+		{
+			"id": "osc-draw",
+			"track": "side",
+			"parent": "oscillators",
+			"chapter": "02-creating-sounds.md",
+			"title": "Draw a waveform (OSC DRAW)",
+			"blurb": "Replace the square with a 16-step shape. PWM does not apply while you do.",
+			"steps": [
+				{
+					"title": "Turn draw on",
+					"do": "Hold SHIFT and press pad 5 (OSC DRAW), or hold SHIFT and turn the saw knob. Pick StEP or SLPE. OFF is the plain square. That switch is CC 107.",
+					"listen": "The square becomes a staircase or a slope.",
+					"look": "The scope stops being a simple square.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "PAD 5", "SAW", "TEMPO/VALUE"],
+					"view": "scope",
+					"goal": {
+						"touch": [107]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 29,
+						"section": "OSC DRAW",
+						"quote": "You can use a square wave oscillator to generate original waveforms."
+					}
+				},
+				{
+					"title": "Multiply",
+					"do": "Still in OSC DRAW, select NULt (Multiply), or hold SHIFT and turn the square knob. The value runs 1.0–32.0 and each doubling (2, 4, 8, 16, 32) raises the drawn wave an octave. That knob sends CC 102.",
+					"caveat": "The manual warns that a high Multiply on a high note can turn into noise. It does not list a CC value for “1.0” or “32.0”.",
+					"controls": ["SHIFT", "SQUARE", "PAD 5", "TEMPO/VALUE"],
+					"view": "spectrum",
+					"goal": {
+						"touch": [102],
+						"moves": 2
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 30,
+						"section": "Multiply",
+						"quote": "Each time the setting value is increased from 2.0, 4.0, 8.0, 16.0, and 32.0 increases the pitch by one octave."
+					}
+				},
+				{
+					"title": "Edit one of the 16 steps",
+					"do": "When ForN is on the display, hold a pad 1–16 and turn TEMPO/VALUE. The height is −100 to 100. Negative pads blink, zero is dark, positive lights. SHIFT + pad 1 leaves the editor.",
+					"caveat": "The chart has CCs for the draw switch and for Multiply, and none for the 16 step heights. Press Done.",
+					"controls": ["PAD", "TEMPO/VALUE", "SHIFT", "PAD 1"],
+					"view": "scope",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 29,
+						"section": "ForN",
+						"quote": "You can create original waveforms by dividing a single waveform cycle into 16 steps and individually editing the volume for each step."
+					}
+				}
+			]
+		},
+		{
+			"id": "osc-chop",
+			"track": "side",
+			"parent": "oscillators",
+			"chapter": "02-creating-sounds.md",
+			"title": "Chop the wave (OSC CHOP)",
+			"blurb": "Slice the cycle and push the harmonics. Overtone and Comb are knobs; the slice pattern is not MIDI.",
+			"steps": [
+				{
+					"title": "Overtone",
+					"do": "Hold SHIFT and press pad 6 (OSC CHOP), choose ovtn, or hold SHIFT and turn the oscillator LFO knob. 0–200. 100 mutes the wave; above 100 it comes back upside down. That sends CC 103.",
+					"listen": "Thinner, buzzier, more overtone than fundamental.",
+					"caveat": "The panel range is 0–200. The CC is 0–127. The manual does not say which CC value is “100”.",
+					"controls": ["SHIFT", "PAD 6", "OSC LFO", "TEMPO/VALUE"],
+					"view": "spectrum",
+					"goal": {
+						"touch": [103],
+						"moves": 2
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 31,
+						"section": "OSC CHOP",
+						"quote": "You can chop the waveforms that are generated by the oscillator, and emphasize their harmonics (overtones)."
+					}
+				},
+				{
+					"title": "Comb",
+					"do": "In OSC CHOP, choose CoNb (Comb), or hold SHIFT and turn SUB. That is CC 104.",
+					"caveat": "The manual names Comb in the function list and the CC list. It does not spell out a 0–127 scale for it.",
+					"controls": ["SHIFT", "SUB", "PAD 6"],
+					"view": "spectrum",
+					"goal": {
+						"touch": [104]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+						"page": 74,
+						"section": "OSC CHOP COMB",
+						"quote": "104 OSC CHOP COMB ([SHIFT] button + pad [6] (OSC CHOP): COMB) ([SHIFT] + OSCILLATOR [SUB] knob)"
+					}
+				},
+				{
+					"title": "The chop pattern",
+					"do": "Open a chop pattern (square, saw, sub or noise — the function list calls them SqrP, SAľ.P, SUb.P, noi.P). Press pads 1–16 to cut those slices out. There is a separate pattern for each of the four waveforms.",
+					"caveat": "No control change in the chart is the chop pattern. Press Done.",
+					"controls": ["SHIFT", "PAD 6", "PAD"],
+					"view": "scope",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 31,
+						"section": "Square Chop",
+						"quote": "This divides the waveform of a single cycle into 16 steps and sets the pattern (chop pattern) used to cut up the waveform."
+					}
+				}
+			]
+		},
+		{
+			"id": "riser",
+			"track": "side",
+			"parent": "oscillators",
+			"chapter": "05-other-useful-functions.md",
+			"title": "Riser and downer",
+			"blurb": "The NOISE knob can be a rising or falling sweep instead of hiss. The mode is a menu, not a CC.",
+			"steps": [
+				{
+					"title": "Leave noise mode, or don’t",
+					"do": "SHIFT + pad 15, then rS.Nd (Riser Mode). OFF means the NOISE knob is noise level. SynC, qUiv and qvPn are the three riser behaviors. SHIFT + pad 1 + pad 2 also cycles the setting. Press EXIT if you want to leave it OFF.",
+					"caveat": "Riser Mode, Riser Resonance, Riser Shape (rS.Sh, added for this firmware: 0 saw to 100 square) and Riser Level are menu items. None of them is in the control-change list.",
+					"controls": ["SHIFT", "PAD 15", "NOISE", "TEMPO/VALUE", "PAD 1"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 67,
+						"section": "Riser Mode",
+						"quote": "With this setting, the [NOISE] knob is used to adjust the noise level."
+					}
+				},
+				{
+					"title": "Sweep with the noise knob",
+					"do": "With a riser mode other than OFF, turn NOISE. Minimum (r.0) and maximum (d.0) are muted. Midpoint is the top of the rise; past midpoint it falls. The knob still sends CC 23, which the chart names OSC NOISE LEVEL — the chart does not have a separate riser CC.",
+					"listen": "A rise, then a fall, rather than steady hiss.",
+					"controls": ["NOISE"],
+					"view": "spectrogram",
+					"goal": {
+						"touch": [23],
+						"moves": 4
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 67,
+						"section": "Riser Mode",
+						"quote": "Use the [NOISE] knob to control both the riser and downer effects."
+					}
+				},
+				{
+					"title": "Prepare the drop",
+					"do": "Hold SHIFT while you turn NOISE away from the ends, then let SHIFT go. Ver. 1.02 starts the riser at that knob position as soon as you release SHIFT, so you can arm a downer without hearing it early.",
+					"caveat": "Release of SHIFT is not a MIDI message. CC 23 may move while you turn the knob; the page cannot see the release itself. Press Done.",
+					"controls": ["SHIFT", "NOISE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 57,
+						"section": "Ver.1.02",
+						"quote": "After you turn the [NOISE] knob to a setting besides minimum or maximum while holding down the [SHIFT] button and then release the [SHIFT] button, the riser sound is output immediately according to the knob position. (Ver.1.02)"
+					}
+				}
+			]
+		},
+		{
+			"id": "portamento",
+			"track": "side",
+			"parent": "oscillators",
+			"chapter": "02-creating-sounds.md",
+			"title": "Portamento",
+			"blurb": "Glide between pitches. Off, always, or only when you play legato.",
+			"steps": [
+				{
+					"title": "Pick the mode",
+					"do": "Hold SHIFT and press PORTA ON. Turn TEMPO/VALUE: OFF, On, or AUto (glide only when the next pad is pressed before the previous one is released). That is CC 31.",
+					"listen": "Notes slide instead of stepping, or only when you overlap them.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step. The function list adds that AUto does not glide while the arpeggiator is playing. With the arp, On glides, OFF does not, and AUto glides only when ENV TRG is Gate.",
+					"controls": ["SHIFT", "PORTA ON", "TEMPO/VALUE"],
+					"view": "scope",
+					"goal": {
+						"touch": [31]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 24,
+						"section": "PORTAMENTO",
+						"quote": "Portamento is an effect that makes one pitch glide smoothly into another."
+					}
+				},
+				{
+					"title": "Set the time",
+					"do": "Hold SHIFT and press PORTA TIME. Turn TEMPO/VALUE. The panel range is 0–255. The chart calls the message CC 5 PORTAMENTO TIME. It does not say how 0–255 sits on 0–127.",
+					"listen": "A short smear, or a slow slide.",
+					"controls": ["SHIFT", "PORTA TIME", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"goal": {
+						"touch": [5],
+						"moves": 2
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 24,
+						"section": "PORTAMENTO TIME",
+						"quote": "Follow these steps to change how much time it takes (portamento time) to glide smoothly between pitches."
+					}
+				}
+			]
+		},
+		{
+			"id": "manual-mode",
+			"track": "side",
+			"parent": "oscillators",
+			"chapter": "05-other-useful-functions.md",
+			"title": "Manual: the knobs become the tone",
+			"blurb": "Snap the pattern’s tone to where the knobs are sitting. SHIFT-layer parameters stay put.",
+			"steps": [
+				{
+					"title": "Why it exists",
+					"do": "The stored tone and the knob positions can disagree. Manual mode copies the top-panel knob positions onto the tone. The manual suggests an empty pattern (2-01 onward) or initializing first if you want to start from scratch.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "HOLD"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 52,
+						"section": "Using the manual function",
+						"quote": "The manual function applies the position of all of the knobs to the tone."
+					}
+				},
+				{
+					"title": "Apply the knobs",
+					"do": "Set the knobs where you want the sound, then press SHIFT + HOLD. Only the plain top-panel knobs are applied. SHIFT-layer parameters (the knob table on p. 70) are left alone.",
+					"listen": "The tone jumps to match the panel.",
+					"caveat": "SHIFT + HOLD does not have its own CC. Afterwards the S-1 may send the knob CCs, but the chart does not say manual mode itself is a message. Press Done.",
+					"controls": ["SHIFT", "HOLD"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 52,
+						"section": "manual mode",
+						"quote": "Press the [SHIFT] + [HOLD] buttons to enter manual mode. When doing so, the current knob positions are applied to the tone of the selected pattern."
+					}
+				}
+			]
+		},
+		{
 			"id": "filter",
+			"track": "core",
+			"chapter": "02-creating-sounds.md",
 			"title": "Filter and resonance",
 			"blurb": "Carve the harmonics away and make the cutoff sing.",
 			"setup": {},
@@ -155,9 +997,18 @@
 					"look": "The saw’s sharp edge rounds off towards a sine wave.",
 					"controls": ["FREQ"],
 					"view": "scope",
-					"goal": { "when": [{ "cc": 74, "max": 55 }] },
+					"goal": {
+						"when": [
+							{
+								"cc": 74,
+								"max": 55
+							}
+						]
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 15,
+						"section": "[FREQ] knob",
 						"quote": "Turning the knob counterclockwise cuts the higher frequencies and makes the waveform closer to that of a sine wave."
 					}
 				},
@@ -168,9 +1019,18 @@
 					"look": "Harmonics above the cutoff fall away; the low ones always pass.",
 					"controls": ["FREQ"],
 					"view": "spectrum",
-					"goal": { "when": [{ "cc": 74, "min": 100 }] },
+					"goal": {
+						"when": [
+							{
+								"cc": 74,
+								"min": 100
+							}
+						]
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 15,
+						"section": "FILTER section",
 						"quote": "This lets you pass the lower frequencies through while cutting the higher frequencies (LPF: Low-Pass Filter)."
 					}
 				},
@@ -183,12 +1043,20 @@
 					"view": "spectrum",
 					"goal": {
 						"when": [
-							{ "cc": 74, "max": 90 },
-							{ "cc": 71, "min": 90 }
+							{
+								"cc": 74,
+								"max": 90
+							},
+							{
+								"cc": 71,
+								"min": 90
+							}
 						]
 					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 15,
+						"section": "[RESO]",
 						"quote": "Emphasizes the frequencies around the cutoff point that you set using the [FREQ] knob."
 					}
 				},
@@ -201,21 +1069,74 @@
 					"view": "spectrogram",
 					"goal": {
 						"when": [
-							{ "cc": 71, "min": 90 },
-							{ "cc": 74, "min": 110 }
+							{
+								"cc": 71,
+								"min": 90
+							},
+							{
+								"cc": 74,
+								"min": 110
+							}
 						],
 						"touch": [74],
 						"moves": 6
 					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 15,
+						"section": "FILTER section",
 						"quote": "In particular, when you move the cutoff point while the resonance is raised, you can get a sound that’s unique to synthesizers."
 					}
 				}
 			]
 		},
 		{
+			"id": "filter-keyboard",
+			"track": "side",
+			"parent": "filter",
+			"chapter": "02-creating-sounds.md",
+			"title": "Filter keyboard follow",
+			"blurb": "Let the cutoff rise with the note, so high pads don’t go dull.",
+			"steps": [
+				{
+					"title": "Open keyboard follow",
+					"do": "Hold SHIFT and press pad 7 (FILTER KYBD), or hold SHIFT and turn the filter ENV knob. The panel value is 0–255. 255 makes the cutoff follow the pitch exactly. Changing it sends CC 26.",
+					"listen": "High notes stay as bright as low ones, instead of thinning out.",
+					"caveat": "Key transpose also changes this value, the controller section says. The CC list does not publish which number is 255.",
+					"controls": ["SHIFT", "PAD 7", "FILTER ENV", "TEMPO/VALUE"],
+					"view": "spectrum",
+					"goal": {
+						"touch": [26]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 15,
+						"section": "FILTER KYBD",
+						"quote": "A value of “255” makes the cutoff point perfectly follow the pitch."
+					}
+				},
+				{
+					"title": "Hear it on two octaves",
+					"do": "Play a low pad and a high pad. Then raise or lower the follow amount and play the pair again.",
+					"listen": "With follow down, the high note is duller. With follow up, the brightness travels with the pitch.",
+					"controls": ["PAD", "PAD 7"],
+					"view": "spectrum",
+					"goal": {
+						"notes": 2
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 15,
+						"section": "filter keyboard follow",
+						"quote": "By making the cutoff point follow the pitch of the notes played, you can keep the same harmonic components."
+					}
+				}
+			]
+		},
+		{
 			"id": "envelopes",
+			"track": "core",
+			"chapter": "02-creating-sounds.md",
 			"title": "Envelopes (ADSR)",
 			"blurb": "Shape every note over time: swells, plucks and tails.",
 			"setup": {},
@@ -227,9 +1148,18 @@
 					"look": "Notes start dim and brighten in the spectrogram.",
 					"controls": ["ATTACK"],
 					"view": "spectrogram",
-					"goal": { "when": [{ "cc": 73, "min": 70 }] },
+					"goal": {
+						"when": [
+							{
+								"cc": 73,
+								"min": 70
+							}
+						]
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 19,
+						"section": "[ATTACK] knob",
 						"quote": "This knob sets the time (attack time) it takes for the control signal to reach its peak level after you press a keyboard pad."
 					}
 				},
@@ -242,12 +1172,20 @@
 					"view": "spectrogram",
 					"goal": {
 						"when": [
-							{ "cc": 73, "max": 20 },
-							{ "cc": 30, "max": 15 }
+							{
+								"cc": 73,
+								"max": 20
+							},
+							{
+								"cc": 30,
+								"max": 15
+							}
 						]
 					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 19,
+						"section": "[SUSTAIN] knob",
 						"quote": "This knob sets the sustain level, which is the level that the sound stays at after the envelope reaches its peak."
 					}
 				},
@@ -260,12 +1198,20 @@
 					"view": "spectrogram",
 					"goal": {
 						"when": [
-							{ "cc": 30, "min": 90 },
-							{ "cc": 72, "min": 80 }
+							{
+								"cc": 30,
+								"min": 90
+							},
+							{
+								"cc": 72,
+								"min": 80
+							}
 						]
 					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 19,
+						"section": "[RELEASE] knob",
 						"quote": "This knob sets the time (release time) it takes for the control signal to drop to zero (where the envelope reaches its end) after you release the keyboard pad."
 					}
 				},
@@ -278,142 +1224,81 @@
 					"view": "spectrogram",
 					"goal": {
 						"when": [
-							{ "cc": 74, "max": 70 },
-							{ "cc": 24, "min": 70 }
+							{
+								"cc": 74,
+								"max": 70
+							},
+							{
+								"cc": 24,
+								"min": 70
+							}
 						]
 					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 15,
+						"section": "[ENV]",
 						"quote": "Use this to make changes in the sound over a short time within single notes."
 					}
 				}
 			]
 		},
 		{
-			"id": "lfo",
-			"title": "LFO: movement",
-			"blurb": "Vibrato, wobble and random steps from the low-frequency oscillator.",
-			"setup": { "3": 64 },
+			"id": "amp-and-trigger",
+			"track": "side",
+			"parent": "envelopes",
+			"chapter": "02-creating-sounds.md",
+			"title": "What opens the amp, and what retriggers",
+			"blurb": "Gate or envelope for the amp. LFO, Gate, or Gate+Trig for the envelope.",
 			"steps": [
 				{
-					"title": "Vibrato",
-					"do": "Hold a note and turn the OSCILLATOR LFO knob up a little.",
-					"listen": "The pitch wobbles.",
-					"look": "The harmonic lines wave up and down together.",
-					"controls": ["OSC LFO"],
+					"title": "Amp: gate or envelope",
+					"do": "Hold SHIFT and press AMP. GAtE holds a level only while the pad is down. Env follows ATTACK, DECAY, SUSTAIN and RELEASE. That switch is CC 28.",
+					"listen": "Gate is on/off. Env is the shape you set on the envelope knobs.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "AMP", "TEMPO/VALUE", "ATTACK"],
 					"view": "spectrogram",
-					"goal": { "when": [{ "cc": 13, "min": 30 }] },
-					"cite": {
-						"page": 14,
-						"quote": "This knob adjusts the modulation intensity, when you use the modulator signal from the LFO section to control the fundamental frequency (pitch) of the OSC."
-					}
-				},
-				{
-					"title": "Speed",
-					"do": "Turn RATE to slow the wobble down and speed it up.",
-					"listen": "From a slow sway to a fast flutter.",
-					"look": "The waves in the spectrogram stretch out or bunch up.",
-					"controls": ["RATE"],
-					"view": "spectrogram",
-					"goal": { "touch": [3], "moves": 8 },
-					"cite": { "page": 22, "quote": "This knob sets the LFO and RANDOM speed (frequency)." }
-				},
-				{
-					"title": "Shape",
-					"do": "Turn WAVE FORM through the LFO shapes, including RND (random).",
-					"listen": "Smooth sweeps, jumps between two pitches, random steps.",
-					"look": "The lines change from curves to steps.",
-					"controls": ["WAVE FORM"],
-					"view": "spectrogram",
-					"goal": { "touch": [12], "moves": 3 },
-					"cite": {
-						"page": 22,
-						"quote": "With the RND (RANDOM) setting, the unit outputs a control signal that changes randomly, which is used to produce random notes (OSC) or random filter (FILTER) effects."
-					}
-				},
-				{
-					"title": "Wah with the filter LFO",
-					"do": "Turn the OSCILLATOR LFO back down and the FILTER LFO up. A lower FREQ makes it stronger.",
-					"listen": "A wah or growl instead of a pitch wobble.",
-					"look": "The upper harmonics pulse while the pitch stays put.",
-					"controls": ["OSC LFO", "FILTER LFO", "FREQ"],
-					"view": "spectrum",
 					"goal": {
-						"when": [
-							{ "cc": 13, "max": 10 },
-							{ "cc": 25, "min": 50 }
-						]
+						"touch": [28]
 					},
 					"cite": {
-						"page": 15,
-						"quote": "This adjusts the intensity (depth) when controlling the filter’s cutoff point with the modulator signal from the LFO section."
-					}
-				}
-			]
-		},
-		{
-			"id": "chords-and-arp",
-			"title": "Chords and arpeggios",
-			"blurb": "Poly mode, one-finger chords and the arpeggiator.",
-			"setup": {},
-			"steps": [
-				{
-					"title": "Poly mode",
-					"do": "Hold SHIFT, press POLY and turn TEMPO/VALUE to PoLy. Then play a chord on the pads.",
-					"listen": "Up to four notes at once.",
-					"look": "Several sets of harmonics stack up in the spectrum.",
-					"controls": ["SHIFT", "POLY", "TEMPO/VALUE"],
-					"view": "spectrum",
-					"goal": { "touch": [80] },
-					"cite": {
-						"page": 24,
-						"quote": "Lets you play more than one tone at the same time (up to four voices)."
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 18,
+						"section": "AMP section",
+						"quote": "Hold down the [SHIFT] button and press the [AMP] pad."
 					}
 				},
 				{
-					"title": "One-finger chords",
-					"do": "Keep turning TEMPO/VALUE to Chd, then press pad 2 (ENTER) to switch voices 2–4 on and shift their keys. Now one pad plays a chord.",
-					"listen": "A full chord from a single finger.",
-					"look": "One pad, several stacks of harmonics.",
-					"controls": ["SHIFT", "POLY", "TEMPO/VALUE", "PAD 2"],
-					"view": "spectrum",
-					"goal": { "touch": [80, 81, 82, 83, 85, 86, 87], "moves": 2 },
-					"cite": {
-						"page": 24,
-						"quote": "Plays voices 2–4 at the same time for each note that you play, according to the parameter settings below."
-					}
-				},
-				{
-					"title": "Turn the arpeggiator on",
-					"do": "Hold SHIFT and press pad 8 (ARPEGGIO ON) to switch it on, then hold a few pads together.",
-					"listen": "Your chord plays one note at a time, over and over.",
-					"look": "A staircase of notes in the spectrogram.",
-					"controls": ["SHIFT", "PAD 8"],
+					"title": "Envelope trigger",
+					"do": "Hold SHIFT and press ENV TRG. LFO repeats the envelope while you hold a pad. GAtE starts the envelope on a new note and does not restart it when you play legato. triG restarts it even if another pad is still held. That is CC 29.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "ENV TRG", "TEMPO/VALUE"],
 					"view": "spectrogram",
+					"goal": {
+						"touch": [29]
+					},
 					"cite": {
-						"page": 49,
-						"quote": "On the S-1, you can automatically arpeggiate the chords you play on the keyboard pad."
-					}
-				},
-				{
-					"title": "Arp type and latch",
-					"do": "SHIFT + pad 9 (ARPEGGIO TYPE) picks Up, Down, Random and more. Press HOLD while it plays to keep it going hands-free.",
-					"listen": "The same notes in a new order.",
-					"look": "The staircase changes direction or scatters.",
-					"controls": ["SHIFT", "PAD 9", "HOLD"],
-					"view": "spectrogram",
-					"cite": {
-						"page": 51,
-						"quote": "When you press the [HOLD] button to make it light up while an arpeggio is playing, the arpeggio keeps playing even after you take your finger off the keyboard pad."
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 20,
+						"section": "ENV TRG",
+						"quote": "Hold down the [SHIFT] button and press the [ENV TRG] pad."
 					}
 				}
 			]
 		},
 		{
 			"id": "delay-reverb",
-			"title": "Delay and reverb",
-			"blurb": "Echoes and space around short notes.",
-			"setup": { "73": 0, "75": 50, "30": 0, "72": 30 },
+			"track": "side",
+			"parent": "envelopes",
+			"chapter": "02-creating-sounds.md",
+			"title": "Delay, reverb and chorus",
+			"blurb": "Echoes, a room, and the four chorus types. Level and time are knobs; the rest of each effect is a menu.",
+			"setup": {
+				"30": 0,
+				"72": 30,
+				"73": 0,
+				"75": 50
+			},
 			"steps": [
 				{
 					"title": "Delay",
@@ -422,9 +1307,18 @@
 					"look": "Each note leaves a trail of fading copies.",
 					"controls": ["DELAY"],
 					"view": "spectrogram",
-					"goal": { "when": [{ "cc": 92, "min": 70 }] },
+					"goal": {
+						"when": [
+							{
+								"cc": 92,
+								"min": 70
+							}
+						]
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 26,
+						"section": "[DELAY] knob",
 						"quote": "This adds an echoing effect by delaying the sound and repeating the delay."
 					}
 				},
@@ -435,9 +1329,14 @@
 					"look": "The copies spread apart or bunch together.",
 					"controls": ["SHIFT", "DELAY"],
 					"view": "spectrogram",
-					"goal": { "touch": [90], "moves": 4 },
+					"goal": {
+						"touch": [90],
+						"moves": 4
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 26,
+						"section": "[DELAY] knob",
 						"quote": "You can set the delay time by turning the [DELAY] knob while holding down the [SHIFT] button."
 					}
 				},
@@ -450,12 +1349,20 @@
 					"view": "spectrogram",
 					"goal": {
 						"when": [
-							{ "cc": 92, "max": 15 },
-							{ "cc": 91, "min": 70 }
+							{
+								"cc": 92,
+								"max": 15
+							},
+							{
+								"cc": 91,
+								"min": 70
+							}
 						]
 					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 27,
+						"section": "[REVERB] knob",
 						"quote": "This effect produces reverberation, like being in a hall or room."
 					}
 				},
@@ -466,10 +1373,1149 @@
 					"look": "The tail gets shorter or longer.",
 					"controls": ["SHIFT", "REVERB"],
 					"view": "spectrogram",
-					"goal": { "touch": [89], "moves": 4 },
+					"goal": {
+						"touch": [89],
+						"moves": 4
+					},
 					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
 						"page": 27,
+						"section": "[REVERB] knob",
 						"quote": "Adjust the reverb length (time) by turning the [REVERB] knob while holding down the [SHIFT] button."
+					}
+				},
+				{
+					"title": "Chorus",
+					"do": "The effects section is delay, reverb and chorus. Hold SHIFT, press pad 15 (MENU), choose Cho, press pad 2 (ENTER). OFF, or types 1–4. Changing it sends CC 93.",
+					"listen": "1 is a plain chorus, 2 is faster, 3 is a fast rotary-style swirl, 4 is slower.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+					"view": "spectrum",
+					"goal": {
+						"touch": [93]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 68,
+						"section": "Chorus",
+						"quote": "1: A standard chorus effect."
+					}
+				},
+				{
+					"title": "The effect menus the chart does not list",
+					"do": "SHIFT + pad 13 opens delay: sync, time, level, feedback, low cut, high cut. SHIFT + pad 14 opens reverb: type (ambience, room, two halls, plate, spring, modulate), time, level, pre-delay and the cuts. Turn through them, then EXIT.",
+					"caveat": "The control-change list has delay level (CC 92), delay time (CC 90), reverb level (CC 91), reverb time (CC 89) and chorus (CC 93). Feedback, the filters, reverb type and pre-delay are not in that list.",
+					"controls": ["SHIFT", "PAD 13", "PAD 14", "DELAY", "REVERB", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 26,
+						"section": "EFX section",
+						"quote": "The S-1 features three kinds of built-in effects, including delay, reverb and chorus."
+					}
+				}
+			]
+		},
+		{
+			"id": "global-fx",
+			"track": "side",
+			"parent": "envelopes",
+			"chapter": "05-other-useful-functions.md",
+			"title": "Global delay and reverb",
+			"blurb": "Keep the effect tail when you change patterns, and choose what the DELAY knob turns.",
+			"steps": [
+				{
+					"title": "Carry the tail across patterns",
+					"do": "SHIFT + pad 15, then GL.d.r. OFF stores delay and reverb per pattern and mutes the tail when you switch. On uses the system settings, so the tail keeps ringing across a pattern change.",
+					"caveat": "Global Delay/Reverb SW is not a control change.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "DELAY", "REVERB"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 60,
+						"section": "global delay/reverb",
+						"quote": "“Global delay/reverb” refers to using the system parameters to control the delay and reverb."
+					}
+				},
+				{
+					"title": "Pre or post on the delay knob",
+					"do": "In the menu, d.L.Nd is Delay Level Mode. PrE is the input: turning DELAY down lets the echoes fade. PoSt is the output: turning it down cuts them immediately.",
+					"caveat": "Delay Level Mode is not a control change. Delay level itself is still CC 92.",
+					"controls": ["SHIFT", "PAD 15", "DELAY", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 68,
+						"section": "Delay Level Mode",
+						"quote": "With the “PrE” setting, the delay sound fades out smoothly when you turn down the [DELAY] knob; and with the “PoSt” setting, the delay sound is instantly muted when you turn down the [DELAY] knob."
+					}
+				}
+			]
+		},
+		{
+			"id": "lfo",
+			"track": "core",
+			"chapter": "02-creating-sounds.md",
+			"title": "LFO: movement",
+			"blurb": "Vibrato, wobble and random steps from the low-frequency oscillator.",
+			"setup": {
+				"3": 64
+			},
+			"steps": [
+				{
+					"title": "Vibrato",
+					"do": "Hold a note and turn the OSCILLATOR LFO knob up a little.",
+					"listen": "The pitch wobbles.",
+					"look": "The harmonic lines wave up and down together.",
+					"controls": ["OSC LFO"],
+					"view": "spectrogram",
+					"goal": {
+						"when": [
+							{
+								"cc": 13,
+								"min": 30
+							}
+						]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 14,
+						"section": "[LFO] knob",
+						"quote": "This knob adjusts the modulation intensity, when you use the modulator signal from the LFO section to control the fundamental frequency (pitch) of the OSC."
+					}
+				},
+				{
+					"title": "Speed",
+					"do": "Turn RATE to slow the wobble down and speed it up.",
+					"listen": "From a slow sway to a fast flutter.",
+					"look": "The waves in the spectrogram stretch out or bunch up.",
+					"controls": ["RATE"],
+					"view": "spectrogram",
+					"goal": {
+						"touch": [3],
+						"moves": 8
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 22,
+						"section": "LFO section",
+						"quote": "This knob sets the LFO and RANDOM speed (frequency)."
+					}
+				},
+				{
+					"title": "Shape",
+					"do": "Turn WAVE FORM through the LFO shapes, including RND (random).",
+					"listen": "Smooth sweeps, jumps between two pitches, random steps.",
+					"look": "The lines change from curves to steps.",
+					"controls": ["WAVE FORM"],
+					"view": "spectrogram",
+					"goal": {
+						"touch": [12],
+						"moves": 3
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 22,
+						"section": "LFO section",
+						"quote": "With the RND (RANDOM) setting, the unit outputs a control signal that changes randomly, which is used to produce random notes (OSC) or random filter (FILTER) effects."
+					}
+				},
+				{
+					"title": "Wah with the filter LFO",
+					"do": "Turn the OSCILLATOR LFO back down and the FILTER LFO up. A lower FREQ makes it stronger.",
+					"listen": "A wah or growl instead of a pitch wobble.",
+					"look": "The upper harmonics pulse while the pitch stays put.",
+					"controls": ["OSC LFO", "FILTER LFO", "FREQ"],
+					"view": "spectrum",
+					"goal": {
+						"when": [
+							{
+								"cc": 13,
+								"max": 10
+							},
+							{
+								"cc": 25,
+								"min": 50
+							}
+						]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 15,
+						"section": "[LFO] knob",
+						"quote": "This adjusts the intensity (depth) when controlling the filter’s cutoff point with the modulator signal from the LFO section."
+					}
+				}
+			]
+		},
+		{
+			"id": "lfo-sync",
+			"track": "side",
+			"parent": "lfo",
+			"chapter": "02-creating-sounds.md",
+			"title": "LFO speed, sync and retrigger",
+			"blurb": "Normal or fast, lock the cycle to tempo (Ver. 1.02), and restart the LFO on each note.",
+			"steps": [
+				{
+					"title": "Normal or fast",
+					"do": "Hold SHIFT and turn RATE, or set LFO.N in the menu. norN is the ordinary cycle. FASt runs it extremely fast. This choice does nothing while LFO Sync is On. The mode is CC 79.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "RATE", "PAD 15", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"goal": {
+						"touch": [79]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 23,
+						"section": "LFO Mode",
+						"quote": "This selects how quickly the LFO changes when LFO Sync is “OFF”."
+					}
+				},
+				{
+					"title": "Sync to tempo",
+					"do": "Hold SHIFT and turn WAVE FORM, or set LFO.S in the menu, to On. The cycle follows the tempo, and LFO Mode is ignored. CC 106 is marked Ver.1.02 in the chart.",
+					"listen": "The wobble lands on the beat instead of free-running.",
+					"caveat": "The manual says that if you change RATE while playing, the LFO can fall off the beat. Stop the sequencer and start it again. It does not list the note values of the synced rate as CC numbers.",
+					"controls": ["SHIFT", "WAVE FORM", "PAD 15"],
+					"view": "spectrogram",
+					"goal": {
+						"touch": [106]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 23,
+						"section": "LFO Sync",
+						"quote": "Sets whether to sync the LFO cycle to the tempo."
+					}
+				},
+				{
+					"title": "Restart on each note",
+					"do": "In the menu, LFO.K (LFO Key Trigger) On makes the LFO reset when a note is played or a note-on arrives. Off lets it free-run. That is CC 105.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"goal": {
+						"touch": [105]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 23,
+						"section": "LFO Key Trigger",
+						"quote": "Sets whether to reset the LFO when a note sounds."
+					}
+				}
+			]
+		},
+		{
+			"id": "d-motion",
+			"track": "side",
+			"parent": "lfo",
+			"chapter": "05-other-useful-functions.md",
+			"title": "D-Motion",
+			"blurb": "Tilt the unit. Roll and pitch can drive modulation, the filter, bend, pan, level, or the effects.",
+			"steps": [
+				{
+					"title": "Tilt",
+					"do": "Grip both sides so the cables are not bent. Press PLAY, hold D-MOTION with your right thumb, and tilt forward/back (pitch) or left/right (roll). Let go and the tone returns, unless latch is on.",
+					"listen": "The assigned parameter moves with the angle.",
+					"caveat": "The chart does not give D-MOTION its own message. Pan, expression and the mod wheel are receive-only, and the manual says those tilts act like incoming MIDI, not like something the S-1 sends. This page cannot see the tilt. Press Done.",
+					"controls": ["D-MOTION", "PLAY"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 55,
+						"section": "D-MOTION",
+						"quote": "The S-1 features D-MOTION, which lets you control the tones according to the angle at which this unit is tilted."
+					}
+				},
+				{
+					"title": "Assign roll and pitch",
+					"do": "Hold SHIFT and press D-MOTION. Pick roLL and Ptch. The list is Off, modulation, filter frequency, resonance, pitch bend, pan, expression, delay level and reverb level. Presets 1-01 through 1-16 are the manual’s demo of this.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "D-MOTION", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 55,
+						"section": "Configuring D-MOTION",
+						"quote": "Configure the parameters that you want to change when you tilt this unit from left to right (roll), or when you tilt the unit forward and backward (pitch)."
+					}
+				},
+				{
+					"title": "How deep the tilt goes",
+					"do": "Modulation depth is menu Nod.d (0–255), and it is also what incoming MIDI modulation uses. Changing it sends CC 17. Pitch-bend range is bnd.o (CC 18, 120 = ±1 octave, 240 = ±2) and filter bend is bnd.F (CC 27). Latch (d.Lat) makes D-MOTION a toggle instead of momentary; latch is not a CC.",
+					"caveat": "The chart transmits this parameter as a control change, but it never says which 0–127 value matches each display name. The page only notices that the CC moved. Set the display to the name in the step.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "D-MOTION"],
+					"view": "spectrum",
+					"goal": {
+						"touch": [17]
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 25,
+						"section": "LFO Modulation Depth",
+						"quote": "When the OSC or FILTER receive D-MOTION signals or MIDI modulation, they are controlled by the LFO sine wave output (producing vibrato or growl effects)."
+					}
+				}
+			]
+		},
+		{
+			"id": "step-sequencer",
+			"track": "core",
+			"chapter": "03-sequencer-and-motions.md",
+			"title": "The step sequencer",
+			"blurb": "Put a C on a step, press play, press stop.",
+			"steps": [
+				{
+					"title": "Steps, not bars",
+					"do": "A step holds a pitch, a velocity, a gate, a probability, sub-steps, and any motions. Press STEP so it lights. The white pads are now steps 1–16. PORTA ON and PORTA TIME (marked ‹ and ›) change the page: 1–16, 17–32, 33–48, 49–64.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["STEP", "PAD", "PORTA ON", "PORTA TIME"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 32,
+						"section": "What is a sequencer?",
+						"quote": "With the S-1 sequencer, you can handle the following performance data in units of playing time called “steps”."
+					}
+				},
+				{
+					"title": "Put a note on a step",
+					"do": "REC should be dark and STEP lit. Press a step pad. That step gets C5 and the pad lights. Press it again to delete the note. Hold the pad to see the note number.",
+					"listen": "Nothing yet, until you press play.",
+					"caveat": "Step pads in this mode are selectors, and the chart has no per-step CC. The page cannot tell a C5 was stored. Press Done.",
+					"controls": ["STEP", "REC", "PAD"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 34,
+						"section": "Inputting with the step pads",
+						"quote": "A note (C5) is input to the step you selected, and the step pad lights up."
+					}
+				},
+				{
+					"title": "Play, then stop",
+					"do": "Press PLAY. Press it again to stop. The chart transmits Start and Stop (and not Continue). This step advances when a Start arrives, then the next step waits for a Stop. If your S-1 does not send them, press Skip — the manual never prints “PLAY sends Start”.",
+					"listen": "The C5 on the beat.",
+					"controls": ["PLAY"],
+					"view": "spectrogram",
+					"goal": {
+						"realtime": "start"
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 5,
+						"section": "[►] (PLAY)",
+						"quote": "Plays the pattern. Press the button again to stop playback."
+					}
+				},
+				{
+					"title": "Stop",
+					"do": "Press PLAY again so it goes dark.",
+					"caveat": "The chart transmits Stop and does not transmit Continue. This step advances when a Stop message arrives. The manual never names that byte next to the button; if nothing arrives, press Skip.",
+					"controls": ["PLAY"],
+					"view": "spectrogram",
+					"goal": {
+						"realtime": "stop"
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 5,
+						"section": "[►] (PLAY)",
+						"quote": "Plays the pattern. Press the button again to stop playback."
+					}
+				}
+			]
+		},
+		{
+			"id": "step-edit",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "03-sequencer-and-motions.md",
+			"title": "Edit a step",
+			"blurb": "Pitch, velocity, gate and a tie. None of that is a control change.",
+			"steps": [
+				{
+					"title": "Open the step’s data",
+					"do": "With STEP lit and REC dark, hold a step pad that has a note. The display shows its data. Press D-MOTION while you keep holding to cycle note number, velocity, gate, probability and sub-step.",
+					"caveat": "There is no CC for note number, velocity, gate, probability or sub-step. Press Done when you have seen the display change.",
+					"controls": ["STEP", "PAD", "D-MOTION"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 34,
+						"section": "Editing the notes and performance data",
+						"quote": "When you press the [D-MOTION] button while holding down a step pad, the display switches in the following order."
+					}
+				},
+				{
+					"title": "Velocity and gate",
+					"do": "Hold the pad, land on velocity (v.100, range 1–127) or gate (G. and a length, 1–100). Turn TEMPO/VALUE. Gate 100 plus the same note on the next step plays as a tie. Ver. 1.02 also lets you do this from the keyboard-pad editor: hold the note pad and press D-MOTION.",
+					"controls": ["PAD", "D-MOTION", "TEMPO/VALUE", "REC"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 34,
+						"section": "Velocity",
+						"quote": "v.100 Sets the velocity. Setting range: 1–127"
+					}
+				},
+				{
+					"title": "A chord on one step",
+					"do": "Press STEP so it goes dark and REC so it lights. Turn TEMPO/VALUE to the step. Press up to four keyboard pads. They toggle on and off. That is the chord editor.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["STEP", "REC", "TEMPO/VALUE", "PAD"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 36,
+						"section": "Editing with the keyboard pads (chord)",
+						"quote": "You can play up to four notes at the same time."
+					}
+				},
+				{
+					"title": "Tie a note",
+					"do": "In that keyboard editor (Ver. 1.02), hold the note’s pad and press HOLD to tie it into the next step. You cannot tie if that same note is already on the next step.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["HOLD", "PAD", "REC"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 36,
+						"section": "Inputting a tie (Ver. 1.02)",
+						"quote": "To input a tie that extends to the next step, press the [HOLD] button while holding down the keyboard pad of the note whose length you wish to change."
+					}
+				}
+			]
+		},
+		{
+			"id": "sub-step",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "03-sequencer-and-motions.md",
+			"title": "Sub-steps",
+			"blurb": "Slice one step into repeated hits. The manual’s own example is ooÈ.",
+			"steps": [
+				{
+					"title": "Open sub-step",
+					"do": "Hold a step pad that has a note and press D-MOTION until the display shows the sub-step (o and a gap mark). o plays, the other mark does not. The manual’s example ooÈ plays the first two slices and skips the third.",
+					"listen": "A ratchet or a stutter on that one step.",
+					"caveat": "Sub-step is not a control change. It does nothing on an empty step or in the middle of a tie, the manual says. The Ver. 1.02 update notes describe a fix where a non-plain sub-step used to ignore probability; the owner’s manual does not restate that fix.",
+					"controls": ["STEP", "PAD", "D-MOTION", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 34,
+						"section": "Sub step",
+						"quote": "For example, when ooÈ is indicated, the step is divided into three parts, with the first and second parts being played and the third part not played."
+					}
+				},
+				{
+					"title": "It hits every note in the step",
+					"do": "If the step is a chord, the sub-step pattern applies to all of its notes. Turn TEMPO/VALUE while you hold the pad to change the pattern, then let go.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["PAD", "TEMPO/VALUE", "D-MOTION"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 34,
+						"section": "Sub step",
+						"quote": "This affects all notes within the step."
+					}
+				}
+			]
+		},
+		{
+			"id": "probability",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "03-sequencer-and-motions.md",
+			"title": "Probability",
+			"blurb": "Per step, then a master offset for the whole pattern. Neither one is MIDI.",
+			"steps": [
+				{
+					"title": "One step’s chance",
+					"do": "Hold the step pad, press D-MOTION until you see P. and a number (1–100). 100 always plays. Turn TEMPO/VALUE. The manual says this applies to every note in the step.",
+					"caveat": "No probability CC exists in the chart.",
+					"controls": ["PAD", "D-MOTION", "TEMPO/VALUE", "STEP"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 34,
+						"section": "Probability",
+						"quote": "P.100 Sets the probability for notes to play back."
+					}
+				},
+				{
+					"title": "Master probability",
+					"do": "Hold STEP and turn TEMPO/VALUE, or open menu N.Prb. The value is −100 to 100 in steps of 10, added to each step. It only changes steps whose own probability is 99 or lower. A step at 100 always sounds.",
+					"listen": "Notes start dropping out, or coming back, across the pattern.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["STEP", "TEMPO/VALUE", "SHIFT", "PAD 15"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 59,
+						"section": "master probability",
+						"quote": "Master probability works on steps for which the probability is set to 99 or lower. (Steps always sound if their probability is 100.)"
+					}
+				}
+			]
+		},
+		{
+			"id": "step-loop",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "05-other-useful-functions.md",
+			"title": "Step loop",
+			"blurb": "Loop the steps you hold, live, while the pattern plays.",
+			"steps": [
+				{
+					"title": "Enter step loop",
+					"do": "Press PLAY. Hold SHIFT and press PATTERN. PATTERN blinks. That is step loop mode.",
+					"caveat": "Step loop is not a control change. PLAY may send Start; entering the loop mode does not have a message of its own.",
+					"controls": ["PLAY", "SHIFT", "PATTERN"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 53,
+						"section": "step loop",
+						"quote": "You can make a selected step or steps play back in a loop during pattern playback."
+					}
+				},
+				{
+					"title": "Hold the steps, then leave",
+					"do": "Keep holding the step pads you want repeated. More than one step can loop at once. Press PATTERN to exit.",
+					"listen": "Those steps cycle until you leave.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["PATTERN", "PAD", "STEP"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 53,
+						"section": "step loop",
+						"quote": "Keep pressing the step pads [1]–[16] that you want to play repeatedly."
+					}
+				}
+			]
+		},
+		{
+			"id": "tempo-shuffle",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "01-panel-and-playing.md",
+			"title": "Tempo and shuffle",
+			"blurb": "BPM on the main screen, tenths with SHIFT, and shuffle from −90 to +90.",
+			"steps": [
+				{
+					"title": "Set the tempo",
+					"do": "On the main screen (no menu open), turn TEMPO/VALUE. That is the BPM.",
+					"listen": "The pattern speeds up or slows down.",
+					"caveat": "Tempo is not a control change. The chart does transmit MIDI clock, but clock runs whenever the sequencer runs, so a clock byte is not “you edited the tempo”. Press Done.",
+					"controls": ["TEMPO/VALUE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 11,
+						"section": "Setting the tempo",
+						"quote": "Turn the [TEMPO/VALUE] knob to set the tempo."
+					}
+				},
+				{
+					"title": "Fine tune",
+					"do": "Hold SHIFT and turn TEMPO/VALUE. The manual says the step is 0.1.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/01-panel-and-playing.md",
+						"page": 11,
+						"section": "Setting the tempo",
+						"quote": "The value can be adjusted (fine-tuned) in steps of 0.1."
+					}
+				},
+				{
+					"title": "Shuffle",
+					"do": "Hold SHIFT and press pad 3 (SHUFFLE). Turn TEMPO/VALUE. The range printed in the function list is −90 to 0 to 90.",
+					"listen": "The off-beats swing late or early.",
+					"caveat": "Shuffle is not in the control-change list.",
+					"controls": ["SHIFT", "PAD 3", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 64,
+						"section": "SHUFFLE",
+						"quote": "Pad [3] (SHUFFLE) Configures the shuffle settings (-90–0–90)."
+					}
+				}
+			]
+		},
+		{
+			"id": "pattern-length",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "03-sequencer-and-motions.md",
+			"title": "Length and step size",
+			"blurb": "Last step, from 1 to 64, and the note value of each step. Watch the triplet names.",
+			"steps": [
+				{
+					"title": "Last step",
+					"do": "Hold SHIFT and press pad 4 (LAST). Turn TEMPO/VALUE. The length is 1–64 steps. Pages still flip with PORTA ON and PORTA TIME while STEP is lit.",
+					"caveat": "Last step is not a control change.",
+					"controls": ["SHIFT", "PAD 4", "TEMPO/VALUE", "STEP"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 33,
+						"section": "last step",
+						"quote": "Hold down the [SHIFT] button and press pad [4] (LAST)."
+					}
+				},
+				{
+					"title": "Pattern scale",
+					"do": "Hold PATTERN and turn TEMPO/VALUE, or open P.SCL from the menu. The menu (p. 68) lists eighths, sixteenths, thirty-seconds, and the triplets 8t, 16t and 32t.",
+					"caveat": "Page 46 still prints the older triplet names “4t: quarter-note triplets–16t: sixteenth-note triplets”. The Ver. 1.02 update notes say that display was corrected to 8t–32t. Trust the menu list. Pattern scale is not a CC.",
+					"controls": ["PATTERN", "TEMPO/VALUE", "SHIFT", "PAD 15"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 68,
+						"section": "Pattern Scale",
+						"quote": "Sets the length of a single step in the pattern."
+					}
+				}
+			]
+		},
+		{
+			"id": "realtime-record",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "03-sequencer-and-motions.md",
+			"title": "Record a performance",
+			"blurb": "Arm REC, press play, play the pads. The page can hear the notes. It cannot hear that they were stored.",
+			"steps": [
+				{
+					"title": "Arm and start",
+					"do": "Press REC so it lights (the display shows the steps, standby). Press PLAY. The display shows rEc and recording runs to the last step, then loops. Count-in (Cnt.I, off or 2–4 beats) and the metronome are in the menu if you want them.",
+					"caveat": "REC lighting up is not MIDI. This step advances on MIDI Start, which is the play half. If Start never arrives, press Skip.",
+					"controls": ["REC", "PLAY"],
+					"view": "spectrogram",
+					"goal": {
+						"realtime": "start"
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 40,
+						"section": "Inputting your performance in real time",
+						"quote": "Press the [●] (REC) button to make it light up."
+					}
+				},
+				{
+					"title": "Play the pads",
+					"do": "Play the keyboard pads while it records. An external MIDI keyboard works too, the manual says. The page advances after two Note Ons. Those notes prove you played; they do not prove the sequencer stored them.",
+					"listen": "Your playing, on the current step as it passes.",
+					"controls": [
+						"PAD 1",
+						"PAD 2",
+						"PAD 3",
+						"PAD 4",
+						"PAD 5",
+						"PAD 6",
+						"PAD 7",
+						"PAD 8",
+						"PAD 9",
+						"PAD 10",
+						"PAD 11",
+						"PAD 12",
+						"PAD 13",
+						"PAD 14",
+						"PAD 15",
+						"PAD 16"
+					],
+					"view": "spectrogram",
+					"goal": {
+						"notes": 2
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 40,
+						"section": "Inputting your performance in real time",
+						"quote": "Use the keyboard pads to record to the step that’s now playing."
+					}
+				}
+			]
+		},
+		{
+			"id": "step-tools",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "03-sequencer-and-motions.md",
+			"title": "Copy, paste, insert, double, clear",
+			"blurb": "The step menu under SHIFT + STEP + pad 15. Cancel is always pad 1.",
+			"steps": [
+				{
+					"title": "Copy, and know it has not landed yet",
+					"do": "Light REC, turn TEMPO/VALUE to the source step, hold STEP and press pad 15, choose COPY, press pad 2 (ENTER). donE means the step is on the clipboard. The manual says the pattern is unchanged at this point.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["REC", "STEP", "PAD 15", "TEMPO/VALUE", "PAD 2"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 45,
+						"section": "Copying step (COPY)",
+						"quote": "There is no effect on the pattern at this time."
+					}
+				},
+				{
+					"title": "Paste, insert or double — or cancel a clear",
+					"do": "Paste is PStE, insert-empty is InSr, double-the-length is dUPL, all from that same STEP + menu. Clearing notes is SHIFT + pad 11: CLr.n blinks. Pad 2 executes. Pad 1 (EXIT) cancels. Use EXIT if you only wanted to see the prompt.",
+					"caveat": "None of these edits transmit a dedicated CC.",
+					"controls": ["STEP", "PAD 15", "PAD 11", "PAD 1", "PAD 2"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 40,
+						"section": "CLEAR NOTE",
+						"quote": "If you decide to cancel, press pad [1] (EXIT)."
+					}
+				}
+			]
+		},
+		{
+			"id": "arpeggiator",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "05-other-useful-functions.md",
+			"title": "The arpeggiator",
+			"blurb": "Chords become a repeating phrase. On, type, rate, and hold. No arp CC in the chart.",
+			"steps": [
+				{
+					"title": "Turn the arpeggiator on",
+					"do": "Hold SHIFT and press pad 8 (ARPEGGIO ON) to switch it on, then hold a few pads together.",
+					"listen": "Your chord plays one note at a time, over and over.",
+					"look": "A staircase of notes in the spectrogram.",
+					"caveat": "ARPEGGIO ON, TYPE and RATE are not in the control-change list. Ver. 1.02 also lets you tap SHIFT + pad 8 to toggle the arp without the value knob. Press Done.",
+					"controls": ["SHIFT", "PAD 8"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 49,
+						"section": "Playing arpeggios",
+						"quote": "On the S-1, you can automatically arpeggiate the chords you play on the keyboard pad."
+					}
+				},
+				{
+					"title": "Arp type and latch",
+					"do": "SHIFT + pad 9 (ARPEGGIO TYPE) picks Up, Down, Random and more. Press HOLD while it plays to keep it going hands-free.",
+					"listen": "The same notes in a new order.",
+					"look": "The staircase changes direction or scatters.",
+					"caveat": "The manual also says that with HOLD lit, playing a new chord replaces the one that is running. ENV TRG changes how the arp’s envelope fires; that section is on this same page.",
+					"controls": ["SHIFT", "PAD 9", "HOLD"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 51,
+						"section": "Using the arpeggiator together with the hold function",
+						"quote": "When you press the [HOLD] button to make it light up while an arpeggio is playing, the arpeggio keeps playing even after you take your finger off the keyboard pad."
+					}
+				},
+				{
+					"title": "Rate",
+					"do": "Hold SHIFT and press pad 10 (ARPEGGIO RATE). Turn TEMPO/VALUE. The list is quarter, eighth, sixteenth, thirty-second, and the triplets 8t, 16t, 32t.",
+					"listen": "The same notes, faster or slower, still locked to the tempo.",
+					"caveat": "Arpeggio rate is not a control change.",
+					"controls": ["SHIFT", "PAD 10", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 51,
+						"section": "ARPEGGIO RATE",
+						"quote": "Use the [TEMPO/VALUE] knob to select the arpeggio note length."
+					}
+				}
+			]
+		},
+		{
+			"id": "metronome",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "05-other-useful-functions.md",
+			"title": "Metronome and count-in",
+			"blurb": "Click on record, on record and play, or never. A count-in of 2–4 beats.",
+			"steps": [
+				{
+					"title": "When the click plays",
+					"do": "SHIFT + pad 15, then Ntro. OFF, rEC (only while recording), or rC.PL (record and play). Ntr.L is the level, 0–100. Ver. 1.02 resets the click at the start of the pattern. The knob table also lists SHIFT + REC as a metronome-mode shortcut.",
+					"caveat": "Metronome mode and level are not control changes.",
+					"controls": ["SHIFT", "PAD 15", "REC", "TEMPO/VALUE"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 58,
+						"section": "Using the metronome",
+						"quote": "The metronome timing is reset at the beginning of the pattern. (Ver. 1.02)"
+					}
+				},
+				{
+					"title": "Count-in",
+					"do": "In the menu, Cnt.I is Off or 2–4 beats of count-in before recording. The click is quarter notes.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "REC"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/05-other-useful-functions.md",
+						"page": 58,
+						"section": "Count In",
+						"quote": "Here’s how to set the length (the number of beats) of the count-in for recording."
+					}
+				}
+			]
+		},
+		{
+			"id": "sync-and-midi",
+			"track": "side",
+			"parent": "step-sequencer",
+			"chapter": "07-functions-menus-knobs.md",
+			"title": "Sync and MIDI settings",
+			"blurb": "Channel, clock source, sync pulses, thru, and program-change routing. None of these are performance CCs.",
+			"steps": [
+				{
+					"title": "Channel and clock",
+					"do": "SHIFT + pad 15. CH is the synth MIDI channel, 1–16 (the chart’s default is 3). SYnC is the clock source: AUtO, Int, NiDi or USb. If a plug is in SYNC IN, the manual says that jack wins no matter what SYnC says. S.cLk is sync pulses per beat: 1, 2, 3, 4, 6, 8, 12 or 24.",
+					"caveat": "Changing CH here does not move a CC, and if you change the S-1’s channel the page will stop hearing it until Connect S-1 uses the same channel. Press Done without changing CH unless you mean to.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 68,
+						"section": "MIDI Channel",
+						"quote": "CH (MIDI Channel) 1–16 Specifies the MIDI transmit/receive channel."
+					}
+				},
+				{
+					"title": "Thru and program change",
+					"do": "thru copies MIDI IN to MIDI OUT. txPc sends a program change when the pattern changes. rxPc changes the pattern when a program change arrives. Pc.Ch is the channel for those messages (the chart’s default is 16, separate from the synth channel).",
+					"caveat": "This page listens for program change on any channel, because Pc.Ch is its own setting and there is no SysEx to read it. It will not invent a pattern-change if txPc is Off.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PATTERN"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 68,
+						"section": "Tx Program Change",
+						"quote": "Sets whether program change messages are transmitted or not when the pattern changes."
+					}
+				},
+				{
+					"title": "What the chart refuses",
+					"do": "There is no System Exclusive either direction. Note Off is not transmitted (a Note On is). Pitch bend is recognized and not transmitted. Mod wheel, pan, expression, damper and the portamento pedal CC are receive-only. Continue is neither. That is why a lesson either advances on a transmitted message or asks you to press Done.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["PAD"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/08-specs-signal-midi.md",
+						"page": 73,
+						"section": "System Exclusive",
+						"quote": "System Exclusive x x"
+					}
+				}
+			]
+		},
+		{
+			"id": "motion",
+			"track": "core",
+			"chapter": "03-sequencer-and-motions.md",
+			"title": "Motion recording",
+			"blurb": "Knob moves stored in the pattern. Up to eight parameters, plus pitch bend.",
+			"steps": [
+				{
+					"title": "What gets stored",
+					"do": "A motion is the knob moves (and, in real-time record only, incoming CC and pitch bend) played back with the pattern. The limit is eight parameters plus pitch bend. FULL means you hit the limit. Preset 1-13 is the manual’s example of filter frequency and resonance motion.",
+					"caveat": "Playback can differ slightly from what you turned, the manual says, because of rounding. The S-1 never sends a message that means “a motion was stored”.",
+					"controls": ["FREQ", "RESO", "REC"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 44,
+						"section": "What’s a motion?",
+						"quote": "On the S-1, you can record and play back the changes you make to a maximum of eight parameters and to the pitch bend for each pattern."
+					}
+				},
+				{
+					"title": "Record onto the playing step",
+					"do": "Light REC, press PLAY so recording is running (type D in the manual’s table), and sweep FREQ. Incoming MIDI CC and pitch bend are recorded only in this real-time way. Holding a step pad and turning a knob (type A) writes that one step instead.",
+					"listen": "The filter opens and, next time around, opens again by itself.",
+					"look": "A bright streak each time the recorded sweep passes.",
+					"caveat": "The page advances because FREQ (CC 74) moved. That is the knob, not a confirmation the motion was kept.",
+					"controls": ["REC", "PLAY", "FREQ"],
+					"view": "spectrogram",
+					"goal": {
+						"touch": [74],
+						"moves": 4
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 40,
+						"section": "motion",
+						"quote": "Turn the knob while you play to register a motion."
+					}
+				}
+			]
+		},
+		{
+			"id": "clear-motion",
+			"track": "side",
+			"parent": "motion",
+			"chapter": "03-sequencer-and-motions.md",
+			"title": "Clear a motion",
+			"blurb": "Erase every motion, or only the knob you turn while CLr.N is blinking.",
+			"steps": [
+				{
+					"title": "Open the clear prompt",
+					"do": "Hold SHIFT and press pad 12 (CLEAR MOTION). CLr.N blinks. Pad 2 (ENTER) deletes. Pad 1 (EXIT) cancels. For this step, cancel.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "PAD 12", "PAD 1", "PAD 2"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 40,
+						"section": "Deleting all motions",
+						"quote": "Hold down the [SHIFT] button and press pad [12] (CLEAR MOTION)."
+					}
+				},
+				{
+					"title": "Erase one knob, if you mean it",
+					"do": "While CLr.N is blinking, turning a knob deletes only that knob’s motion. The manual shows CLr when it is gone, or nonE if that knob had no motion. On a selected step (the display shows St. and a number) this hits that step; otherwise it hits the pattern. If you do not want to delete anything, press EXIT instead of turning a knob.",
+					"caveat": "A knob turn does send that knob’s CC, but the page cannot see the CLr.N prompt, so it will not treat a CC as “you deleted a motion”. Press Done.",
+					"controls": ["FREQ", "PAD 1", "PAD 12"],
+					"view": "spectrogram",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/03-sequencer-and-motions.md",
+						"page": 44,
+						"section": "Deleting a motion",
+						"quote": "If “CLr.N” is blinking while the unit is waiting and you turn a knob, the parameter for only that knob is deleted."
+					}
+				}
+			]
+		},
+		{
+			"id": "save-pattern",
+			"track": "core",
+			"chapter": "04-save-copy-reload.md",
+			"title": "Save the pattern",
+			"blurb": "The tone and the sequence are one pattern. Write it, or power-off throws the edits away.",
+			"steps": [
+				{
+					"title": "Tone and sequence travel together",
+					"do": "You do not save a tone in its own slot. The creating-sounds chapter says the tones you make are saved to each pattern. Writing the pattern writes both.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "PAD 16"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 12,
+						"section": "Creating sounds",
+						"quote": "The tones you create are saved to each pattern."
+					}
+				},
+				{
+					"title": "Write",
+					"do": "Hold SHIFT and press pad 16 (WRITE). Turn TEMPO/VALUE: Ptn is this pattern, ALL is every pattern. Pad 2 (ENTER) saves, and the display shows donE. Press ENTER only if you mean to overwrite. Otherwise leave the screen without confirming.",
+					"caveat": "Write is not a control change, and program change is a different message. The page cannot tell a save happened.",
+					"controls": ["SHIFT", "PAD 16", "TEMPO/VALUE", "PAD 2"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
+						"page": 47,
+						"section": "Saving a pattern",
+						"quote": "Hold down the [SHIFT] button and press pad [16] (WRITE)."
+					}
+				},
+				{
+					"title": "What power-off does",
+					"do": "If you do not write, turning the power off puts the pattern back to the last save. The dot at the right of the display is the “edited” mark from the panel chapter.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["POWER", "SHIFT", "PAD 16"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
+						"page": 47,
+						"section": "Saving a pattern",
+						"quote": "Once the power is turned off, any unsaved patterns are reset to their last saved state."
+					}
+				}
+			]
+		},
+		{
+			"id": "pattern-copy",
+			"track": "side",
+			"parent": "save-pattern",
+			"chapter": "04-save-copy-reload.md",
+			"title": "Copy, initialize and reload",
+			"blurb": "Copy to another slot, blank this one, or put back the sound, the sequence, or both.",
+			"steps": [
+				{
+					"title": "Copy, then cancel",
+					"do": "SHIFT + pad 15, choose COPY, press pad 2. Turn TEMPO/VALUE to a destination. Pad 2 copies. Pad 1 (EXIT) cancels. Cancel unless you have a slot you mean to overwrite.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2", "PAD 1"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
+						"page": 48,
+						"section": "Copying the patterns",
+						"quote": "To cancel, press pad [1] (EXIT)."
+					}
+				},
+				{
+					"title": "Initialize, if you mean a blank pattern",
+					"do": "Menu init blanks the current pattern’s sequence and tone. It stays blank only until power-off unless you write it. Find init so you know where it is, then press pad 1 (EXIT). Do not press ENTER unless you want this pattern cleared.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 1"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
+						"page": 48,
+						"section": "Initializing a pattern",
+						"quote": "This shows how to initialize the currently selected pattern (sequence and tone)."
+					}
+				},
+				{
+					"title": "Reload sound, sequence, or both",
+					"do": "rLod puts back the whole last save. rL.Sd puts back only the tone (SHIFT + pad 1 + POLY does that too). rL.Sq puts back only the sequence. These are menu items; ENTER runs them. EXIT leaves without reloading.",
+					"caveat": "Reload does not send a program change or a CC the chart names.",
+					"controls": ["SHIFT", "PAD 15", "POLY", "PAD 1", "TEMPO/VALUE"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/04-save-copy-reload.md",
+						"page": 48,
+						"section": "Reload the tone (Reload Sound)",
+						"quote": "Press the [SHIFT] button, pad [1] (EXIT) and the [POLY] pad at the same time to reload the sound."
+					}
+				}
+			]
+		},
+		{
+			"id": "backup",
+			"track": "side",
+			"parent": "save-pattern",
+			"chapter": "06-connect-reset-backup.md",
+			"title": "Back up and restore",
+			"blurb": "The S-1 becomes a drive. Read the steps. Do not start them unless you mean to take it offline.",
+			"steps": [
+				{
+					"title": "Backup",
+					"do": "The manual’s backup: connect USB, hold PLAY while turning power on, wait 1–2 minutes while the pads show progress, open the S-1 drive, copy everything in the BACKUP folder, eject, power off. This lesson does not ask you to do that now — it drops USB MIDI for those minutes.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["PLAY", "POWER"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+						"page": 63,
+						"section": "Backup",
+						"quote": "While holding down the [►] (PLAY) button, turn on the power."
+					}
+				},
+				{
+					"title": "Restore",
+					"do": "Restore uses the same drive, the RESTORE folder, then the HOLD button. donE means it finished, and you power off. Do not press HOLD on that screen unless the files you want are already in RESTORE.",
+					"caveat": "The manual does not describe a MIDI message for backup or restore. Press Done.",
+					"controls": ["HOLD", "POWER"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+						"page": 63,
+						"section": "Restoring",
+						"quote": "Press the [HOLD] button. This restores the data."
+					}
+				}
+			]
+		},
+		{
+			"id": "factory-reset",
+			"track": "side",
+			"parent": "save-pattern",
+			"chapter": "06-connect-reset-backup.md",
+			"title": "Factory reset — cancel only",
+			"blurb": "How to recognize the screen, and the only action this lesson allows: turn the power off.",
+			"steps": [
+				{
+					"title": "What the screen is",
+					"do": "Factory reset returns the S-1 to its factory state. You are not going to start it. If you ever see FACt and D-MOTION blinking, you are on that screen.",
+					"caveat": "The manual’s next instruction after the cancel line is the button that executes the reset. This lesson stops before that button. Do not press D-MOTION.",
+					"controls": ["POWER", "HOLD"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+						"page": 62,
+						"section": "factory reset",
+						"quote": "Here’s how to return the S-1 to its factory-set state."
+					}
+				},
+				{
+					"title": "Cancel",
+					"do": "To cancel, turn the power off. That is the whole step. Then turn it back on when you want the instrument again, without holding HOLD.",
+					"caveat": "There is no MIDI message for this. Press Done once you have read the cancel.",
+					"controls": ["POWER"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/06-connect-reset-backup.md",
+						"page": 62,
+						"section": "factory reset",
+						"quote": "To cancel the factory reset, turn off the power."
+					}
+				}
+			]
+		},
+		{
+			"id": "system-settings",
+			"track": "side",
+			"parent": "save-pattern",
+			"chapter": "07-functions-menus-knobs.md",
+			"title": "Menus and the system settings",
+			"blurb": "How a menu works, plus tune, pad velocity, pattern volume and the USB level.",
+			"steps": [
+				{
+					"title": "Open, edit, leave",
+					"do": "Hold SHIFT and press pad 15 (MENU). Turn TEMPO/VALUE to an item, pad 2 (ENTER) to edit, turn again, pad 1 (EXIT) to leave. Holding SHIFT while you turn jumps in larger steps. Functions that are not the menu are SHIFT plus one of the other pads; the list is on pp. 64–66.",
+					"caveat": "The manual describes the panel control. It does not give a MIDI message for it, so this step stays manual.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "PAD 2", "PAD 1"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 67,
+						"section": "Using the menus",
+						"quote": "Hold down the [SHIFT] button and press step pad [15] (MENU)."
+					}
+				},
+				{
+					"title": "Tune, velocity, pattern volume, USB level",
+					"do": "tUnE is the master tune, 433.0–448.0 Hz, default 440. vELo is how hard the pads play, 1–127. vOL is this pattern’s volume, 0–127, saved with the pattern. USb.d is the USB output level, or OFF to follow the VOLUME knob.",
+					"caveat": "None of vOL, tUnE, vELo or USb.d is in the control-change list. Fine tune of the oscillator is a different control: SHIFT + RANGE, CC 76, ±1 octave.",
+					"controls": ["SHIFT", "PAD 15", "TEMPO/VALUE", "RANGE", "VOLUME"],
+					"view": "spectrum",
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/07-functions-menus-knobs.md",
+						"page": 69,
+						"section": "Tune",
+						"quote": "433.0–448.0 Sets the master tuning."
+					}
+				},
+				{
+					"title": "Fine tune the oscillator",
+					"do": "Hold SHIFT and turn RANGE. The oscillator chapter calls this fine tune, ±1 octave. It sends CC 76. That is separate from the master tune in the menu.",
+					"listen": "The pitch drifts, not by whole octaves.",
+					"controls": ["SHIFT", "RANGE"],
+					"view": "scope",
+					"goal": {
+						"touch": [76],
+						"moves": 2
+					},
+					"cite": {
+						"doc": "docs/reference/roland-s1-v102/02-creating-sounds.md",
+						"page": 13,
+						"section": "FINE TUNE",
+						"quote": "You can turn the [RANGE] knob while holding down the [SHIFT] button to alter the pitch within a ±1 octave range (this works as a FINE TUNE knob)."
 					}
 				}
 			]
