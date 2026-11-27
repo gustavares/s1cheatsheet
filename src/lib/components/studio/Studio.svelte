@@ -9,12 +9,14 @@
 	import KeystepPanel from './KeystepPanel.svelte';
 	import LessonPlayer from './LessonPlayer.svelte';
 	import PatchLibrary from './PatchLibrary.svelte';
+	import SequencerPanel from './SequencerPanel.svelte';
 
 	const TABS: { id: StudioTab; label: string; blurb: string }[] = [
 		{ id: 'patches', label: 'Patches', blurb: 'Save and recall sounds' },
 		{ id: 'drills', label: 'Drills', blurb: 'Recreate this sound' },
 		{ id: 'lessons', label: 'Lessons', blurb: 'Learn the knobs step by step' },
-		{ id: 'keystep', label: 'KeyStep', blurb: 'Keys, chords and scales' }
+		{ id: 'keystep', label: 'KeyStep', blurb: 'Keys, chords and scales' },
+		{ id: 'sequencer', label: 'Sequencer', blurb: 'Steps and parameter locks' }
 	];
 </script>
 
@@ -59,6 +61,8 @@
 			<LessonPlayer />
 		{:else if uiStore.studioTab === 'keystep'}
 			<KeystepPanel />
+		{:else if uiStore.studioTab === 'sequencer'}
+			<SequencerPanel />
 		{/if}
 	</div>
 </section>
