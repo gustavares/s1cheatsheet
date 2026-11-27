@@ -5,7 +5,9 @@
 	 * the panel drawing (with Connect S-1 and the Visualizer) stays alongside.
 	 */
 	import { uiStore, type StudioTab } from '#lib/stores/ui.svelte.js';
+	import { recorderStore } from '#lib/stores/recorder.svelte.js';
 	import DrillTrainer from './DrillTrainer.svelte';
+	import JamRecorder from './JamRecorder.svelte';
 	import KeystepPanel from './KeystepPanel.svelte';
 	import LessonPlayer from './LessonPlayer.svelte';
 	import PatchLibrary from './PatchLibrary.svelte';
@@ -16,7 +18,8 @@
 		{ id: 'drills', label: 'Drills', blurb: 'Recreate this sound' },
 		{ id: 'lessons', label: 'Lessons', blurb: 'Learn the knobs step by step' },
 		{ id: 'keystep', label: 'KeyStep', blurb: 'Keys, chords and scales' },
-		{ id: 'sequencer', label: 'Sequencer', blurb: 'Steps and parameter locks' }
+		{ id: 'sequencer', label: 'Sequencer', blurb: 'Steps and parameter locks' },
+		{ id: 'recorder', label: 'Recorder', blurb: 'Record jams as WAV' }
 	];
 </script>
 
@@ -41,7 +44,12 @@
 				aria-controls="studio-panel"
 				onclick={() => (uiStore.studioTab = tab.id)}
 			>
-				<span class="studio__tab-label">{tab.label}</span>
+				<span class="studio__tab-label"
+					>{tab.label}{#if tab.id === 'recorder' && recorderStore.recording}<span
+							class="studio__rec"
+							aria-label="(recording)"
+						></span>{/if}</span
+				>
 				<span class="studio__tab-blurb">{tab.blurb}</span>
 			</button>
 		{/each}
@@ -63,6 +71,8 @@
 			<KeystepPanel />
 		{:else if uiStore.studioTab === 'sequencer'}
 			<SequencerPanel />
+		{:else if uiStore.studioTab === 'recorder'}
+			<JamRecorder />
 		{/if}
 	</div>
 </section>
@@ -127,6 +137,17 @@
 		font-size: 0.82rem;
 		font-weight: 800;
 		color: #f1f5f9;
+	}
+
+	.studio__rec {
+		display: inline-block;
+		inline-size: 0.5rem;
+		block-size: 0.5rem;
+		margin-inline-start: 0.35rem;
+		vertical-align: middle;
+		background: #ef4444;
+		border-radius: 999px;
+		box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
 	}
 
 	.studio__tab-blurb {
