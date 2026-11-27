@@ -27,6 +27,21 @@ export interface MidiEvent {
 	shiftLayer: boolean;
 }
 
+/**
+ * An incoming message that isn't a control change. Lessons use these to advance a step.
+ * Note Off is not included: the chart says the S-1 does not transmit it. Clock and
+ * Active Sensing are ignored because they run on their own.
+ */
+export interface InputNotice {
+	kind: 'note' | 'program' | 'start' | 'stop';
+	/** Increments on every notice so a repeated note still counts as a new event. */
+	seq: number;
+	note?: number;
+	velocity?: number;
+	/** Program number 0–127 as received. The chart's true range for the S-1 is 0–63. */
+	program?: number;
+}
+
 export interface ParameterValue {
 	cc: number;
 	parameter: string;
@@ -59,12 +74,15 @@ class MidiStore {
 	/** Last known value per CC number (unknown until sent or received). */
 	values = $state<Record<number, number>>({});
 	lastEvent = $state<MidiEvent | null>(null);
+	/** Latest incoming note, program change, or start/stop. Null until one arrives. */
+	inputNotice = $state<InputNotice | null>(null);
 	/** Faceplate control IDs currently lit by MIDI activity. */
 	flashing = $state<Record<string, boolean>>({});
 
 	#access: MIDIAccess | null = null;
 	#boundInput: MIDIInput | null = null;
 	#flashTimers = new Map<string, ReturnType<typeof setTimeout>>();
+	#noticeSeq = 0;
 
 	get isConnected(): boolean {
 		return this.status === 'connected';
@@ -143,6 +161,7 @@ class MidiStore {
 		this.outputId = '';
 		this.values = {};
 		this.lastEvent = null;
+		this.inputNotice = null;
 		this.flashing = {};
 	}
 
@@ -254,12 +273,39 @@ class MidiStore {
 		}
 	}
 
+	#notice(partial: Omit<InputNotice, 'seq'>) {
+		this.inputNotice = { ...partial, seq: ++this.#noticeSeq };
+	}
+
 	#handleMessage = (event: MIDIMessageEvent) => {
 		const data = event.data;
-		if (!data || data.length < 3) return;
-		const isControlChange = (data[0] & 0xf0) === 0xb0;
-		if (!isControlChange || (data[0] & 0x0f) !== this.channel - 1) return;
-		this.#record('in', data[1], data[2]);
+		if (!data || data.length < 1) return;
+		const status = data[0];
+		// System real-time has no channel. Continue (0xFB) is not transmitted.
+		// Clock (0xF8) and Active Sensing (0xFE) run by themselves, so they aren't lessons.
+		if (status === 0xfa) {
+			this.#notice({ kind: 'start' });
+			return;
+		}
+		if (status === 0xfc) {
+			this.#notice({ kind: 'stop' });
+			return;
+		}
+		if (status >= 0xf8) return;
+		if (data.length < 2) return;
+		const type = status & 0xf0;
+		// Program change uses its own channel (menu: Pc.Ch, default 16), not the synth channel.
+		if (type === 0xc0) {
+			this.#notice({ kind: 'program', program: data[1] });
+			return;
+		}
+		if ((status & 0x0f) !== this.channel - 1 || data.length < 3) return;
+		// Note On with velocity 0 is a note-off. The chart doesn't transmit Note Off either way.
+		if (type === 0x90 && data[2] > 0) {
+			this.#notice({ kind: 'note', note: data[1], velocity: data[2] });
+			return;
+		}
+		if (type === 0xb0) this.#record('in', data[1], data[2]);
 	};
 
 	#flash(id: string) {

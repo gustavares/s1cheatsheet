@@ -12,6 +12,7 @@
 		BookOpen,
 		Check,
 		Eye,
+		GitBranch,
 		LayoutGrid,
 		Music,
 		RotateCcw,
@@ -20,15 +21,22 @@
 		Wand2
 	} from '@lucide/svelte';
 	import {
-		LESSONS,
+		CHAPTERS,
+		CORE_LESSONS,
+		SIDE_LESSONS,
 		ccLabel,
+		chapterTitle,
+		citeDocLabel,
 		conditionLabel,
 		conditionMet,
 		goalMet,
+		lessonsInChapter,
 		loadLessonProgress,
 		saveLessonProgress,
 		setupMessages,
+		sidesOf,
 		watchedCcs,
+		type Lesson,
 		type LessonProgress
 	} from '#lib/lessons.js';
 	import { audioStore } from '#lib/stores/audio.svelte.js';
@@ -42,24 +50,38 @@
 	const VIEW_LABEL = { scope: 'Oscilloscope', spectrum: 'Spectrum', spectrogram: 'Spectrogram' };
 
 	let progress = $state<Record<string, LessonProgress>>(loadLessonProgress());
+	let browser = $state<'core' | 'chapter'>('core');
 	let openId = $state<string | null>(null);
 	let stepIndex = $state(0);
 	let moves = $state(0);
+	let notesSeen = $state(0);
+	let sawProgram = $state(false);
+	let sawRealtime = $state(false);
 	let completed = $state(false);
 	let holding = $state(false);
 	let message = $state('');
 	let advanceTimer: ReturnType<typeof setTimeout> | undefined;
 	let lastSeen: MidiEvent | null = midiStore.lastEvent;
+	let lastInput = midiStore.inputNotice;
 	let skipEvent: MidiEvent | null = null;
 
-	const lesson = $derived(LESSONS.find((l) => l.id === openId) ?? null);
-	const lessonNumber = $derived(lesson ? LESSONS.indexOf(lesson) + 1 : 0);
+	const lesson = $derived(
+		CORE_LESSONS.find((l) => l.id === openId) ?? SIDE_LESSONS.find((l) => l.id === openId) ?? null
+	);
 	const step = $derived(lesson ? lesson.steps[stepIndex] : null);
 	const isLast = $derived(lesson ? stepIndex === lesson.steps.length - 1 : false);
-	const nextLesson = $derived(lesson ? (LESSONS[LESSONS.indexOf(lesson) + 1] ?? null) : null);
+	const coreIndex = $derived(
+		lesson?.track === 'core' ? CORE_LESSONS.findIndex((l) => l.id === lesson.id) : -1
+	);
+	const nextCore = $derived(coreIndex >= 0 ? (CORE_LESSONS[coreIndex + 1] ?? null) : null);
+	const parentLesson = $derived(
+		lesson?.parent ? (CORE_LESSONS.find((l) => l.id === lesson.parent) ?? null) : null
+	);
+	const branches = $derived(lesson?.track === 'core' ? sidesOf(lesson.id) : []);
 	const connected = $derived(midiStore.status === 'connected');
 	const canSend = $derived(connected && midiStore.outputReady);
-	const doneCount = $derived(LESSONS.filter((l) => progress[l.id]?.done).length);
+	const coreDone = $derived(CORE_LESSONS.filter((l) => progress[l.id]?.done).length);
+	const sideDone = $derived(SIDE_LESSONS.filter((l) => progress[l.id]?.done).length);
 	const lessonFinished = $derived(completed && isLast);
 
 	// Light the step's controls on the drawing and show the right Visualizer view.
@@ -69,15 +91,38 @@
 		if (s) untrack(() => (vizStore.view = s.view));
 	});
 
-	// Count the player's moves and check the goal on every CC the knob mirror sees.
+	// CCs from the knob mirror, plus notes, program change, and start/stop.
 	$effect(() => {
 		const event = midiStore.lastEvent;
+		const notice = midiStore.inputNotice;
+		const goal = step?.goal;
 		untrack(() => {
-			if (!event || event === lastSeen) return;
-			lastSeen = event;
-			if (event === skipEvent || !step?.goal || completed) return;
-			if (watchedCcs(step.goal).includes(event.cc)) moves += 1;
-			if (goalMet(step.goal, midiStore.values, moves)) complete();
+			if (!goal || completed) return;
+			let changed = false;
+			if (event && event !== lastSeen) {
+				lastSeen = event;
+				if (event !== skipEvent) {
+					if (watchedCcs(goal).includes(event.cc)) moves += 1;
+					changed = true;
+				}
+			}
+			if (notice && notice !== lastInput) {
+				lastInput = notice;
+				if (notice.kind === 'note' && goal.notes) notesSeen += 1;
+				if (notice.kind === 'program' && goal.program) sawProgram = true;
+				if (goal.realtime && notice.kind === goal.realtime) sawRealtime = true;
+				changed = true;
+			}
+			if (
+				changed &&
+				goalMet(goal, midiStore.values, moves, {
+					notes: notesSeen,
+					program: sawProgram,
+					realtime: sawRealtime
+				})
+			) {
+				complete();
+			}
 		});
 	});
 
@@ -95,7 +140,7 @@
 	}
 
 	function open(id: string) {
-		const target = LESSONS.find((l) => l.id === id);
+		const target = CORE_LESSONS.find((l) => l.id === id) ?? SIDE_LESSONS.find((l) => l.id === id);
 		if (!target) return;
 		const saved = progress[id];
 		openId = id;
@@ -107,9 +152,13 @@
 		clearTimeout(advanceTimer);
 		stepIndex = Math.max(0, Math.min(lesson.steps.length - 1, index));
 		moves = 0;
+		notesSeen = 0;
+		sawProgram = false;
+		sawRealtime = false;
 		completed = false;
 		message = '';
 		lastSeen = midiStore.lastEvent;
+		lastInput = midiStore.inputNotice;
 		remember(lesson.id, stepIndex, false);
 	}
 
@@ -159,6 +208,12 @@
 		}
 	}
 
+	function lessonMeta(item: Lesson, saved: LessonProgress | undefined): string {
+		if (saved?.done) return `Done · ${item.steps.length} steps`;
+		if (saved) return `Step ${saved.step + 1} of ${item.steps.length}`;
+		return `${item.steps.length} steps`;
+	}
+
 	function valueText(cc: number): string {
 		const v = midiStore.values[cc];
 		return v === undefined ? 'not seen yet' : `now ${v}`;
@@ -170,56 +225,160 @@
 		<header class="tool__head">
 			<h3 id="lessons-title">Guided lessons</h3>
 			<p>
-				Short steps on the real knobs. Each step lights the control on the drawing and says what to
-				listen and look for. With <strong>Connect S-1</strong> on, the page sees your knob moves and
-				moves on by itself; the <strong>Visualizer</strong> shows what each change does.
+				The core path is the short way through the instrument. Side lessons hang off a core lesson
+				and can wait. Each step lights a control on the drawing. With <strong>Connect S-1</strong>
+				on, a step moves on by itself when the S-1 sends a note, a control change, a program change, or
+				start/stop — only messages the MIDI chart says it transmits. Anything else has a
+				<strong>Done</strong> button. Roland publishes this as one Owner’s Manual (v1.02); the parameter
+				lists live in that book, not in a separate guide.
 			</p>
 		</header>
-		<p class="overall">
-			<span class="overall__bar" aria-hidden="true">
-				<span style="inline-size: {(doneCount / LESSONS.length) * 100}%"></span>
-			</span>
-			{doneCount} of {LESSONS.length} lessons done
-		</p>
-		<ol class="cards">
-			{#each LESSONS as item, i (item.id)}
-				{@const saved = progress[item.id]}
-				<li>
-					<button
-						type="button"
-						class="card"
-						class:card--done={saved?.done}
-						onclick={() => open(item.id)}
-					>
-						<span class="card__number" aria-hidden="true">
-							{#if saved?.done}<Check size={15} />{:else}{i + 1}{/if}
-						</span>
-						<span class="card__body">
-							<span class="card__title">{item.title}</span>
-							<span class="card__blurb">{item.blurb}</span>
-							<span class="card__meta">
-								{#if saved?.done}
-									Done · {item.steps.length} steps
-								{:else if saved}
-									Step {saved.step + 1} of {item.steps.length}
-								{:else}
-									{item.steps.length} steps
-								{/if}
+		<div class="overalls">
+			<p class="overall">
+				<span class="overall__label">Core</span>
+				<span class="overall__bar" aria-hidden="true">
+					<span style="inline-size: {(coreDone / CORE_LESSONS.length) * 100}%"></span>
+				</span>
+				{coreDone} of {CORE_LESSONS.length}
+			</p>
+			<p class="overall">
+				<span class="overall__label">Side</span>
+				<span class="overall__bar overall__bar--side" aria-hidden="true">
+					<span style="inline-size: {(sideDone / SIDE_LESSONS.length) * 100}%"></span>
+				</span>
+				{sideDone} of {SIDE_LESSONS.length}
+			</p>
+		</div>
+		<div class="switch" role="tablist" aria-label="How to browse lessons">
+			<button
+				type="button"
+				role="tab"
+				class="switch__btn"
+				aria-selected={browser === 'core'}
+				onclick={() => (browser = 'core')}
+			>
+				Core path
+			</button>
+			<button
+				type="button"
+				role="tab"
+				class="switch__btn"
+				aria-selected={browser === 'chapter'}
+				onclick={() => (browser = 'chapter')}
+			>
+				By chapter
+			</button>
+		</div>
+		{#if browser === 'core'}
+			<ol class="path">
+				{#each CORE_LESSONS as item, i (item.id)}
+					{@const saved = progress[item.id]}
+					{@const sides = sidesOf(item.id)}
+					<li class="path__item">
+						<button
+							type="button"
+							class="card"
+							class:card--done={saved?.done}
+							onclick={() => open(item.id)}
+						>
+							<span class="card__number" aria-hidden="true">
+								{#if saved?.done}<Check size={15} />{:else}{i + 1}{/if}
 							</span>
-						</span>
-					</button>
-				</li>
-			{/each}
-		</ol>
+							<span class="card__body">
+								<span class="card__title">{item.title}</span>
+								<span class="card__blurb">{item.blurb}</span>
+								<span class="card__meta">{lessonMeta(item, saved)}</span>
+							</span>
+						</button>
+						{#if sides.length}
+							<ul class="branches">
+								{#each sides as side (side.id)}
+									{@const sideSaved = progress[side.id]}
+									<li>
+										<button
+											type="button"
+											class="branch"
+											class:branch--done={sideSaved?.done}
+											onclick={() => open(side.id)}
+										>
+											<GitBranch size={13} />
+											<span class="branch__title">{side.title}</span>
+											<span class="branch__meta">{lessonMeta(side, sideSaved)}</span>
+										</button>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</li>
+				{/each}
+			</ol>
+		{:else}
+			<div class="chapters">
+				{#each CHAPTERS as chapter (chapter.id)}
+					{@const items = lessonsInChapter(chapter.id)}
+					<section class="chapter" aria-labelledby="ch-{chapter.id}">
+						<h4 id="ch-{chapter.id}">{chapter.title}</h4>
+						<ul class="chapter__list">
+							{#each items as item (item.id)}
+								{@const saved = progress[item.id]}
+								<li>
+									<button
+										type="button"
+										class="branch"
+										class:branch--core={item.track === 'core'}
+										class:branch--done={saved?.done}
+										onclick={() => open(item.id)}
+									>
+										<span class="branch__kind">{item.track === 'core' ? 'Core' : 'Side'}</span>
+										<span class="branch__title">{item.title}</span>
+										<span class="branch__meta">{lessonMeta(item, saved)}</span>
+									</button>
+								</li>
+							{/each}
+						</ul>
+					</section>
+				{/each}
+			</div>
+		{/if}
 	{:else if step}
 		<div class="lesson">
 			<div class="lesson__bar">
 				<button type="button" class="btn btn--small" onclick={backToPicker}>
 					<LayoutGrid size={13} /> All lessons
 				</button>
-				<span class="lesson__kicker">Lesson {lessonNumber} of {LESSONS.length}</span>
+				<span class="lesson__kicker">
+					{#if lesson.track === 'core'}
+						Core {coreIndex + 1} of {CORE_LESSONS.length}
+					{:else}
+						Side · {parentLesson?.title}
+					{/if}
+				</span>
 			</div>
 			<h3 id="lessons-title" class="lesson__title">{lesson.title}</h3>
+			<p class="lesson__where">{chapterTitle(lesson.chapter)}</p>
+			{#if lesson.track === 'side' && parentLesson}
+				<p class="lesson__back">
+					<button
+						type="button"
+						class="btn btn--small"
+						onclick={() => parentLesson && open(parentLesson.id)}
+					>
+						<ArrowLeft size={13} />
+						{parentLesson.title}
+					</button>
+				</p>
+			{:else if branches.length}
+				<ul class="branches branches--inline">
+					{#each branches as side (side.id)}
+						<li>
+							<button type="button" class="branch" onclick={() => open(side.id)}>
+								<GitBranch size={13} />
+								<span class="branch__title">{side.title}</span>
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
 			<div class="dots" role="group" aria-label="Steps">
 				{#each lesson.steps as s, i (i)}
 					<button
@@ -241,18 +400,32 @@
 				<div class="finish" role="status">
 					<p class="finish__title"><Check size={18} /> Lesson complete</p>
 					<p class="finish__text">
-						{nextLesson
-							? `Up next: ${nextLesson.title}. ${nextLesson.blurb}`
-							: 'That was the last lesson. Revisit any of them from the list.'}
+						{#if lesson.track === 'core' && nextCore}
+							Up next on the core path: {nextCore.title}. {nextCore.blurb} Side lessons never block that.
+						{:else if lesson.track === 'core'}
+							That was the last core lesson. The side lessons are still there whenever you want
+							them.
+						{:else}
+							Optional lesson done. The core path is unchanged.
+						{/if}
 					</p>
 					<div class="actions">
-						{#if nextLesson}
+						{#if lesson.track === 'core' && nextCore}
 							<button
 								type="button"
 								class="btn btn--accent"
-								onclick={() => nextLesson && open(nextLesson.id)}
+								onclick={() => nextCore && open(nextCore.id)}
 							>
-								Next lesson <ArrowRight size={14} />
+								Next core lesson <ArrowRight size={14} />
+							</button>
+						{:else if parentLesson}
+							<button
+								type="button"
+								class="btn btn--accent"
+								onclick={() => parentLesson && open(parentLesson.id)}
+							>
+								<ArrowLeft size={14} />
+								{parentLesson.title}
 							</button>
 						{/if}
 						<button type="button" class="btn" onclick={() => goTo(0)}>
@@ -265,9 +438,13 @@
 				</div>
 			{:else}
 				<article class="step" aria-live="polite">
-					<p class="step__kicker">Step {stepIndex + 1} of {lesson.steps.length}</p>
+					<p class="step__kicker">
+						Step {stepIndex + 1} of {lesson.steps.length}
+						{#if !step.goal}<span class="manual">Manual</span>{/if}
+					</p>
 					<h4 class="step__title">{step.title}</h4>
 					<p class="step__do">{step.do}</p>
+					{#if step.caveat}<p class="caveat">{step.caveat}</p>{/if}
 					<ul class="step__hints">
 						{#if step.listen}
 							<li><Volume2 size={13} /> <span><strong>Listen:</strong> {step.listen}</span></li>
@@ -290,7 +467,7 @@
 									<span class="goal__now">{valueText(condition.cc)}</span>
 								</li>
 							{/each}
-							{#if !step.goal.when?.length || (step.goal.moves ?? 1) > 1}
+							{#if watchedCcs(step.goal).length && (!step.goal.when?.length || (step.goal.moves ?? 1) > 1)}
 								{@const need = step.goal.moves ?? 1}
 								<li class="goal" class:goal--ok={moves >= need}>
 									{#if moves >= need}<Check size={12} />{/if}
@@ -300,6 +477,29 @@
 									<span class="goal__now">{Math.min(moves, need)}/{need} moves</span>
 								</li>
 							{/if}
+							{#if step.goal.notes}
+								<li class="goal" class:goal--ok={notesSeen >= step.goal.notes}>
+									{#if notesSeen >= step.goal.notes}<Check size={12} />{/if}
+									<span class="goal__name">Note On</span>
+									<span class="goal__now"
+										>{Math.min(notesSeen, step.goal.notes)}/{step.goal.notes}</span
+									>
+								</li>
+							{/if}
+							{#if step.goal.program}
+								<li class="goal" class:goal--ok={sawProgram}>
+									{#if sawProgram}<Check size={12} />{/if}
+									<span class="goal__name">Program change</span>
+								</li>
+							{/if}
+							{#if step.goal.realtime}
+								<li class="goal" class:goal--ok={sawRealtime}>
+									{#if sawRealtime}<Check size={12} />{/if}
+									<span class="goal__name"
+										>MIDI {step.goal.realtime === 'start' ? 'Start' : 'Stop'}</span
+									>
+								</li>
+							{/if}
 						</ul>
 					{/if}
 
@@ -307,10 +507,12 @@
 						{#if completed}
 							<Check size={14} /> Nice! On to the next step…
 						{:else if !step.goal}
-							Do this on the S-1, then press {isLast ? 'Finish' : 'Next'}.
+							The S-1 doesn’t send this, so the page can’t see it. Do it on the instrument, then
+							press
+							{isLast ? 'Finish' : 'Done'}.
 						{:else if !connected}
-							Connect S-1 (above the drawing) and the page moves on when it sees the knob move, or
-							press Skip.
+							Connect S-1 (above the drawing) and the page moves on when the S-1 sends what this
+							step is waiting for, or press Skip.
 						{:else}
 							Waiting for your move on the S-1…
 						{/if}
@@ -319,7 +521,9 @@
 					<blockquote class="cite">
 						<BookOpen size={13} />
 						<span>
-							<span class="cite__src">Manual, p. {step.cite.page}:</span>
+							<span class="cite__src">
+								{citeDocLabel(step.cite.doc)} · {step.cite.section} · p. {step.cite.page}:
+							</span>
 							“{step.cite.quote}”
 						</span>
 					</blockquote>
@@ -339,7 +543,7 @@
 							class:btn--accent={!step.goal || completed}
 							onclick={next}
 						>
-							{#if isLast}Finish{:else if step.goal && !completed}Skip{:else}Next{/if}
+							{#if isLast}Finish{:else if !step.goal}Done{:else if completed}Next{:else}Skip{/if}
 							<ArrowRight size={14} />
 						</button>
 						<span class="actions__gap" aria-hidden="true"></span>
@@ -378,14 +582,28 @@
 </section>
 
 <style>
+	.overalls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.8rem 1.4rem;
+		margin: 0 0 0.7rem;
+	}
+
 	.overall {
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
-		margin: 0 0 0.8rem;
+		margin: 0;
 		font-size: 0.74rem;
 		font-weight: 700;
 		color: #94a3b8;
+	}
+
+	.overall__label {
+		flex: none;
+		inline-size: 2.4rem;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
 	}
 
 	.overall__bar {
@@ -404,13 +622,142 @@
 		transition: inline-size 0.3s ease;
 	}
 
-	.cards {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
-		gap: 0.55rem;
+	.overall__bar--side span {
+		background: linear-gradient(90deg, #c2410c, #fdba74);
+	}
+
+	.switch {
+		display: flex;
+		gap: 0.35rem;
+		margin: 0 0 0.8rem;
+	}
+
+	.switch__btn {
+		margin: 0;
+		padding: 0.28rem 0.7rem;
+		font-size: 0.72rem;
+		font-weight: 800;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: #94a3b8;
+		background: #11141a;
+		border: 1px solid #2e3543;
+		border-radius: 999px;
+		cursor: pointer;
+	}
+
+	.switch__btn[aria-selected='true'] {
+		color: #fff7ed;
+		background: rgba(234, 88, 12, 0.18);
+		border-color: #ea580c;
+	}
+
+	.path,
+	.chapter__list,
+	.branches {
 		margin: 0;
 		padding: 0;
 		list-style: none;
+	}
+
+	.path {
+		display: grid;
+		gap: 0.85rem;
+	}
+
+	.branches {
+		display: grid;
+		gap: 0.35rem;
+		margin: 0.4rem 0 0 1.15rem;
+		padding-inline-start: 0.75rem;
+		border-inline-start: 2px solid #2a2f3a;
+	}
+
+	.branches--inline {
+		margin: 0 0 0.7rem;
+	}
+
+	.branch {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.35rem 0.55rem;
+		inline-size: 100%;
+		margin: 0;
+		padding: 0.4rem 0.55rem;
+		text-align: left;
+		color: #cbd5e1;
+		background: transparent;
+		border: 1px solid transparent;
+		border-radius: 0.45rem;
+		cursor: pointer;
+	}
+
+	.branch:hover {
+		background: #11141a;
+		border-color: #2a2f3a;
+	}
+
+	.branch__title {
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+
+	.branch__meta,
+	.branch__kind {
+		font-size: 0.66rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: #64748b;
+	}
+
+	.branch--core .branch__kind {
+		color: #fdba74;
+	}
+
+	.branch--done .branch__title {
+		color: #bbf7d0;
+	}
+
+	.chapters {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.chapter h4 {
+		margin: 0 0 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 800;
+		color: #e2e8f0;
+	}
+
+	.lesson__where {
+		margin: -0.2rem 0 0.55rem;
+		font-size: 0.72rem;
+		color: #64748b;
+	}
+
+	.lesson__back {
+		margin: 0 0 0.55rem;
+	}
+
+	.manual {
+		margin-inline-start: 0.45rem;
+		padding: 0.05rem 0.4rem;
+		font-size: 0.62rem;
+		letter-spacing: 0.06em;
+		color: #fde68a;
+		background: rgba(234, 179, 8, 0.12);
+		border: 1px solid rgba(234, 179, 8, 0.45);
+		border-radius: 999px;
+	}
+
+	.caveat {
+		margin: 0;
+		font-size: 0.76rem;
+		line-height: 1.45;
+		color: #fcd34d;
 	}
 
 	.card {
