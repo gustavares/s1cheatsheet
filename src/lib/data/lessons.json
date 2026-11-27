@@ -1,0 +1,478 @@
+{
+	"$comment": "Guided lessons (Studio → Lessons). Each step lights `controls` on the drawing, switches the Visualizer to `view` and, with a `goal`, advances by itself once the S-1 (or the drawing) reports the knob moves: every `when` condition holds (CC value min/max, 0–127) and at least `moves` CC messages for the `touch` CCs (default: the `when` CCs) arrived during the step. Steps without a goal have a Next button. `cite` is a verbatim quote from that page of the S-1 manual (checked by `npm run validate:lessons`). `setup` holds knob CCs sent by 'Set up the lesson', on top of baseSetup.",
+	"baseSetup": {
+		"13": 0,
+		"25": 0,
+		"91": 0,
+		"92": 0,
+		"23": 0,
+		"24": 0,
+		"71": 0,
+		"74": 127,
+		"73": 0,
+		"75": 64,
+		"30": 127,
+		"72": 20,
+		"20": 127,
+		"19": 0,
+		"21": 0
+	},
+	"lessons": [
+		{
+			"id": "oscillators",
+			"title": "Oscillators and waveforms",
+			"blurb": "Saw and square: the raw material of every S-1 sound.",
+			"setup": { "20": 0, "19": 0 },
+			"steps": [
+				{
+					"title": "Start with a sawtooth",
+					"do": "Hold a note (or press Hold A2), then turn the SAW level up until it’s nearly full.",
+					"listen": "Bright and buzzy, like brass or bowed strings.",
+					"look": "A ramp that climbs, then drops straight down once per cycle.",
+					"controls": ["SAW"],
+					"view": "scope",
+					"goal": { "when": [{ "cc": 20, "min": 100 }] },
+					"cite": {
+						"page": 12,
+						"quote": "The wave includes the nth harmonic at a volume of 1/n, with the fundamental wave considered as “1”."
+					}
+				},
+				{
+					"title": "Swap to the square",
+					"do": "Turn SAW all the way down and SQUARE up.",
+					"listen": "Hollow and woody, like a clarinet.",
+					"look": "Flat tops and bottoms joined by straight edges.",
+					"controls": ["SAW", "SQUARE"],
+					"view": "scope",
+					"goal": {
+						"when": [
+							{ "cc": 20, "max": 15 },
+							{ "cc": 19, "min": 100 }
+						]
+					},
+					"cite": {
+						"page": 12,
+						"quote": "However, the even-numbered harmonics are left out entirely."
+					}
+				},
+				{
+					"title": "Blend them and see the harmonics",
+					"do": "Keep SQUARE up and bring SAW back up too, watching the spectrum.",
+					"listen": "Thicker than either wave on its own.",
+					"look": "The square has only odd harmonics (1×, 3×, 5× the note); the saw fills in the even ones between them.",
+					"controls": ["SAW", "SQUARE"],
+					"view": "spectrum",
+					"goal": {
+						"when": [
+							{ "cc": 19, "min": 80 },
+							{ "cc": 20, "min": 80 }
+						]
+					},
+					"cite": {
+						"page": 12,
+						"quote": "Square waves are composed of a fundamental sine wave and the sine waves of the odd-numbered harmonics, all at a fixed ratio."
+					}
+				},
+				{
+					"title": "Change the octave",
+					"do": "Turn RANGE a couple of clicks either way.",
+					"listen": "The same sound, an octave lower or higher per click.",
+					"look": "The pitch readout jumps by octaves while the wave keeps its shape.",
+					"controls": ["RANGE"],
+					"view": "scope",
+					"goal": { "touch": [14], "moves": 2 },
+					"cite": {
+						"page": 13,
+						"quote": "By switching the settings from 64′ all the way down to 2′, you can change the tonal range in octaves."
+					}
+				}
+			]
+		},
+		{
+			"id": "sub-and-noise",
+			"title": "Sub oscillator and noise",
+			"blurb": "Add weight underneath, or hiss with no pitch at all.",
+			"setup": {},
+			"steps": [
+				{
+					"title": "Add the sub oscillator",
+					"do": "With the saw playing, turn SUB up.",
+					"listen": "More weight underneath: a square wave an octave or two below.",
+					"look": "The pitch readout drops an octave and the wave repeats half as often.",
+					"controls": ["SUB"],
+					"view": "scope",
+					"goal": { "when": [{ "cc": 21, "min": 90 }] },
+					"cite": { "page": 14, "quote": "Adjusts the level of the sub oscillator." }
+				},
+				{
+					"title": "Pick the sub’s octave",
+					"do": "Hold SHIFT and press the SUB OCT key, then turn TEMPO/VALUE: -1oc, -2oc or -2o.A.",
+					"listen": "-2oc sits two octaves down; -2o.A is a thinner, asymmetrical version.",
+					"look": "At -2oc each cycle is twice as long again.",
+					"controls": ["SHIFT", "SUB OCT", "TEMPO/VALUE"],
+					"view": "scope",
+					"goal": { "touch": [22] },
+					"cite": {
+						"page": 14,
+						"quote": "Hold down the [SHIFT] button and press the [SUB OCT] pad."
+					}
+				},
+				{
+					"title": "Noise",
+					"do": "Turn SAW and SUB down and NOISE up. (If NOISE plays a rising riser instead, Riser Mode is on: switch it OFF in the menu.)",
+					"listen": "A hiss with no pitch, the stuff of wind, snares and sweeps.",
+					"look": "The spectrum fills from bottom to top with no harmonic peaks, and the scope can’t find a pitch.",
+					"controls": ["NOISE", "SAW", "SUB"],
+					"view": "spectrum",
+					"goal": { "when": [{ "cc": 23, "min": 90 }] },
+					"cite": { "page": 14, "quote": "Adjusts the level of the noise." }
+				},
+				{
+					"title": "Pink or white",
+					"do": "Hold SHIFT and turn NOISE to switch between pink and white noise.",
+					"listen": "White noise is brighter; pink noise is darker and softer.",
+					"look": "White noise puts more energy in the highs.",
+					"controls": ["SHIFT", "NOISE"],
+					"view": "spectrum",
+					"goal": { "touch": [78] },
+					"cite": {
+						"page": 74,
+						"quote": "NOISE MODE ([SHIFT] button + pad [15] (MENU): Noise Mode) ([SHIFT] + OSCILLATOR [NOISE] knob)"
+					}
+				}
+			]
+		},
+		{
+			"id": "filter",
+			"title": "Filter and resonance",
+			"blurb": "Carve the harmonics away and make the cutoff sing.",
+			"setup": {},
+			"steps": [
+				{
+					"title": "Close the filter",
+					"do": "Hold a note and slowly turn FREQ down to about a third.",
+					"listen": "Darker and softer as the highs disappear.",
+					"look": "The saw’s sharp edge rounds off towards a sine wave.",
+					"controls": ["FREQ"],
+					"view": "scope",
+					"goal": { "when": [{ "cc": 74, "max": 55 }] },
+					"cite": {
+						"page": 15,
+						"quote": "Turning the knob counterclockwise cuts the higher frequencies and makes the waveform closer to that of a sine wave."
+					}
+				},
+				{
+					"title": "Watch the harmonics come back",
+					"do": "Turn FREQ back up while watching the spectrum.",
+					"listen": "The brightness returns.",
+					"look": "Harmonics above the cutoff fall away; the low ones always pass.",
+					"controls": ["FREQ"],
+					"view": "spectrum",
+					"goal": { "when": [{ "cc": 74, "min": 100 }] },
+					"cite": {
+						"page": 15,
+						"quote": "This lets you pass the lower frequencies through while cutting the higher frequencies (LPF: Low-Pass Filter)."
+					}
+				},
+				{
+					"title": "Add resonance",
+					"do": "Set FREQ to about halfway, then turn RESO up.",
+					"listen": "A nasal, whistling edge.",
+					"look": "A peak appears at the cutoff; on the scope, ripples ring after each edge.",
+					"controls": ["FREQ", "RESO"],
+					"view": "spectrum",
+					"goal": {
+						"when": [
+							{ "cc": 74, "max": 90 },
+							{ "cc": 71, "min": 90 }
+						]
+					},
+					"cite": {
+						"page": 15,
+						"quote": "Emphasizes the frequencies around the cutoff point that you set using the [FREQ] knob."
+					}
+				},
+				{
+					"title": "The classic sweep",
+					"do": "Keep RESO up and sweep FREQ slowly all the way up.",
+					"listen": "The famous synth sweep: the resonant peak sings as it rises.",
+					"look": "The peak draws a bright rising line in the spectrogram.",
+					"controls": ["FREQ", "RESO"],
+					"view": "spectrogram",
+					"goal": {
+						"when": [
+							{ "cc": 71, "min": 90 },
+							{ "cc": 74, "min": 110 }
+						],
+						"touch": [74],
+						"moves": 6
+					},
+					"cite": {
+						"page": 15,
+						"quote": "In particular, when you move the cutoff point while the resonance is raised, you can get a sound that’s unique to synthesizers."
+					}
+				}
+			]
+		},
+		{
+			"id": "envelopes",
+			"title": "Envelopes (ADSR)",
+			"blurb": "Shape every note over time: swells, plucks and tails.",
+			"setup": {},
+			"steps": [
+				{
+					"title": "Attack",
+					"do": "Turn ATTACK up past halfway and play a few notes on the pads.",
+					"listen": "Each note fades in instead of starting at once.",
+					"look": "Notes start dim and brighten in the spectrogram.",
+					"controls": ["ATTACK"],
+					"view": "spectrogram",
+					"goal": { "when": [{ "cc": 73, "min": 70 }] },
+					"cite": {
+						"page": 19,
+						"quote": "This knob sets the time (attack time) it takes for the control signal to reach its peak level after you press a keyboard pad."
+					}
+				},
+				{
+					"title": "Decay and sustain: a pluck",
+					"do": "Turn ATTACK and SUSTAIN down, set DECAY to about a third, and play short notes.",
+					"listen": "A pluck: loud at first, then gone even while you hold the pad.",
+					"look": "Short bright blips that fade quickly.",
+					"controls": ["ATTACK", "DECAY", "SUSTAIN"],
+					"view": "spectrogram",
+					"goal": {
+						"when": [
+							{ "cc": 73, "max": 20 },
+							{ "cc": 30, "max": 15 }
+						]
+					},
+					"cite": {
+						"page": 19,
+						"quote": "This knob sets the sustain level, which is the level that the sound stays at after the envelope reaches its peak."
+					}
+				},
+				{
+					"title": "Release",
+					"do": "Bring SUSTAIN back up and turn RELEASE up.",
+					"listen": "Notes ring on after you let go of the pad.",
+					"look": "Each note trails off after its pad is released.",
+					"controls": ["SUSTAIN", "RELEASE"],
+					"view": "spectrogram",
+					"goal": {
+						"when": [
+							{ "cc": 30, "min": 90 },
+							{ "cc": 72, "min": 80 }
+						]
+					},
+					"cite": {
+						"page": 19,
+						"quote": "This knob sets the time (release time) it takes for the control signal to drop to zero (where the envelope reaches its end) after you release the keyboard pad."
+					}
+				},
+				{
+					"title": "The envelope on the filter",
+					"do": "Turn FREQ down to about halfway, turn the filter ENV knob up, and play short notes.",
+					"listen": "A “wow” at the start of every note as the filter opens and closes.",
+					"look": "Harmonics flare up at each note’s start, then fall back.",
+					"controls": ["FREQ", "FILTER ENV"],
+					"view": "spectrogram",
+					"goal": {
+						"when": [
+							{ "cc": 74, "max": 70 },
+							{ "cc": 24, "min": 70 }
+						]
+					},
+					"cite": {
+						"page": 15,
+						"quote": "Use this to make changes in the sound over a short time within single notes."
+					}
+				}
+			]
+		},
+		{
+			"id": "lfo",
+			"title": "LFO: movement",
+			"blurb": "Vibrato, wobble and random steps from the low-frequency oscillator.",
+			"setup": { "3": 64 },
+			"steps": [
+				{
+					"title": "Vibrato",
+					"do": "Hold a note and turn the OSCILLATOR LFO knob up a little.",
+					"listen": "The pitch wobbles.",
+					"look": "The harmonic lines wave up and down together.",
+					"controls": ["OSC LFO"],
+					"view": "spectrogram",
+					"goal": { "when": [{ "cc": 13, "min": 30 }] },
+					"cite": {
+						"page": 14,
+						"quote": "This knob adjusts the modulation intensity, when you use the modulator signal from the LFO section to control the fundamental frequency (pitch) of the OSC."
+					}
+				},
+				{
+					"title": "Speed",
+					"do": "Turn RATE to slow the wobble down and speed it up.",
+					"listen": "From a slow sway to a fast flutter.",
+					"look": "The waves in the spectrogram stretch out or bunch up.",
+					"controls": ["RATE"],
+					"view": "spectrogram",
+					"goal": { "touch": [3], "moves": 8 },
+					"cite": { "page": 22, "quote": "This knob sets the LFO and RANDOM speed (frequency)." }
+				},
+				{
+					"title": "Shape",
+					"do": "Turn WAVE FORM through the LFO shapes, including RND (random).",
+					"listen": "Smooth sweeps, jumps between two pitches, random steps.",
+					"look": "The lines change from curves to steps.",
+					"controls": ["WAVE FORM"],
+					"view": "spectrogram",
+					"goal": { "touch": [12], "moves": 3 },
+					"cite": {
+						"page": 22,
+						"quote": "With the RND (RANDOM) setting, the unit outputs a control signal that changes randomly, which is used to produce random notes (OSC) or random filter (FILTER) effects."
+					}
+				},
+				{
+					"title": "Wah with the filter LFO",
+					"do": "Turn the OSCILLATOR LFO back down and the FILTER LFO up. A lower FREQ makes it stronger.",
+					"listen": "A wah or growl instead of a pitch wobble.",
+					"look": "The upper harmonics pulse while the pitch stays put.",
+					"controls": ["OSC LFO", "FILTER LFO", "FREQ"],
+					"view": "spectrum",
+					"goal": {
+						"when": [
+							{ "cc": 13, "max": 10 },
+							{ "cc": 25, "min": 50 }
+						]
+					},
+					"cite": {
+						"page": 15,
+						"quote": "This adjusts the intensity (depth) when controlling the filter’s cutoff point with the modulator signal from the LFO section."
+					}
+				}
+			]
+		},
+		{
+			"id": "chords-and-arp",
+			"title": "Chords and arpeggios",
+			"blurb": "Poly mode, one-finger chords and the arpeggiator.",
+			"setup": {},
+			"steps": [
+				{
+					"title": "Poly mode",
+					"do": "Hold SHIFT, press POLY and turn TEMPO/VALUE to PoLy. Then play a chord on the pads.",
+					"listen": "Up to four notes at once.",
+					"look": "Several sets of harmonics stack up in the spectrum.",
+					"controls": ["SHIFT", "POLY", "TEMPO/VALUE"],
+					"view": "spectrum",
+					"goal": { "touch": [80] },
+					"cite": {
+						"page": 24,
+						"quote": "Lets you play more than one tone at the same time (up to four voices)."
+					}
+				},
+				{
+					"title": "One-finger chords",
+					"do": "Keep turning TEMPO/VALUE to Chd, then press pad 2 (ENTER) to switch voices 2–4 on and shift their keys. Now one pad plays a chord.",
+					"listen": "A full chord from a single finger.",
+					"look": "One pad, several stacks of harmonics.",
+					"controls": ["SHIFT", "POLY", "TEMPO/VALUE", "PAD 2"],
+					"view": "spectrum",
+					"goal": { "touch": [80, 81, 82, 83, 85, 86, 87], "moves": 2 },
+					"cite": {
+						"page": 24,
+						"quote": "Plays voices 2–4 at the same time for each note that you play, according to the parameter settings below."
+					}
+				},
+				{
+					"title": "Turn the arpeggiator on",
+					"do": "Hold SHIFT and press pad 8 (ARPEGGIO ON) to switch it on, then hold a few pads together.",
+					"listen": "Your chord plays one note at a time, over and over.",
+					"look": "A staircase of notes in the spectrogram.",
+					"controls": ["SHIFT", "PAD 8"],
+					"view": "spectrogram",
+					"cite": {
+						"page": 49,
+						"quote": "On the S-1, you can automatically arpeggiate the chords you play on the keyboard pad."
+					}
+				},
+				{
+					"title": "Arp type and latch",
+					"do": "SHIFT + pad 9 (ARPEGGIO TYPE) picks Up, Down, Random and more. Press HOLD while it plays to keep it going hands-free.",
+					"listen": "The same notes in a new order.",
+					"look": "The staircase changes direction or scatters.",
+					"controls": ["SHIFT", "PAD 9", "HOLD"],
+					"view": "spectrogram",
+					"cite": {
+						"page": 51,
+						"quote": "When you press the [HOLD] button to make it light up while an arpeggio is playing, the arpeggio keeps playing even after you take your finger off the keyboard pad."
+					}
+				}
+			]
+		},
+		{
+			"id": "delay-reverb",
+			"title": "Delay and reverb",
+			"blurb": "Echoes and space around short notes.",
+			"setup": { "73": 0, "75": 50, "30": 0, "72": 30 },
+			"steps": [
+				{
+					"title": "Delay",
+					"do": "Play short notes and turn DELAY up.",
+					"listen": "Echoes repeat after each note.",
+					"look": "Each note leaves a trail of fading copies.",
+					"controls": ["DELAY"],
+					"view": "spectrogram",
+					"goal": { "when": [{ "cc": 92, "min": 70 }] },
+					"cite": {
+						"page": 26,
+						"quote": "This adds an echoing effect by delaying the sound and repeating the delay."
+					}
+				},
+				{
+					"title": "Delay time",
+					"do": "Hold SHIFT and turn DELAY to change the time between echoes.",
+					"listen": "Slapback, rhythmic echoes or long gaps.",
+					"look": "The copies spread apart or bunch together.",
+					"controls": ["SHIFT", "DELAY"],
+					"view": "spectrogram",
+					"goal": { "touch": [90], "moves": 4 },
+					"cite": {
+						"page": 26,
+						"quote": "You can set the delay time by turning the [DELAY] knob while holding down the [SHIFT] button."
+					}
+				},
+				{
+					"title": "Reverb",
+					"do": "Turn DELAY back down and REVERB up.",
+					"listen": "A room or hall around the notes.",
+					"look": "A soft, smeared tail instead of separate copies.",
+					"controls": ["DELAY", "REVERB"],
+					"view": "spectrogram",
+					"goal": {
+						"when": [
+							{ "cc": 92, "max": 15 },
+							{ "cc": 91, "min": 70 }
+						]
+					},
+					"cite": {
+						"page": 27,
+						"quote": "This effect produces reverberation, like being in a hall or room."
+					}
+				},
+				{
+					"title": "Reverb time",
+					"do": "Hold SHIFT and turn REVERB to make the space shorter or longer.",
+					"listen": "From a small room to a huge hall.",
+					"look": "The tail gets shorter or longer.",
+					"controls": ["SHIFT", "REVERB"],
+					"view": "spectrogram",
+					"goal": { "touch": [89], "moves": 4 },
+					"cite": {
+						"page": 27,
+						"quote": "Adjust the reverb length (time) by turning the [REVERB] knob while holding down the [SHIFT] button."
+					}
+				}
+			]
+		}
+	]
+}

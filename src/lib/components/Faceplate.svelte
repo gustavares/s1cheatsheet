@@ -37,7 +37,11 @@
 		onClearSelectedTip
 	}: Props = $props();
 
-	const highlightedButtons = $derived(selectedTip ? selectedTip.buttons : activeButtons);
+	// A running lesson step points at its controls; otherwise the selected tip or the filter.
+	const lessonOn = $derived(uiStore.lessonHighlight.length > 0);
+	const highlightedButtons = $derived(
+		lessonOn ? uiStore.lessonHighlight : selectedTip ? selectedTip.buttons : activeButtons
+	);
 	const isShiftActive = $derived(highlightedButtons.includes('SHIFT'));
 	const isAnyPadActive = $derived(highlightedButtons.includes('PAD'));
 	const isAnyKnobActive = $derived(highlightedButtons.includes('KNOB'));
@@ -283,6 +287,7 @@
 		<svg
 			class="panel"
 			class:panel--midi={midiOn}
+			class:panel--lesson={lessonOn}
 			viewBox="0 0 1500 850"
 			role="group"
 			aria-label="S-1 controls: click to filter shortcuts"
@@ -942,6 +947,29 @@
 		stroke: #f97316;
 		stroke-width: 6;
 		filter: url(#glow);
+	}
+
+	/* Guided lessons: the step's controls pulse */
+	.panel--lesson .ctl--active .knob__body,
+	.panel--lesson .ctl--active .button__cap,
+	.panel--lesson .ctl--active .key__cap,
+	.panel--lesson .ctl--active .pad__cap {
+		animation: lesson-pulse 1.6s ease-in-out infinite;
+	}
+
+	@keyframes lesson-pulse {
+		50% {
+			opacity: 0.55;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.panel--lesson .ctl--active .knob__body,
+		.panel--lesson .ctl--active .button__cap,
+		.panel--lesson .ctl--active .key__cap,
+		.panel--lesson .ctl--active .pad__cap {
+			animation: none;
+		}
 	}
 
 	.ctl--knob.ctl--any .knob__body {

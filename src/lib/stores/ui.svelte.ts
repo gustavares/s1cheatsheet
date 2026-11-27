@@ -6,6 +6,8 @@ class UiStore {
 	studioTab = $state<StudioTab>('patches');
 	/** Target knob positions (CC → value) drawn as orange ticks on the panel (drill "Reveal"). */
 	ghostValues = $state.raw<Record<string, number> | null>(null);
+	/** Controls the current lesson step points at (they pulse on the drawing). */
+	lessonHighlight = $state.raw<string[]>([]);
 	showFaceplate = $state(true);
 	showPrintModal = $state(false);
 
