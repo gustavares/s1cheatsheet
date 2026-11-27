@@ -87,6 +87,27 @@
 		return entry ? midiStore.values[entry.cc] : undefined;
 	};
 
+	/** SVG arc from the knob's minimum (−135°) to its current value, for the live mirror. */
+	function valueArc(radius: number, value: number): string {
+		const start = (-135 * Math.PI) / 180;
+		const end = ((-135 + (270 * value) / 127) * Math.PI) / 180;
+		const x0 = radius * Math.sin(start);
+		const y0 = -radius * Math.cos(start);
+		const x1 = radius * Math.sin(end);
+		const y1 = -radius * Math.cos(end);
+		const large = end - start > Math.PI ? 1 : 0;
+		return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${radius} ${radius} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+	}
+
+	/** Value shown in the bubble above a control the S-1 just moved (⇧ = its SHIFT layer). */
+	function bubbleValue(id: string): string | null {
+		const event = midiStore.lastEvent;
+		if (!midiOn || !event || !midiStore.flashing[id] || !event.controls.includes(id)) return null;
+		return event.shiftLayer ? `⇧${event.value}` : String(event.value);
+	}
+
+	const lastTouched = $derived(midiStore.lastEvent);
+
 	function midiTitle(id: string): string {
 		const knobCc = KNOB_CC.get(id);
 		const others = (CCS_BY_CONTROL.get(id) ?? []).filter((e) => e !== knobCc);
@@ -303,6 +324,33 @@
 				<text class="silk silk--label" x="1145" y="150" text-anchor="middle">IN — MIX — OUT</text>
 			</g>
 
+			<!-- Live knob mirror: last touched parameter (Connect S-1 mode) -->
+			{#if midiOn}
+				<g class="last-touched" transform="translate(236 58)" aria-hidden="true">
+					<rect class="lt__box" width="390" height="82" rx="12" />
+					<text class="lt__label" x="18" y="26">LAST TOUCHED</text>
+					{#if lastTouched}
+						<text class="lt__source" x="372" y="26" text-anchor="end">
+							{lastTouched.direction === 'in' ? 'FROM S-1' : 'FROM SCREEN'} · CC {lastTouched.cc}
+						</text>
+						<text class="lt__value" x="18" y="56"
+							>{lastTouched.shiftLayer ? '⇧ ' : ''}{lastTouched.parameter} = {lastTouched.value}</text
+						>
+						<rect class="lt__bar-track" x="18" y="66" width="354" height="5" rx="2.5" />
+						<rect
+							class="lt__bar"
+							x="18"
+							y="66"
+							width={(354 * lastTouched.value) / 127}
+							height="5"
+							rx="2.5"
+						/>
+					{:else}
+						<text class="lt__value lt__value--idle" x="18" y="56">Turn a knob on the S-1</text>
+					{/if}
+				</g>
+			{/if}
+
 			<!-- Left zone: 7-segment display + TEMPO/VALUE + PLAY/REC -->
 			<g aria-hidden="true">
 				<rect class="zone-plate" x="62" y="178" width="282" height="378" rx="14" />
@@ -379,6 +427,12 @@
 					{#if ringColour !== 'none'}
 						<circle class="knob__ring" r={r + 6} style:stroke={ringColour} />
 					{/if}
+					{#if sendsCc(knob.id)}
+						<path class="knob__track" d={valueArc(r + 12, 127)} />
+						{#if (ccValue(knob.id) ?? 0) > 0}
+							<path class="knob__arc" d={valueArc(r + 12, ccValue(knob.id) ?? 0)} />
+						{/if}
+					{/if}
 					<circle class="knob__body" {r} />
 					<g transform="rotate({midiOn ? knobAngle(ccValue(knob.id)) : 0})">
 						<line class="knob__pointer" x1="0" y1={-r + 3} x2="0" y2={-r * 0.35} />
@@ -400,6 +454,12 @@
 							y={r + (knob.size === 'large' ? 26 : 40)}
 							text-anchor="middle">{knob.label}</text
 						>
+					{/if}
+					{#if bubbleValue(knob.id)}
+						<g class="knob__bubble" transform="translate(0 {-r - 30})">
+							<rect x="-30" y="-17" width="60" height="28" rx="8" />
+							<text y="4" text-anchor="middle">{bubbleValue(knob.id)}</text>
+						</g>
 					{/if}
 				</g>
 			{/each}
@@ -999,6 +1059,85 @@
 		stroke: #f97316;
 		stroke-width: 4;
 		stroke-dasharray: 8 6;
+	}
+
+	/* Live knob mirror */
+	.knob__track {
+		fill: none;
+		stroke: rgba(34, 211, 238, 0.14);
+		stroke-width: 4;
+		stroke-linecap: round;
+		pointer-events: none;
+	}
+
+	.knob__arc {
+		fill: none;
+		stroke: #22d3ee;
+		stroke-width: 4;
+		stroke-linecap: round;
+		pointer-events: none;
+		filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
+	}
+
+	.knob__bubble {
+		pointer-events: none;
+	}
+
+	.knob__bubble rect {
+		fill: #0b1220;
+		stroke: #22d3ee;
+		stroke-width: 2;
+	}
+
+	.knob__bubble text {
+		fill: #ecfeff;
+		font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+		font-size: 18px;
+		font-weight: 800;
+	}
+
+	.lt__box {
+		fill: #0b0f14;
+		stroke: rgba(34, 211, 238, 0.35);
+		stroke-width: 2;
+	}
+
+	.lt__label,
+	.lt__source {
+		fill: #67e8f9;
+		font-family:
+			system-ui,
+			-apple-system,
+			'Segoe UI',
+			sans-serif;
+		font-size: 14px;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+	}
+
+	.lt__source {
+		fill: #64748b;
+		letter-spacing: 0.06em;
+	}
+
+	.lt__value {
+		fill: #ecfeff;
+		font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+		font-size: 22px;
+		font-weight: 700;
+	}
+
+	.lt__value--idle {
+		fill: #64748b;
+		font-weight: 500;
+	}
+
+	.lt__bar-track {
+		fill: rgba(34, 211, 238, 0.14);
+	}
+
+	.lt__bar {
+		fill: #22d3ee;
 	}
 
 	/* Connect S-1 (Web MIDI) mode */

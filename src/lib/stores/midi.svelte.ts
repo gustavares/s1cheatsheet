@@ -21,6 +21,16 @@ export interface MidiEvent {
 	cc: number;
 	value: number;
 	parameter: string;
+	/** Faceplate controls the CC belongs to (empty for standard controllers). */
+	controls: string[];
+	/** true for SHIFT + knob parameters (the knob's second layer). */
+	shiftLayer: boolean;
+}
+
+export interface ParameterValue {
+	cc: number;
+	parameter: string;
+	value: number;
 }
 
 const S1_PORT_NAME = /\bS-1\b/i;
@@ -66,6 +76,20 @@ class MidiStore {
 
 	get outputReady(): boolean {
 		return this.outputs.some((p) => p.id === this.outputId && p.connected);
+	}
+
+	/**
+	 * Live parameter state: every CC value sent or received since connecting (the S-1 has no
+	 * SysEx/dump, so values are only known once a control has moved).
+	 */
+	get parameterState(): ParameterValue[] {
+		return Object.entries(this.values)
+			.map(([cc, value]) => ({
+				cc: Number(cc),
+				parameter: CC_BY_NUMBER.get(Number(cc))?.parameter ?? `CC ${cc}`,
+				value
+			}))
+			.sort((a, b) => a.cc - b.cc);
 	}
 
 	async connect() {
@@ -149,7 +173,9 @@ class MidiStore {
 			direction,
 			cc,
 			value,
-			parameter: entry?.parameter ?? 'not in the S-1 CC list'
+			parameter: entry?.parameter ?? 'not in the S-1 CC list',
+			controls: entry?.controls ?? [],
+			shiftLayer: entry?.layer === 'shift-knob'
 		};
 		for (const id of entry?.controls ?? []) this.#flash(id);
 	}

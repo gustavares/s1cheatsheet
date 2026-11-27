@@ -99,17 +99,23 @@
 			<p class="midi-msg midi-msg--warn" role="status">{portStatus}</p>
 		{/if}
 		<p class="midi-legend">
-			Drag a knob up/down (or focus it and press ↑/↓) to send its CC. Moves on the S-1 rotate and
-			light up the matching control. <span class="midi-legend__hatch">Hatched</span> controls are not
-			controllable over MIDI (no CC in the S-1's MIDI implementation). Values stay unknown until a control
-			moves.
+			Drag a knob up/down (or focus it and press ↑/↓) to send its CC. Knobs you turn on the S-1
+			rotate and light up on the drawing. <span class="midi-legend__hatch">Hatched</span> controls are
+			not controllable over MIDI (no CC in the S-1's MIDI implementation). Values stay unknown until a
+			control moves.
+		</p>
+		<p class="midi-legend">
+			<strong>Mirroring knobs from the S-1:</strong> the S-1 always sends its knob moves as CC on
+			its MIDI channel. Its menu has no separate CC-transmit switch, so just make sure Ch here
+			matches the S-1's channel: <kbd>SHIFT</kbd> + pad 15 (MENU) → <code>CH</code> (default 3).
 		</p>
 		<p class="midi-event" aria-live="polite">
 			{#if midiStore.lastEvent}
-				<span class="midi-event__dir">{midiStore.lastEvent.direction === 'in' ? 'IN' : 'OUT'}</span>
-				CC {midiStore.lastEvent.cc} · {midiStore.lastEvent.parameter} = {midiStore.lastEvent.value}
+				<span class="midi-event__dir">Last touched</span>
+				{midiStore.lastEvent.parameter} = {midiStore.lastEvent.value} · CC {midiStore.lastEvent.cc}
+				({midiStore.lastEvent.direction === 'in' ? 'from S-1' : 'from screen'})
 			{:else}
-				No MIDI messages yet.
+				Last touched: nothing yet. Turn a knob on the S-1.
 			{/if}
 		</p>
 	{/if}
@@ -230,6 +236,21 @@
 	.midi-event__dir {
 		font-weight: 800;
 		color: #22d3ee;
+	}
+
+	.midi-legend strong {
+		color: #cbd5e1;
+	}
+
+	.midi-legend kbd,
+	.midi-legend code {
+		padding: 0 0.25rem;
+		font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+		font-size: 0.68rem;
+		color: #e2e8f0;
+		background: #171b22;
+		border: 1px solid #334155;
+		border-radius: 0.25rem;
 	}
 
 	@media (pointer: coarse) {
