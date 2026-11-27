@@ -16,6 +16,7 @@
 	import Faceplate from '#lib/components/Faceplate.svelte';
 	import TipCard from '#lib/components/TipCard.svelte';
 	import Keycap from '#lib/components/Keycap.svelte';
+	import Studio from '#lib/components/studio/Studio.svelte';
 	import { pinnedStore } from '#lib/stores/pinned.svelte.js';
 	import { uiStore } from '#lib/stores/ui.svelte.js';
 	import { Star, Printer, SlidersHorizontal, Plus, Sparkles, Layers } from '@lucide/svelte';
@@ -59,6 +60,7 @@
 	let selectedTipId = $state<string | null>(null);
 
 	const isPinnedView = $derived(uiStore.viewMode === 'pinned');
+	const isStudioView = $derived(uiStore.viewMode === 'studio');
 
 	const selectedTip = $derived(
 		selectedTipId ? (tips.find((t) => t.id === selectedTipId) ?? null) : null
@@ -310,7 +312,11 @@
 	{/if}
 
 	<!-- Search & Category Tabs Bar -->
-	<search class="search-panel" aria-label="Filter shortcuts by intent, category, or button">
+	<search
+		class="search-panel"
+		class:search-panel--hidden={isStudioView}
+		aria-label="Filter shortcuts by intent, category, or button"
+	>
 		<div class="search-input-row">
 			<label for="shortcut-search" class="visually-hidden">
 				Search shortcuts by goal, button, or community slang
@@ -467,201 +473,173 @@
 			</aside>
 		{/if}
 
-		<section class="workspace__results" aria-labelledby="results-heading">
-			<div class="results-header">
-				<h2 id="results-heading" class="results-title">
-					{#if isPinnedView}
-						My Pinned Cheat Sheet ({filteredTips.length})
-					{:else if selectedCategory !== 'ALL'}
-						{selectedCategory} ({filteredTips.length})
-					{:else if hasActiveFilters}
-						Matching Shortcuts ({filteredTips.length})
-					{:else}
-						All Workflows ({filteredTips.length} shortcuts)
-					{/if}
-				</h2>
-
-				<div class="results-header__controls">
-					<div class="tier-segmented" role="group" aria-label="Filter by shortcut depth">
-						<button
-							type="button"
-							class="tier-seg-btn"
-							class:tier-seg-btn--active={selectedTier === 'ALL'}
-							aria-pressed={selectedTier === 'ALL'}
-							onclick={() => (selectedTier = 'ALL')}
-						>
-							All
-						</button>
-						<button
-							type="button"
-							class="tier-seg-btn"
-							class:tier-seg-btn--active={selectedTier === 'essential'}
-							aria-pressed={selectedTier === 'essential'}
-							onclick={() => (selectedTier = 'essential')}
-						>
-							Essentials
-						</button>
-						<button
-							type="button"
-							class="tier-seg-btn"
-							class:tier-seg-btn--active={selectedTier === 'deep-dive'}
-							aria-pressed={selectedTier === 'deep-dive'}
-							onclick={() => (selectedTier = 'deep-dive')}
-						>
-							Deep Dive
-						</button>
-					</div>
-
-					{#if isPinnedView && pinnedStore.ids.length > 0}
-						<button type="button" class="unpin-all-btn" onclick={handleClearPinned}>
-							Clear Pinned
-						</button>
-					{/if}
-				</div>
+		{#if isStudioView}
+			<div class="workspace__results">
+				<Studio />
 			</div>
+		{:else}
+			<section class="workspace__results" aria-labelledby="results-heading">
+				<div class="results-header">
+					<h2 id="results-heading" class="results-title">
+						{#if isPinnedView}
+							My Pinned Cheat Sheet ({filteredTips.length})
+						{:else if selectedCategory !== 'ALL'}
+							{selectedCategory} ({filteredTips.length})
+						{:else if hasActiveFilters}
+							Matching Shortcuts ({filteredTips.length})
+						{:else}
+							All Workflows ({filteredTips.length} shortcuts)
+						{/if}
+					</h2>
 
-			{#if filteredTips.length === 0}
-				{#if isPinnedView && availableUnpinnedTips.length > 0}
-					<div class="empty-pinned-notice">
-						<p>
-							None of your currently pinned shortcuts match this filter. Showing <strong
-								>{availableUnpinnedTips.length}</strong
+					<div class="results-header__controls">
+						<div class="tier-segmented" role="group" aria-label="Filter by shortcut depth">
+							<button
+								type="button"
+								class="tier-seg-btn"
+								class:tier-seg-btn--active={selectedTier === 'ALL'}
+								aria-pressed={selectedTier === 'ALL'}
+								onclick={() => (selectedTier = 'ALL')}
 							>
-							available shortcuts below from the master library that you can add:
-						</p>
+								All
+							</button>
+							<button
+								type="button"
+								class="tier-seg-btn"
+								class:tier-seg-btn--active={selectedTier === 'essential'}
+								aria-pressed={selectedTier === 'essential'}
+								onclick={() => (selectedTier = 'essential')}
+							>
+								Essentials
+							</button>
+							<button
+								type="button"
+								class="tier-seg-btn"
+								class:tier-seg-btn--active={selectedTier === 'deep-dive'}
+								aria-pressed={selectedTier === 'deep-dive'}
+								onclick={() => (selectedTier = 'deep-dive')}
+							>
+								Deep Dive
+							</button>
+						</div>
+
+						{#if isPinnedView && pinnedStore.ids.length > 0}
+							<button type="button" class="unpin-all-btn" onclick={handleClearPinned}>
+								Clear Pinned
+							</button>
+						{/if}
 					</div>
-				{:else if isPinnedView && pinnedStore.ids.length === 0}
-					<div class="empty-state empty-state--mysheet">
-						<div class="starter-badge">
-							<Sparkles size={20} class="starter-badge-icon" />
+				</div>
+
+				{#if filteredTips.length === 0}
+					{#if isPinnedView && availableUnpinnedTips.length > 0}
+						<div class="empty-pinned-notice">
+							<p>
+								None of your currently pinned shortcuts match this filter. Showing <strong
+									>{availableUnpinnedTips.length}</strong
+								>
+								available shortcuts below from the master library that you can add:
+							</p>
 						</div>
-						<h3>Your Custom Studio Sheet is Empty</h3>
-						<p>
-							Build your personal desk reference. Search any workflow above (e.g. <em>"arp"</em>,
-							<em>"motion record"</em>, <em>"write"</em>) to add shortcuts, or pick a starter kit:
-						</p>
-						<div class="starter-kits-row">
-							<button
-								type="button"
-								class="starter-kit-btn"
-								onclick={() => addStarterPack('essentials')}
-							>
-								<Plus size={14} />
-								<span>Add {STARTER_PACKS.essentials.length} Essentials</span>
-							</button>
-							<button
-								type="button"
-								class="starter-kit-btn"
-								onclick={() => addStarterPack('sequencer')}
-							>
-								<Plus size={14} />
-								<span>Sequencer & Step Edit ({STARTER_PACKS.sequencer.length})</span>
-							</button>
-							<button type="button" class="starter-kit-btn" onclick={() => addStarterPack('sound')}>
-								<Plus size={14} />
-								<span>Sound & FX ({STARTER_PACKS.sound.length})</span>
+					{:else if isPinnedView && pinnedStore.ids.length === 0}
+						<div class="empty-state empty-state--mysheet">
+							<div class="starter-badge">
+								<Sparkles size={20} class="starter-badge-icon" />
+							</div>
+							<h3>Your Custom Studio Sheet is Empty</h3>
+							<p>
+								Build your personal desk reference. Search any workflow above (e.g. <em>"arp"</em>,
+								<em>"motion record"</em>, <em>"write"</em>) to add shortcuts, or pick a starter kit:
+							</p>
+							<div class="starter-kits-row">
+								<button
+									type="button"
+									class="starter-kit-btn"
+									onclick={() => addStarterPack('essentials')}
+								>
+									<Plus size={14} />
+									<span>Add {STARTER_PACKS.essentials.length} Essentials</span>
+								</button>
+								<button
+									type="button"
+									class="starter-kit-btn"
+									onclick={() => addStarterPack('sequencer')}
+								>
+									<Plus size={14} />
+									<span>Sequencer & Step Edit ({STARTER_PACKS.sequencer.length})</span>
+								</button>
+								<button
+									type="button"
+									class="starter-kit-btn"
+									onclick={() => addStarterPack('sound')}
+								>
+									<Plus size={14} />
+									<span>Sound & FX ({STARTER_PACKS.sound.length})</span>
+								</button>
+							</div>
+							<div class="starter-browse-row">
+								<button
+									type="button"
+									class="starter-browse-btn"
+									onclick={() => uiStore.setViewMode('all')}
+								>
+									<Layers size={14} />
+									<span>Browse All {tips.length} Shortcuts</span>
+								</button>
+							</div>
+						</div>
+					{:else}
+						<div class="empty-state">
+							<h3>No matching shortcuts found</h3>
+							<p>
+								Try removing one of the selected faceplate buttons or broadening your search term.
+							</p>
+							<button type="button" class="tool-btn" onclick={clearAllFilters}>
+								Reset Filters
 							</button>
 						</div>
-						<div class="starter-browse-row">
-							<button
-								type="button"
-								class="starter-browse-btn"
-								onclick={() => uiStore.setViewMode('all')}
-							>
-								<Layers size={14} />
-								<span>Browse All {tips.length} Shortcuts</span>
-							</button>
-						</div>
+					{/if}
+				{:else if isGroupedByCategory}
+					<div class="category-sections">
+						{#each groupedSections as section (section.category)}
+							<section class="category-group" aria-labelledby="cat-{section.category}">
+								<div class="category-group__header">
+									<h3 id="cat-{section.category}" class="category-group__title">
+										{section.category}
+									</h3>
+									<span class="category-group__count">{section.items.length}</span>
+								</div>
+								<ul class="tips-grid" role="list">
+									{#each section.items as tip (tip.id)}
+										<li>
+											<TipCard
+												{tip}
+												isPinned={pinnedStore.has(tip.id)}
+												isSelected={selectedTipId === tip.id}
+												{activeButtons}
+												hideCategoryBadge={true}
+												onTogglePin={(id) => pinnedStore.toggle(id)}
+												onSelectTip={toggleSelectTip}
+												onSelectCategory={(cat) => {
+													selectedCategory = selectedCategory === cat ? 'ALL' : cat;
+												}}
+											/>
+										</li>
+									{/each}
+								</ul>
+							</section>
+						{/each}
 					</div>
 				{:else}
-					<div class="empty-state">
-						<h3>No matching shortcuts found</h3>
-						<p>
-							Try removing one of the selected faceplate buttons or broadening your search term.
-						</p>
-						<button type="button" class="tool-btn" onclick={clearAllFilters}>
-							Reset Filters
-						</button>
-					</div>
-				{/if}
-			{:else if isGroupedByCategory}
-				<div class="category-sections">
-					{#each groupedSections as section (section.category)}
-						<section class="category-group" aria-labelledby="cat-{section.category}">
-							<div class="category-group__header">
-								<h3 id="cat-{section.category}" class="category-group__title">
-									{section.category}
-								</h3>
-								<span class="category-group__count">{section.items.length}</span>
-							</div>
-							<ul class="tips-grid" role="list">
-								{#each section.items as tip (tip.id)}
-									<li>
-										<TipCard
-											{tip}
-											isPinned={pinnedStore.has(tip.id)}
-											isSelected={selectedTipId === tip.id}
-											{activeButtons}
-											hideCategoryBadge={true}
-											onTogglePin={(id) => pinnedStore.toggle(id)}
-											onSelectTip={toggleSelectTip}
-											onSelectCategory={(cat) => {
-												selectedCategory = selectedCategory === cat ? 'ALL' : cat;
-											}}
-										/>
-									</li>
-								{/each}
-							</ul>
-						</section>
-					{/each}
-				</div>
-			{:else}
-				<ul class="tips-grid" role="list">
-					{#each filteredTips as tip (tip.id)}
-						<li>
-							<TipCard
-								{tip}
-								isPinned={pinnedStore.has(tip.id)}
-								isSelected={selectedTipId === tip.id}
-								{activeButtons}
-								hideCategoryBadge={selectedCategory !== 'ALL'}
-								onTogglePin={(id) => pinnedStore.toggle(id)}
-								onSelectTip={toggleSelectTip}
-								onSelectCategory={(cat) => {
-									selectedCategory = selectedCategory === cat ? 'ALL' : cat;
-								}}
-							/>
-						</li>
-					{/each}
-				</ul>
-			{/if}
-
-			{#if isPinnedView && availableUnpinnedTips.length > 0}
-				<section class="unpinned-section" aria-label="Available shortcuts from master library">
-					<div class="unpinned-section__header">
-						<div class="unpinned-title-group">
-							<Plus size={16} class="unpinned-icon" />
-							<div>
-								<h3 class="unpinned-title">
-									Available in Master Library ({availableUnpinnedTips.length})
-								</h3>
-								<p class="unpinned-subtitle">
-									Matching shortcuts not yet in your sheet. Click the <strong>Star</strong> on any card
-									to add it.
-								</p>
-							</div>
-						</div>
-					</div>
-
 					<ul class="tips-grid" role="list">
-						{#each availableUnpinnedTips as tip (tip.id)}
+						{#each filteredTips as tip (tip.id)}
 							<li>
 								<TipCard
 									{tip}
 									isPinned={pinnedStore.has(tip.id)}
 									isSelected={selectedTipId === tip.id}
 									{activeButtons}
-									hideCategoryBadge={false}
+									hideCategoryBadge={selectedCategory !== 'ALL'}
 									onTogglePin={(id) => pinnedStore.toggle(id)}
 									onSelectTip={toggleSelectTip}
 									onSelectCategory={(cat) => {
@@ -671,9 +649,47 @@
 							</li>
 						{/each}
 					</ul>
-				</section>
-			{/if}
-		</section>
+				{/if}
+
+				{#if isPinnedView && availableUnpinnedTips.length > 0}
+					<section class="unpinned-section" aria-label="Available shortcuts from master library">
+						<div class="unpinned-section__header">
+							<div class="unpinned-title-group">
+								<Plus size={16} class="unpinned-icon" />
+								<div>
+									<h3 class="unpinned-title">
+										Available in Master Library ({availableUnpinnedTips.length})
+									</h3>
+									<p class="unpinned-subtitle">
+										Matching shortcuts not yet in your sheet. Click the <strong>Star</strong> on any card
+										to add it.
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<ul class="tips-grid" role="list">
+							{#each availableUnpinnedTips as tip (tip.id)}
+								<li>
+									<TipCard
+										{tip}
+										isPinned={pinnedStore.has(tip.id)}
+										isSelected={selectedTipId === tip.id}
+										{activeButtons}
+										hideCategoryBadge={false}
+										onTogglePin={(id) => pinnedStore.toggle(id)}
+										onSelectTip={toggleSelectTip}
+										onSelectCategory={(cat) => {
+											selectedCategory = selectedCategory === cat ? 'ALL' : cat;
+										}}
+									/>
+								</li>
+							{/each}
+						</ul>
+					</section>
+				{/if}
+			</section>
+		{/if}
 	</div>
 </main>
 
@@ -751,6 +767,10 @@
 		background: rgba(234, 88, 12, 0.14);
 		border-color: #ea580c;
 		color: #fdba74;
+	}
+
+	.search-panel.search-panel--hidden {
+		display: none;
 	}
 
 	.main-layout {

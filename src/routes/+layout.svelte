@@ -8,6 +8,7 @@
 		Laptop,
 		Smartphone,
 		Radio,
+		SlidersVertical,
 		Zap,
 		Layers,
 		Share2,
@@ -170,6 +171,20 @@
 				{#if pinnedStore.ids.length > 0}
 					<span class="view-tab__count view-tab__count--active">{pinnedStore.ids.length}</span>
 				{/if}
+			</button>
+
+			<button
+				type="button"
+				role="tab"
+				id="tab-studio"
+				class="view-tab"
+				class:view-tab--active={uiStore.viewMode === 'studio'}
+				aria-selected={uiStore.viewMode === 'studio'}
+				aria-controls="main-content"
+				onclick={() => uiStore.setViewMode('studio')}
+			>
+				<SlidersVertical size={12} />
+				<span>Studio</span>
 			</button>
 		</div>
 

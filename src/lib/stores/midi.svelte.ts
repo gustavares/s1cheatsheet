@@ -155,14 +155,50 @@ class MidiStore {
 		this.outputId = id;
 	}
 
+	#output(): MIDIOutput | null {
+		if (this.status !== 'connected' || !this.#access) return null;
+		const output = this.#access.outputs.get(this.outputId);
+		return output && output.state === 'connected' ? output : null;
+	}
+
 	/** Sends a Control Change on the selected channel. Returns false (and sends nothing) unless connected. */
 	sendCC(cc: number, value: number): boolean {
-		if (this.status !== 'connected' || !this.#access) return false;
-		const output = this.#access.outputs.get(this.outputId);
-		if (!output || output.state !== 'connected') return false;
+		const output = this.#output();
+		if (!output) return false;
 		const data = Math.max(0, Math.min(127, Math.round(value)));
 		output.send([0xb0 | (this.channel - 1), cc & 0x7f, data]);
 		this.#record('out', cc, data);
+		return true;
+	}
+
+	/**
+	 * Sends several CCs with Web MIDI timestamps `spacingMs` apart (patch recall), so the S-1's
+	 * input isn't flooded. Returns how many were sent (0 unless connected).
+	 */
+	sendControlChanges(messages: [number, number][], spacingMs = 3): number {
+		const output = this.#output();
+		if (!output || messages.length === 0) return 0;
+		const status = 0xb0 | (this.channel - 1);
+		const start = performance.now();
+		messages.forEach(([cc, value], i) => {
+			const data = Math.max(0, Math.min(127, Math.round(value)));
+			output.send([status, cc & 0x7f, data], start + i * spacingMs);
+			this.values[cc] = data;
+		});
+		const [lastCc, lastValue] = messages[messages.length - 1];
+		this.#record('out', lastCc, lastValue);
+		return messages.length;
+	}
+
+	/**
+	 * Sends raw MIDI bytes to the S-1 output (notes, clock…), optionally at a Web MIDI timestamp.
+	 * Channel-voice status bytes should use `this.channel`. Returns false unless connected.
+	 */
+	send(bytes: number[], timestamp?: number): boolean {
+		const output = this.#output();
+		if (!output) return false;
+		if (timestamp === undefined) output.send(bytes);
+		else output.send(bytes, timestamp);
 		return true;
 	}
 
