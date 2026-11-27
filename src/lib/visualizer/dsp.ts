@@ -333,3 +333,151 @@ export function buildColormap(stops: [number, [number, number, number]][]): Uint
 	}
 	return lut;
 }
+
+/** One cycle starting at `start` (fractional), resampled to `points`, zero-mean and peak-normalized. */
+export function resampleCycle(
+	x: Float32Array,
+	start: number,
+	period: number,
+	points = 256
+): Float32Array {
+	const out = new Float32Array(points);
+	let mean = 0;
+	for (let i = 0; i < points; i++) {
+		out[i] = sampleAt(x, start + (i / points) * period);
+		mean += out[i];
+	}
+	mean /= points;
+	let peak = 0;
+	for (let i = 0; i < points; i++) {
+		out[i] -= mean;
+		peak = Math.max(peak, Math.abs(out[i]));
+	}
+	if (peak > 1e-9) for (let i = 0; i < points; i++) out[i] /= peak;
+	return out;
+}
+
+/** RMS loudness every `hopSeconds`, normalized to its peak (0–1). */
+export function envelopeOf(x: Float32Array, sampleRate: number, hopSeconds = 0.01): Float32Array {
+	const hop = Math.max(1, Math.round(sampleRate * hopSeconds));
+	const frames = Math.floor(x.length / hop);
+	const env = new Float32Array(frames);
+	let peak = 0;
+	for (let f = 0; f < frames; f++) {
+		let sum = 0;
+		for (let i = f * hop; i < (f + 1) * hop; i++) sum += x[i] * x[i];
+		env[f] = Math.sqrt(sum / hop);
+		peak = Math.max(peak, env[f]);
+	}
+	if (peak > 1e-9) for (let f = 0; f < frames; f++) env[f] /= peak;
+	return env;
+}
+
+/** Fraction of the peak that marks an envelope's onset: low, so a slow attack still lines up. */
+export const ENVELOPE_ONSET = 0.03;
+
+/** Index where an envelope (normalized to a peak of 1) first reaches `threshold` (its onset). */
+export function envelopeOnset(env: ArrayLike<number>, threshold = ENVELOPE_ONSET): number {
+	for (let i = 0; i < env.length; i++) if (env[i] >= threshold) return i;
+	return 0;
+}
+
+/**
+ * Similarity of two peak-normalized loudness envelopes (0–1). Both are aligned at their onset
+ * (which also cancels MIDI and audio latency) and compared over the target's length, counting
+ * only moments when at least one of them is audible, so trailing silence doesn't water the
+ * score down. It falls linearly to 0 at a mean difference of `span` (half the full scale).
+ */
+export function envelopeSimilarity(
+	target: ArrayLike<number>,
+	live: ArrayLike<number>,
+	span = 0.5
+): number {
+	const t0 = envelopeOnset(target);
+	const l0 = envelopeOnset(live);
+	let diff = 0;
+	let frames = 0;
+	for (let i = 0; t0 + i < target.length; i++) {
+		const t = target[t0 + i];
+		const l = live[l0 + i] ?? 0;
+		if (t > 0.02 || l > 0.02) {
+			diff += Math.abs(t - l);
+			frames++;
+		}
+	}
+	return frames ? Math.max(0, 1 - diff / frames / span) : 0;
+}
+
+/** Magnitudes of harmonics 1…`count` of one resampled cycle (index 0 is the fundamental). */
+export function harmonicMagnitudes(cycle: Float32Array, count: number): Float64Array {
+	const n = cycle.length;
+	const cos = new Float64Array(n);
+	const sin = new Float64Array(n);
+	for (let i = 0; i < n; i++) {
+		cos[i] = Math.cos((2 * Math.PI * i) / n);
+		sin[i] = Math.sin((2 * Math.PI * i) / n);
+	}
+	const out = new Float64Array(count);
+	for (let k = 1; k <= count && k < n / 2; k++) {
+		let re = 0;
+		let im = 0;
+		for (let i = 0; i < n; i++) {
+			const j = (k * i) % n;
+			re += cycle[i] * cos[j];
+			im -= cycle[i] * sin[j];
+		}
+		out[k - 1] = Math.hypot(re, im) / n;
+	}
+	return out;
+}
+
+export interface TimbreOptions {
+	/** Average level difference (dB) at which the score reaches 0. */
+	spanDb?: number;
+	/** Harmonics quieter than this (dB below the strongest) count as silent. */
+	floorDb?: number;
+	/** Compare harmonics up to about this frequency. */
+	maxHz?: number;
+}
+
+/**
+ * Timbre similarity (0–1) of a target and a live cycle from their harmonic levels. Phase and
+ * polarity are ignored, so a different filter phase response or an inverted signal costs
+ * nothing. When one fundamental is one or two octaves below the other (a sub oscillator only
+ * one of them has), both are compared on the lower fundamental's harmonic grid, so the missing
+ * or extra sub counts against the score. Levels are in dB below each cycle's strongest
+ * harmonic, floored at `floorDb`; the score falls linearly to 0 at an average difference of
+ * `spanDb`.
+ */
+export function timbreSimilarity(
+	target: Float32Array,
+	targetHz: number,
+	live: Float32Array,
+	liveHz: number,
+	options: TimbreOptions = {}
+): number {
+	const { spanDb = 20, floorDb = -48, maxHz = 2640 } = options;
+	const octavesApart = (ratio: number) => {
+		const m = Math.round(ratio);
+		return (m === 2 || m === 4) && Math.abs(ratio - m) <= 0.04 * m ? m : 1;
+	};
+	const mTarget = targetHz > liveHz ? octavesApart(targetHz / liveHz) : 1;
+	const mLive = liveHz > targetHz ? octavesApart(liveHz / targetHz) : 1;
+	const count = Math.max(8, Math.min(96, Math.round((maxHz * mTarget) / targetHz)));
+	const levels = (cycle: Float32Array, m: number) => {
+		const mags = harmonicMagnitudes(cycle, Math.ceil(count / m));
+		let peak = 0;
+		for (const v of mags) peak = Math.max(peak, v);
+		const out = new Float64Array(count).fill(floorDb);
+		if (peak <= 0) return out;
+		for (let j = 1; j * m <= count; j++) {
+			out[j * m - 1] = Math.max(floorDb, 20 * Math.log10(mags[j - 1] / peak + 1e-12));
+		}
+		return out;
+	};
+	const a = levels(target, mTarget);
+	const b = levels(live, mLive);
+	let diff = 0;
+	for (let k = 0; k < count; k++) diff += Math.abs(a[k] - b[k]);
+	return Math.max(0, 1 - diff / count / spanDb);
+}

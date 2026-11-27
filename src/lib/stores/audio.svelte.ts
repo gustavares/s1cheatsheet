@@ -3,10 +3,12 @@
  * @description Opt-in audio input for the Visualizer (the S-1 is a USB audio interface).
  *
  * Nothing is requested until `start()` runs from a click. The input only feeds two
- * AnalyserNodes; it is never connected to the speakers (no monitoring, no feedback).
+ * AnalyserNodes and, while something records, capture taps (`startCapture`); it is never
+ * connected to the speakers (no monitoring, no feedback).
  * Browser processing (echo cancellation, noise suppression, auto gain) is switched off so the
  * analysers see the S-1's real waveform.
  */
+import { createCapture, type AudioCapture, type CaptureOptions } from '#lib/audio/capture.js';
 
 export type AudioStatus =
 	| 'idle'
@@ -49,6 +51,8 @@ class AudioInputStore {
 	#stream: MediaStream | null = null;
 	#source: MediaStreamAudioSourceNode | null = null;
 	#generation = 0;
+	/** Capture taps currently recording; reconnected when the input changes. */
+	#taps: AudioWorkletNode[] = [];
 
 	get isRunning(): boolean {
 		return this.status === 'running';
@@ -110,9 +114,35 @@ class AudioInputStore {
 		}
 	}
 
+	/**
+	 * Starts recording the raw input: every channel, no processing, never routed to the speakers.
+	 * Resolves to null when the input isn't running. Recording follows the input if the device
+	 * changes, and ends (keeping what was captured) when the Visualizer closes.
+	 */
+	async startCapture(options: CaptureOptions = {}): Promise<AudioCapture | null> {
+		const ctx = this.#ctx;
+		if (!ctx || this.status !== 'running' || !this.#source) return null;
+		try {
+			return await createCapture(
+				ctx,
+				(node) => {
+					this.#taps = [...this.#taps, node];
+					if (this.#ctx === ctx) this.#source?.connect(node);
+				},
+				(node) => {
+					this.#taps = this.#taps.filter((tap) => tap !== node);
+				},
+				options
+			);
+		} catch {
+			return null;
+		}
+	}
+
 	/** Closes the Visualizer: stops the tracks, disconnects the analysers, closes the AudioContext. */
 	stop() {
 		this.#generation++;
+		this.#taps = [];
 		this.#teardownStream();
 		if (typeof navigator !== 'undefined') {
 			navigator.mediaDevices?.removeEventListener('devicechange', this.#onDeviceChange);
@@ -171,6 +201,7 @@ class AudioInputStore {
 		// Analysers only: never connected to ctx.destination, so nothing reaches the speakers.
 		this.#source.connect(this.scope);
 		this.#source.connect(this.spectrum);
+		for (const tap of this.#taps) this.#source.connect(tap);
 		if (ctx.state === 'suspended') await ctx.resume();
 
 		const settings = track?.getSettings() ?? {};

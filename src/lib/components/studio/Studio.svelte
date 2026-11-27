@@ -5,10 +5,12 @@
 	 * the panel drawing (with Connect S-1 and the Visualizer) stays alongside.
 	 */
 	import { uiStore, type StudioTab } from '#lib/stores/ui.svelte.js';
+	import DrillTrainer from './DrillTrainer.svelte';
 	import PatchLibrary from './PatchLibrary.svelte';
 
 	const TABS: { id: StudioTab; label: string; blurb: string }[] = [
-		{ id: 'patches', label: 'Patches', blurb: 'Save and recall sounds' }
+		{ id: 'patches', label: 'Patches', blurb: 'Save and recall sounds' },
+		{ id: 'drills', label: 'Drills', blurb: 'Recreate this sound' }
 	];
 </script>
 
@@ -47,6 +49,8 @@
 	>
 		{#if uiStore.studioTab === 'patches'}
 			<PatchLibrary />
+		{:else if uiStore.studioTab === 'drills'}
+			<DrillTrainer />
 		{/if}
 	</div>
 </section>

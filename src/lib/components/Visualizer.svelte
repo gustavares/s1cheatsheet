@@ -8,7 +8,14 @@
 	 */
 	import { X } from '@lucide/svelte';
 	import { audioStore, MAX_DECIBELS, MIN_DECIBELS } from '#lib/stores/audio.svelte.js';
-	import { findTrigger, noteName, PitchDetector, type Pitch } from '#lib/visualizer/dsp.js';
+	import {
+		findTrigger,
+		noteName,
+		PitchDetector,
+		resampleCycle,
+		type Pitch
+	} from '#lib/visualizer/dsp.js';
+	import { vizStore, type VizView } from '#lib/stores/viz.svelte.js';
 	import {
 		createSpectrogramState,
 		createSpectrumState,
@@ -20,8 +27,7 @@
 		type Surface
 	} from '#lib/visualizer/render.js';
 
-	type View = 'scope' | 'spectrum' | 'spectrogram';
-	const VIEWS: { id: View; label: string }[] = [
+	const VIEWS: { id: VizView; label: string }[] = [
 		{ id: 'scope', label: 'Oscilloscope' },
 		{ id: 'spectrum', label: 'Spectrum' },
 		{ id: 'spectrogram', label: 'Spectrogram' }
@@ -31,8 +37,6 @@
 	const QUIET_PEAK = 0.0015; // about −56 dBFS
 	const QUIET_AFTER_MS = 1500;
 
-	let view = $state<View>('scope');
-	let cycles = $state(2);
 	let canvas = $state<HTMLCanvasElement | null>(null);
 
 	// Readouts, refreshed ~10× per second from the animation loop.
@@ -50,7 +54,7 @@
 			audioStore.status === 'no-device' ||
 			audioStore.status === 'error'
 	);
-	const viewLabel = $derived(VIEWS.find((v) => v.id === view)?.label ?? '');
+	const viewLabel = $derived(VIEWS.find((v) => v.id === vizStore.view)?.label ?? '');
 	const canvasLabel = $derived(
 		`${viewLabel} of the audio input${note ? `, pitch ${note} ${frequency}` : ''}`
 	);
@@ -95,6 +99,7 @@
 		let gain = 1;
 		let quietSince = performance.now();
 		let lastReadout = 0;
+		let lastCyclePublish = 0;
 		let raf = 0;
 
 		const frame = (now: number) => {
@@ -105,6 +110,8 @@
 				drawScope(surface, { samples: idle, start: 0, span: 4, gain: 1, cycles: 0 });
 				return;
 			}
+			const view = vizStore.view;
+			const cycles = vizStore.cycles;
 			const sampleRate = scope.context.sampleRate;
 			if (timeData?.length !== scope.fftSize) timeData = new Float32Array(scope.fftSize);
 			scope.getFloatTimeDomainData(timeData);
@@ -144,8 +151,20 @@
 					start: trigger.start,
 					span,
 					gain,
-					cycles: locked ? shownCycles : 0
+					cycles: locked ? shownCycles : 0,
+					overlay: vizStore.overlay?.cycle ?? null
 				});
+				// Share the locked live cycle (for drill scores) ~10× per second.
+				if (now - lastCyclePublish > 100) {
+					lastCyclePublish = now;
+					if (locked && period) {
+						vizStore.liveCycle = resampleCycle(timeData, trigger.start, period);
+						vizStore.livePitch = sampleRate / period;
+					} else {
+						vizStore.liveCycle = null;
+						vizStore.livePitch = null;
+					}
+				}
 			} else {
 				spectrum.smoothingTimeConstant = view === 'spectrum' ? 0.6 : 0.25;
 				if (freqData?.length !== spectrum.frequencyBinCount) {
@@ -216,9 +235,9 @@
 				<button
 					type="button"
 					class="viz__view"
-					class:viz__view--active={view === v.id}
-					aria-pressed={view === v.id}
-					onclick={() => (view = v.id)}
+					class:viz__view--active={vizStore.view === v.id}
+					aria-pressed={vizStore.view === v.id}
+					onclick={() => (vizStore.view = v.id)}
 				>
 					{v.label}
 				</button>
@@ -265,7 +284,13 @@
 					<span class="viz__hz viz__muted">No stable pitch</span>
 				{/if}
 			</div>
-			{#if view === 'scope'}
+			{#if vizStore.view === 'scope' && vizStore.overlay}
+				<div class="viz__readout viz__readout--target">
+					<span class="viz__target-swatch" aria-hidden="true"></span>Target: {vizStore.overlay
+						.label}
+				</div>
+			{/if}
+			{#if vizStore.view === 'scope'}
 				<div class="viz__readout viz__readout--trigger">
 					<span class:viz__locked={triggerText.startsWith('Locked')}>{triggerText}</span>
 					{#if gainText}<span class="viz__muted" title="Auto vertical gain">{gainText}</span>{/if}
@@ -290,23 +315,23 @@
 	</div>
 
 	<div class="viz__footer">
-		{#if view === 'scope'}
+		{#if vizStore.view === 'scope'}
 			<div class="viz__cycles" role="group" aria-label="Cycles shown">
 				<span>Cycles</span>
 				{#each CYCLE_OPTIONS as n (n)}
 					<button
 						type="button"
 						class="viz__chip"
-						class:viz__chip--active={cycles === n}
-						aria-pressed={cycles === n}
-						onclick={() => (cycles = n)}
+						class:viz__chip--active={vizStore.cycles === n}
+						aria-pressed={vizStore.cycles === n}
+						onclick={() => (vizStore.cycles = n)}
 					>
 						{n}
 					</button>
 				{/each}
 			</div>
 			<span class="viz__hint">Trigger locks to the fundamental’s rising zero crossing.</span>
-		{:else if view === 'spectrum'}
+		{:else if vizStore.view === 'spectrum'}
 			<span class="viz__hint">Green markers: the fundamental (f₀) and its harmonics.</span>
 		{:else}
 			<span class="viz__hint">Newest on the right; brighter = louder (−100 to −10 dBFS).</span>
@@ -471,6 +496,22 @@
 			right: auto;
 			left: 0.4rem;
 		}
+	}
+
+	.viz__readout--target {
+		bottom: 0.4rem;
+		right: 0.4rem;
+		align-items: center;
+		color: #fdba74;
+	}
+
+	.viz__target-swatch {
+		display: inline-block;
+		inline-size: 1rem;
+		block-size: 3px;
+		background: #fb923c;
+		border-radius: 2px;
+		box-shadow: 0 0 6px rgba(251, 146, 60, 0.8);
 	}
 
 	.viz__note {

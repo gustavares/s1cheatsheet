@@ -4,6 +4,8 @@ export type StudioTab = 'patches' | 'drills' | 'lessons' | 'keystep' | 'sequence
 class UiStore {
 	viewMode = $state<MainViewMode>('all');
 	studioTab = $state<StudioTab>('patches');
+	/** Target knob positions (CC → value) drawn as orange ticks on the panel (drill "Reveal"). */
+	ghostValues = $state.raw<Record<string, number> | null>(null);
 	showFaceplate = $state(true);
 	showPrintModal = $state(false);
 

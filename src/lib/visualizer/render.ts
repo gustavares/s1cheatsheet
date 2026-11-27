@@ -77,6 +77,8 @@ export interface ScopeFrame {
 	gain: number;
 	/** Number of whole cycles shown when locked (draws cycle boundaries), else 0. */
 	cycles: number;
+	/** Optional target cycle (peak-normalized), drawn under the live trace in each locked cycle. */
+	overlay?: Float32Array | null;
 }
 
 export function drawScope(s: Surface, frame: ScopeFrame) {
@@ -114,6 +116,28 @@ export function drawScope(s: Surface, frame: ScopeFrame) {
 	const mid = h / 2;
 	const amp = h * 0.42 * gain;
 	const clampY = (v: number) => Math.max(dpr, Math.min(h - dpr, mid - v * amp));
+
+	// Target overlay: same height as the auto-scaled live trace (peak ≈ 0.9 of the half-height).
+	if (frame.overlay && frame.cycles > 0) {
+		const target = frame.overlay;
+		const cycleWidth = w / frame.cycles;
+		const overlayPath = new Path2D();
+		for (let k = 0; k < frame.cycles; k++) {
+			for (let i = 0; i <= target.length; i++) {
+				const x = k * cycleWidth + (i / target.length) * cycleWidth;
+				const y = mid - 0.9 * target[i % target.length] * h * 0.42;
+				if (k === 0 && i === 0) overlayPath.moveTo(x, y);
+				else overlayPath.lineTo(x, y);
+			}
+		}
+		glowStroke(
+			s,
+			overlayPath,
+			'rgba(251, 146, 60, 0.08)',
+			'rgba(251, 146, 60, 0.22)',
+			'rgba(253, 186, 116, 0.75)'
+		);
+	}
 	const path = new Path2D();
 	const perPixel = span / w;
 	if (perPixel <= 1.5) {

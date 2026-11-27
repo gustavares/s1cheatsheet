@@ -14,6 +14,7 @@
 	import { GENERIC_CONTROLS, PANEL_CONTROLS, type PanelControl, type Tip } from '#lib/types.js';
 	import { CCS_BY_CONTROL, KNOB_CC, MIDI_MAPPED_CONTROLS, knobAngle } from '#lib/midi.js';
 	import { midiStore } from '#lib/stores/midi.svelte.js';
+	import { uiStore } from '#lib/stores/ui.svelte.js';
 	import MidiPanel from './MidiPanel.svelte';
 	import Visualizer from './Visualizer.svelte';
 	import { audioStore } from '#lib/stores/audio.svelte.js';
@@ -107,6 +108,12 @@
 	}
 
 	const lastTouched = $derived(midiStore.lastEvent);
+
+	/** Drill "Reveal": target value for a knob, drawn as an orange tick. */
+	const ghostValue = (id: string): number | undefined => {
+		const entry = KNOB_CC.get(id);
+		return entry ? uiStore.ghostValues?.[String(entry.cc)] : undefined;
+	};
 
 	function midiTitle(id: string): string {
 		const knobCc = KNOB_CC.get(id);
@@ -437,6 +444,11 @@
 					<g transform="rotate({midiOn ? knobAngle(ccValue(knob.id)) : 0})">
 						<line class="knob__pointer" x1="0" y1={-r + 3} x2="0" y2={-r * 0.35} />
 					</g>
+					{#if ghostValue(knob.id) !== undefined}
+						<g class="knob__ghost" transform="rotate({knobAngle(ghostValue(knob.id))})">
+							<line x1="0" y1={-r - 17} x2="0" y2={-r + 6} />
+						</g>
+					{/if}
 					{#if noMidi(knob.id)}
 						<circle class="no-midi-hatch" r={r + 6} />
 					{/if}
@@ -1059,6 +1071,15 @@
 		stroke: #f97316;
 		stroke-width: 4;
 		stroke-dasharray: 8 6;
+	}
+
+	/* Drill reveal: target position */
+	.knob__ghost line {
+		stroke: #fb923c;
+		stroke-width: 5;
+		stroke-linecap: round;
+		filter: drop-shadow(0 0 5px rgba(251, 146, 60, 0.9));
+		pointer-events: none;
 	}
 
 	/* Live knob mirror */
