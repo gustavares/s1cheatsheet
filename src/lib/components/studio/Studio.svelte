@@ -6,13 +6,15 @@
 	 */
 	import { uiStore, type StudioTab } from '#lib/stores/ui.svelte.js';
 	import DrillTrainer from './DrillTrainer.svelte';
+	import KeystepPanel from './KeystepPanel.svelte';
 	import LessonPlayer from './LessonPlayer.svelte';
 	import PatchLibrary from './PatchLibrary.svelte';
 
 	const TABS: { id: StudioTab; label: string; blurb: string }[] = [
 		{ id: 'patches', label: 'Patches', blurb: 'Save and recall sounds' },
 		{ id: 'drills', label: 'Drills', blurb: 'Recreate this sound' },
-		{ id: 'lessons', label: 'Lessons', blurb: 'Learn the knobs step by step' }
+		{ id: 'lessons', label: 'Lessons', blurb: 'Learn the knobs step by step' },
+		{ id: 'keystep', label: 'KeyStep', blurb: 'Keys, chords and scales' }
 	];
 </script>
 
@@ -55,6 +57,8 @@
 			<DrillTrainer />
 		{:else if uiStore.studioTab === 'lessons'}
 			<LessonPlayer />
+		{:else if uiStore.studioTab === 'keystep'}
+			<KeystepPanel />
 		{/if}
 	</div>
 </section>
